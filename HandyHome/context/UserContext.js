@@ -22,8 +22,8 @@ export const UserProvider = ({ children }) => {
             // setHasOnboarded(onboardedFlag === 'true');
    
             // TEMPORARY SIMULATION for testing (remove later)
-            setUser(null);           
-            setHasOnboarded(false);   
+            setUser("merp");           
+            setHasOnboarded(true);   
          } catch (error) {
             console.error('Error loading user data', error);
          } finally {

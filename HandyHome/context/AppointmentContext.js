@@ -10,6 +10,7 @@ export const AppointmentProvider = ({ children }) => {
       bookingDate: null,
       bookingTime: null,
       bookingNote: "",
+      workerDetails: null,
    });
 
    const clearAppointment = () => {

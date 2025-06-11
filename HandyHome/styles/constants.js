@@ -5,7 +5,8 @@ const COLORS = {
    lightblue: '#A4DCFF',
    darkblue: '#161745',
    lettersicons: '#3A454D',
-   labels: '#7f7f7f80',
+   labels: '#9C9C9C',
+   // labels: '#7f7f7f80',
    strokes: '#3A454D40'
 }
 

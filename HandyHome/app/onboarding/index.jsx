@@ -85,7 +85,7 @@ export default function OnboardingScreen() {
         <View style={{
           width: 266,
           aspectRatio: 1/1,
-          borderColor: '#07407B',
+          borderColor: COLORS.primary,
           borderWidth: 29,
           borderRadius: 266,
           opacity: 0.25,

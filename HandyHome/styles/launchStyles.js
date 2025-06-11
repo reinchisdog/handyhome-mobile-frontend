@@ -32,15 +32,15 @@ export const launchStyles = StyleSheet.create({
     title: {
         color: COLORS.primary,
         textAlign: 'center',
-        fontFamily: 'Cooper-SBd',
-        fontSize: FONT_SIZES.xxl,
+        fontFamily: FONTS.roboto700,
+        fontSize: FONT_SIZES.xxxl,
         marginBottom: 12
     },
     description: {
         color: COLORS.lettersicons,
         textAlign: 'center',
         fontFamily: FONTS.roboto400,
-        fontSize: FONT_SIZES.xs,
+        fontSize: FONT_SIZES.sm,
         paddingHorizontal: 64,
     }, 
     image: {

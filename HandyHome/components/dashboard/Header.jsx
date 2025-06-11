@@ -1,4 +1,4 @@
-import { SafeAreaView, StyleSheet, Text, View, Platform, useWindowDimensions, StatusBar } from 'react-native'
+import { SafeAreaView, StyleSheet, Text, View, Platform, useWindowDimensions, StatusBar, Animated } from 'react-native'
 import React from 'react'
 
 import { globalStyles as global } from '../../styles/globalStyles';
@@ -11,7 +11,8 @@ const Header = ({
     title,
     titleAlign = 'center',
     titlePosition = 'relative',
-    headerPosition = 'relative'
+    headerPosition = 'relative',
+    zIndex = 100
 }) => {
     /* ----------------------------- Initialization ----------------------------- */
     const { width } = useWindowDimensions();
@@ -21,16 +22,16 @@ const Header = ({
     else if (right && !left) direction = 'row-reverse';
 
     return (
-        <SafeAreaView style={[
+        <Animated.View style={[
             {
                 width: width,
                 backgroundColor: background,
-                paddingTop: Platform.OS === 'ios' ? 0 : StatusBar.currentHeight,
+                paddingTop: StatusBar.currentHeight,
                 paddingHorizontal: 24,
                 position: headerPosition,
                 top: 0,
                 left: 0,
-                zIndex: 100
+                zIndex: zIndex
             }
         ]}>
             {/* ----------------------------- Main Container ----------------------------- */}
@@ -61,7 +62,7 @@ const Header = ({
                 {/* ----------------------------- Right Icon ------------------------------ */}
                 {right ? right : null}
             </View>
-        </SafeAreaView>
+        </Animated.View>
     )
 }
 

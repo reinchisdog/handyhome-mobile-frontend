@@ -49,71 +49,81 @@ const BookingsLayout = () => {
 
 const BookingTabBar = ({ state, descriptors, navigation, position, active }) => {
   return (
-    <View style={{
-      flexDirection: 'row',
-      height: 36,
-      backgroundColor: COLORS.primary,
-      gap: 12
-    }}>
-      {state.routes.map((route, index) => {
-        const { options } = descriptors[route.key];
-        const label =
-          options.tabBarLabel !== undefined
-            ? options.tabBarLabel
-            : options.title !== undefined
-              ? options.title
-              : route.name;
+    <>
+      <View style={{
+        flexDirection: 'row',
+        height: 36,
+        backgroundColor: COLORS.primary,
+        gap: 12,
+      }}>
+        {state.routes.map((route, index) => {
+          const { options } = descriptors[route.key];
+          const label =
+            options.tabBarLabel !== undefined
+              ? options.tabBarLabel
+              : options.title !== undefined
+                ? options.title
+                : route.name;
 
-        const isFocused = state.index === index;
+          const isFocused = state.index === index;
 
-        const onPress = () => {
-          const event = navigation.emit({
-            type: 'tabPress',
-            target: route.key,
-          });
+          const onPress = () => {
+            const event = navigation.emit({
+              type: 'tabPress',
+              target: route.key,
+            });
 
-          if (!isFocused && !event.defaultPrevented) {
-            navigation.navigate(route.name);
-          }
-        };
+            if (!isFocused && !event.defaultPrevented) {
+              navigation.navigate(route.name);
+            }
+          };
 
-        const onLongPress = () => {
-          navigation.emit({
-            type: 'tabLongPress',
-            target: route.key,
-          });
-        };
-        return (
-          <TouchableOpacity
-            key={index}
-            accessibilityRole="button"
-            accessibilityState={isFocused ? { selected: true } : {}}
-            accessibilityLabel={options.tabBarAccessibilityLabel}
-            testID={options.tabBarTestID}
-            onPress={onPress}
-            onLongPress={onLongPress}
-            style={{ 
-              flex: 1 ,
-              justifyContent: 'center',
-              alignItems: 'center',
-              backgroundColor: (isFocused)? '#fff' :  'transparent',
-              borderTopLeftRadius: 8,
-              borderTopRightRadius: 8
-            }}
-          >
-            <Text 
-              style={{
-                fontFamily: FONTS.roboto700,
-                fontSize: FONT_SIZES.sm,
-                color: (isFocused)? COLORS.accent : '#fff'
+          const onLongPress = () => {
+            navigation.emit({
+              type: 'tabLongPress',
+              target: route.key,
+            });
+          };
+          return (
+            <TouchableOpacity
+              key={index}
+              accessibilityRole="button"
+              accessibilityState={isFocused ? { selected: true } : {}}
+              accessibilityLabel={options.tabBarAccessibilityLabel}
+              testID={options.tabBarTestID}
+              onPress={onPress}
+              onLongPress={onLongPress}
+              style={{ 
+                flex: 1 ,
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: (isFocused)? '#fff' :  'transparent',
+                borderTopLeftRadius: 8,
+                borderTopRightRadius: 8
               }}
             >
-              {label}
-            </Text>
-          </TouchableOpacity>
-        );
-      })}
-    </View>
+              <Text 
+                style={{
+                  fontFamily: FONTS.roboto700,
+                  fontSize: FONT_SIZES.sm,
+                  color: (isFocused)? COLORS.accent : '#fff'
+                }}
+              >
+                {label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+        
+      </View>
+      <View 
+      style={{
+        height: 8,
+        backgroundColor: '#fff'
+      }}
+      />
+    </>
+    
   )
 }
 
