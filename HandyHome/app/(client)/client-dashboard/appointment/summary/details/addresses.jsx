@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, FlatList, Pressable, TouchableOpacity, TouchableHighlight } from 'react-native'
+import { StyleSheet, Text, View, FlatList, Pressable, TouchableOpacity, TouchableHighlight, useWindowDimensions } from 'react-native'
 import React from 'react'
 
 import Icons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -30,6 +30,8 @@ const AddressesList = [
 ]
 
 const AppointmentAddresses = () => {
+  const {width} = useWindowDimensions();
+
   return (
     <View style={[global.screenContainer, {backgroundColor: '#fff'}]}>
       <FlatList 
@@ -121,6 +123,9 @@ const AppointmentAddresses = () => {
             }}>Add New Address</Text>
           </Pressable>
         }
+        ListFooterComponentStyle={{
+          paddingHorizontal: 24
+        }}
       />
       <View style={{
         width: '100%',

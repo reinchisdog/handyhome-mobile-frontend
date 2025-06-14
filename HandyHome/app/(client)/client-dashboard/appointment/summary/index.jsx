@@ -113,6 +113,7 @@ const ReviewSummary = () => {
             styles.summaryBoxPressable, {
             backgroundColor: pressed ? 'rgb(210, 230, 255)' : 'white',
           }]}
+          onPress={() => router.push('client-dashboard/appointment/summary/details/worker')}
           >
             <View style={[styles.left, {}]}>
               <ImageBackground
@@ -207,6 +208,7 @@ const ReviewSummary = () => {
             styles.summaryBoxPressable, {
             backgroundColor: pressed ? 'rgb(210, 230, 255)' : 'white',
           }]}
+          onPress={() => router.push('client-dashboard/appointment/summary/details/payment')}
           >
             <View style={styles.left}>
               <Icons name="cash-multiple" size={24} color={COLORS.labels} />
@@ -247,6 +249,7 @@ const ReviewSummary = () => {
             backgroundColor: pressed ? 'rgb(210, 230, 255)' : 'white',
             justifyContent: 'center'
           }]}
+          onPress={() => router.push('client-dashboard/appointment/summary/details/receipt')}
           >
             <View style={{ alignItems: 'center' }}>
               <Text 
@@ -318,7 +321,7 @@ const ReviewSummary = () => {
         </View>
         <TouchableHighlight style={global.primaryBtn}
           underlayColor='#0072bc'
-          onPress={() => router.replace()}>
+          onPress={() => router.replace('client-dashboard/appointment/success')}>
             <Text style={global.primaryBtnText}>Confirm Booking</Text>
         </TouchableHighlight>
       </View>

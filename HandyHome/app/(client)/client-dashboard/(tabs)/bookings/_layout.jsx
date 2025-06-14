@@ -14,7 +14,7 @@ import { COLORS, FONT_SIZES, FONTS } from '../../../../../styles/constants';
 
 const BookingsLayout = () => {
   /* ----------------------------- Initialization ----------------------------- */
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
 
   return (
     <View style={global.screenContainer}>

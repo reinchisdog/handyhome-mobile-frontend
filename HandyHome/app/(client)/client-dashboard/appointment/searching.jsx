@@ -74,7 +74,7 @@ useEffect(() => {
       gap: 48,
       justifyContent: 'center',
       alignItems: 'center',
-      transform: [{ translateX: cont }] 
+      transform: [{ translateX: cont }] ,
     }}
     >
       <View
@@ -149,6 +149,7 @@ const SearchingSuccess = () => {
       width,
       zIndex: 4,
       position: 'relative',
+      backgroundColor: '#fff'
     }]}>
     
       <Animated.Image 
@@ -200,13 +201,13 @@ const AppointLoading = () => {
 
       setTimeout(() => {
         router.replace('client-dashboard/appointment/summary')
-      }, 3000)
+      }, 500)
     }
 
     const getWorkerDetails = async () => {
       setTimeout(() => {
         setWorkerDetails("merp");
-      }, 4000)
+      }, 500)
     }
 
     getWorkerDetails();
@@ -214,7 +215,7 @@ const AppointLoading = () => {
   }, [workerDetails]);
 
   return (
-    <View style={[global.screenContainer, global.centerContainer]}>
+    <View style={[global.screenContainer, global.centerContainer, {backgroundColor: '#fff'}]}>
     {(!workerDetails) ?
       <SearchingScreen /> :
       <SearchingSuccess />

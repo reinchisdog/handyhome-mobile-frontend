@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, ImageBackground, useWindowDimensions, Animated, TouchableHighlight, TextInput, Platform, Image } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, ImageBackground, useWindowDimensions, Animated, Image, StatusBar } from 'react-native'
 import React, { useRef } from 'react'
 import { useAppointment } from '../../../../context/AppointmentContext'
 import { useRouter, useLocalSearchParams } from 'expo-router'
@@ -14,6 +14,8 @@ import { COLORS, FONT_SIZES, FONTS } from '../../../../styles/constants'
 import Arrows from '@expo/vector-icons/AntDesign';
 import Icons from '@expo/vector-icons/MaterialIcons';
 
+const IMAGE_HEIGHT = 272;
+
 const CientSchedule = () => {
    const router = useRouter();
 
@@ -24,8 +26,14 @@ const CientSchedule = () => {
    const scrollY = useRef(new Animated.Value(0)).current;
 
    const headerColor = scrollY.interpolate({
-      inputRange: [100, 174],
+      inputRange: [IMAGE_HEIGHT-64-10-StatusBar.currentHeight, IMAGE_HEIGHT-64],
       outputRange: ['rgba(255, 255, 255, 0)', 'rgba(255, 255, 255, 1)'],
+      extrapolate: 'clamp',
+    });
+
+    const headerText = scrollY.interpolate({
+      inputRange: [IMAGE_HEIGHT-64-10-StatusBar.currentHeight, IMAGE_HEIGHT-64],
+      outputRange: [0, 1],
       extrapolate: 'clamp',
     });
 
@@ -41,6 +49,40 @@ const CientSchedule = () => {
                <Arrows name={"left"} size={24} color={COLORS.primary} />
             </TouchableOpacity>}
          headerPosition='absolute'
+         title={
+            <Animated.View style={{
+               opacity: headerText,
+               flexDirection: 'row',
+               justifyContent: 'space-between',
+               width: '100%',
+               paddingLeft: 24
+            }}>
+               <Text 
+               numberOfLines={1}
+               style={{
+                  fontFamily: FONTS.roboto600,
+                  fontSize: FONT_SIZES.xl,
+                  color: COLORS.lettersicons,
+                  flexShrink: 1
+               }}
+               >
+                  {"Service NameDasdasdasdasdadasdasd"}
+               </Text>
+               <View 
+               style={[
+                  global.tagContainer, {
+                  backgroundColor: COLORS.lightblue
+               }]}>
+                  <Text 
+                  style={[
+                     global.tagText, {
+                     color: COLORS.lettersicons
+                  }]}>
+                     {"Service Category"}
+                  </Text>
+               </View>
+            </Animated.View>
+         }
          />
 
          <KeyboardAwareScrollView 
@@ -56,7 +98,7 @@ const CientSchedule = () => {
             source={require('../../../../assets/placeholder-base.png')}
             style={{
                width: width,
-               height: 272,
+               height: IMAGE_HEIGHT,
                objectFit: 'cover'
             }}
             />
