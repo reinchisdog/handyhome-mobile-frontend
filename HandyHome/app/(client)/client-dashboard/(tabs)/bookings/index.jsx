@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, FlatList } from 'react-native'
+import { StyleSheet, Text, View, FlatList, TouchableOpacity } from 'react-native'
 import React from 'react'
 
 import BookingItem from '../../../../../components/dashboard/booking/BookingItem'
@@ -48,14 +48,35 @@ const BookingItems = [
   },
 ]
 
-const UpcomingScreen = () => {
+const OngoingScreen = () => {
+  
+
   return (
     <FlatList 
       data={BookingItems}
-      renderItem={({item}) => <BookingItem item={item} status="Upcoming" />}
+      renderItem={({item}) => (
+        <TouchableOpacity
+          activeOpacity={0.6}
+          onLongPress={() => {console.log("Long Pressed")}}
+          onPress={() => {console.log("Pressed")}}
+        >
+          <BookingItem item={item} 
+          left = {{
+            name: 'Message',
+            function: () => {console.log("Message")}
+          }}
+          right = {{
+            name: 'Track',
+            function: () => {console.log("Track")}
+          }}
+          />
+        </TouchableOpacity>
+        
+      )
+      }
       inverted
     />
   )
 }
 
-export default UpcomingScreen
+export default OngoingScreen

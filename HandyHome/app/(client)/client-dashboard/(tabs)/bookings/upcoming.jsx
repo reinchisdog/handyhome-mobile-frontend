@@ -48,14 +48,18 @@ const BookingItems = [
   },
 ]
 
-const CancelledScreen = () => {
+const UpcomingScreen = () => {
   return (
     <FlatList 
       data={BookingItems}
       renderItem={({item}) => 
         <BookingItem item={item} 
+        left = {{
+          name: 'Cancel',
+          function: () => {}
+        }}
         right = {{
-          name: 'Rebook',
+          name: 'E-Receipt',
           function: () => {}
         }}/>
       }
@@ -63,6 +67,5 @@ const CancelledScreen = () => {
     />
   )
 }
-  
 
-export default CancelledScreen
+export default UpcomingScreen

@@ -5,7 +5,7 @@ import { globalStyles as global} from '../../../styles/globalStyles'
 import { COLORS, FONT_SIZES, FONTS } from '../../../styles/constants'
 import Icons from '@expo/vector-icons/MaterialIcons';
 
-const BookingItem = ({item, status}) => {
+const BookingItem = ({item, left, right}) => {
 
    return (
       <View style={{
@@ -116,8 +116,9 @@ const BookingItem = ({item, status}) => {
 
          {
             // ---- First Button (Upcoming / Completed)
-            (status !== "Cancelled") ? 
+            (left) ? 
             <TouchableHighlight
+               underlayColor="#d8d8d8"
                style={[
                   global.centerContainer, {
                   height: '100%',
@@ -128,6 +129,7 @@ const BookingItem = ({item, status}) => {
                   borderWidth: 2,
                   borderColor: COLORS.strokes,
                }]}
+               onPress={left.function}
             >
                <Text
                   style={[{
@@ -136,7 +138,7 @@ const BookingItem = ({item, status}) => {
                      color: COLORS.lettersicons
                   }]}
                >
-                  { (status === "Upcoming") ? "Cancel" : "Rate" }
+                  {left.name}
                </Text>
             </TouchableHighlight>
             :
@@ -157,7 +159,7 @@ const BookingItem = ({item, status}) => {
                   borderColor: COLORS.primary,
                }]}
                underlayColor={'#035082'}
-               onPress={() => {}}   
+               onPress={right.function}   
             >
                <Text
                   style={[{
@@ -166,7 +168,7 @@ const BookingItem = ({item, status}) => {
                      color: '#fff'
                   }]}
                >
-                  { (status === "Upcoming" || status === "Completed") ? "E-Receipt" : "Re-Book" }
+                  {right.name}
                </Text>
             </TouchableHighlight>
          }

@@ -1,9 +1,10 @@
-import { Text, View, TouchableOpacity, useWindowDimensions } from 'react-native'
+import { Text, View, TouchableOpacity, useWindowDimensions, ScrollView } from 'react-native'
 import React, {useEffect, useState} from 'react'
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 
 import Header from '../../../../../components/dashboard/Header';
-import UpcomingScreen from './index';
+import OngoingScreen from './index';
+import UpcomingScreen from './upcoming';
 import CompletedScreen from './completed';
 import CancelledScreen from './cancelled';
 
@@ -33,11 +34,14 @@ const BookingsLayout = () => {
         initialLayout={{ width: width }}
         screenOptions={{
           lazy: true,
+          
           // pagerEnabled: false,
           // lazyPlaceholder = {},
         }}
         tabBar={(props) => <BookingTabBar {...props} />}
+        
       >
+        <Tabs.Screen name="Ongoing" component={OngoingScreen}/>
         <Tabs.Screen name="Upcoming" component={UpcomingScreen}/>
         <Tabs.Screen name="Completed" component={CompletedScreen}/>
         <Tabs.Screen name="Cancelled" component={CancelledScreen}/>
@@ -49,12 +53,17 @@ const BookingsLayout = () => {
 
 const BookingTabBar = ({ state, descriptors, navigation, position, active }) => {
   return (
-    <>
-      <View style={{
-        flexDirection: 'row',
+    <View>
+      <ScrollView 
+      horizontal
+      contentContainerStyle={{
         height: 36,
-        backgroundColor: COLORS.primary,
         gap: 12,
+      }}
+      style={{
+        flexDirection: 'row',
+        backgroundColor: COLORS.primary,
+        
       }}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
@@ -94,7 +103,8 @@ const BookingTabBar = ({ state, descriptors, navigation, position, active }) => 
               onPress={onPress}
               onLongPress={onLongPress}
               style={{ 
-                flex: 1 ,
+                // flex: 1 ,
+                width: 100,
                 justifyContent: 'center',
                 alignItems: 'center',
                 backgroundColor: (isFocused)? '#fff' :  'transparent',
@@ -115,14 +125,14 @@ const BookingTabBar = ({ state, descriptors, navigation, position, active }) => 
           );
         })}
         
-      </View>
+      </ScrollView>
       <View 
       style={{
         height: 8,
         backgroundColor: '#fff'
       }}
       />
-    </>
+    </View>
     
   )
 }

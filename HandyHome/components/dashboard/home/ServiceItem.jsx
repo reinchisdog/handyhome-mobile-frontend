@@ -54,5 +54,3 @@ const ServiceItem = ({item}) => {
 }
 
 export default ServiceItem
-
-const styles = StyleSheet.create({})

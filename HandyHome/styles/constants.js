@@ -3,7 +3,7 @@ const COLORS = {
    secondary: '#F8F8F8',
    accent: '#F7931E',
    lightblue: '#A4DCFF',
-   darkblue: '#161745',
+   darkblue: '#0A466C',
    lettersicons: '#3A454D',
    labels: '#9C9C9C',
    // labels: '#7f7f7f80',

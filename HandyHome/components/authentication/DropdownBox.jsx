@@ -129,6 +129,8 @@ const DropdownBox = ({
                height: '100%',
                backgroundColor: '#00000040',
                position: 'absolute',
+               top: 0,
+               left: 0,
                zIndex: 1,
                elevation: 1
                }}></View>

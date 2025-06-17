@@ -52,7 +52,13 @@ const CompletedScreen = () => {
   return (
     <FlatList 
       data={BookingItems}
-      renderItem={({item}) => <BookingItem item={item} status="Completed" />}
+      renderItem={({item}) => 
+        <BookingItem item={item} 
+        right = {{
+          name: 'Rate',
+          function: () => {}
+        }}/>
+      }
       inverted
     />
   )

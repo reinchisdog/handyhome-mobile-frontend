@@ -1,6 +1,7 @@
 /* --------------------------------- Imports -------------------------------- */
-import { ScrollView, Text, View, TouchableOpacity, FlatList, useWindowDimensions, Animated } from 'react-native'
+import { ScrollView, Text, View, TouchableOpacity, TouchableHighlight, FlatList, useWindowDimensions, Animated, Image, Easing } from 'react-native'
 import { useRouter } from 'expo-router'
+import { useFocusEffect } from 'expo-router'
 import React, { useState, useRef, useEffect } from 'react'
 import { useUser } from '../../../../../context/UserContext'
 /* ------------------------------- Components ------------------------------- */
@@ -18,13 +19,24 @@ import PopularItem from '../../../../../components/dashboard/home/PopularItem';
 /* ---------------------------- Styles and Icons ---------------------------- */
 import Icons from '@expo/vector-icons/MaterialCommunityIcons';
 import { globalStyles as global } from '../../../../../styles/globalStyles';
-import { COLORS } from '../../../../../styles/constants';
+import { COLORS, FONTS, FONT_SIZES } from '../../../../../styles/constants';
 
 const HomeScreen = () => {
   /* ----------------------------- Initialization ----------------------------- */
   const {width, height} = useWindowDimensions();
   const [userName, setUsername] = useState('John Doe');
+  const [isVerified, setIsVerified] = useState(false);
+  const [showVerify, setShowVerify] = useState(true)
   const router = useRouter();
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!isVerified) {
+        verifyX.setValue(0);
+        setShowVerify(true);
+      }
+    }, [])
+  )
 
   /* ------------------------------- Animations ------------------------------- */
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -51,10 +63,25 @@ const HomeScreen = () => {
     return () => clearTimeout(timer); 
   }, [currentIndex]);
   
+  const verifyX = useRef(new Animated.Value(0)).current;
+
+  const closeVerify = () => {
+    Animated.timing(verifyX, {
+      toValue: -width,
+      duration: 600,
+      easing: Easing.bezier(0.76, 0, 0.24, 1),
+      useNativeDriver: true
+    }).start(() => {
+      setShowVerify(false)
+    })
+  }
+
   return (
     <ScrollView 
+    // showsHorizontalScrollIndicator={true}
+    showsVerticalScrollIndicator={true}
     style={[global.screenContainer]}
-    contentContainerStyle={{ minHeight: height, backgroundColor: COLORS.secondary }}
+    contentContainerStyle={{ backgroundColor: COLORS.secondary }}
     stickyHeaderIndices={[0]}
     >
       <Header 
@@ -125,12 +152,105 @@ const HomeScreen = () => {
             <Paginator slides={PromoSlides} scrollX={scrollX} currentIndex={currentIndex}/>
           </View>
           
+          {/* ---- Verification Alert */}
+          {!isVerified && showVerify && (
+            <Animated.View
+            style={[{
+              gap: 16,
+              marginHorizontal: 24,
+              marginTop: 16,
+              paddingHorizontal: 24,
+              paddingVertical: 16,
+              backgroundColor: '#fff',
+              borderRadius: 20,
+              shadowColor: "#000",
+              shadowOffset: {
+                  width: 0,
+                  height: 2,
+              },
+              shadowOpacity: 0.25,
+              shadowRadius: 4,
+
+              elevation: 2,
+
+              transform: [{translateX: verifyX}]
+            }]}>  
+              <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+              }}>
+                <Icons name='shield-check' size={24} color={COLORS.primary}/>
+                <Text
+                style={global.headingText}>
+                  <Text style={{color: COLORS.primary}}>Get Verified </Text>
+                  <Text style={{color: COLORS.lettersicons}}>to Book Services</Text>
+                </Text>
+              </View>
+
+              <Text
+              style={{
+                fontFamily: FONTS.roboto400,
+                fontSize: FONT_SIZES.sm,
+                color: COLORS.lettersicons
+              }}
+              >
+                Verify your account to fully access booking features and ensure secure transactions.
+              </Text>
+
+              <View 
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                gap: 12,
+              }}>
+                <TouchableOpacity 
+                style={{
+                  height: 32,
+                  width: 100,
+                  borderRadius: 16,
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}
+                underlayColor='#0072bc'
+                onPress={closeVerify}>
+                  <Text style={{
+                    fontFamily: FONTS.roboto700,
+                    fontSize: FONT_SIZES.md,
+                    color: COLORS.lettersicons
+                  }}>Maybe Later</Text>
+                </TouchableOpacity>
+
+                <TouchableHighlight 
+                style={{
+                  backgroundColor: COLORS.primary,
+                  height: 32,
+                  width: 100,
+                  borderRadius: 16,
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}
+                underlayColor='#0072bc'
+                onPress={() => {router.push('client-dashboard/verify')}}>
+                  <Text style={{
+                    fontFamily: FONTS.roboto700,
+                    fontSize: FONT_SIZES.md,
+                    color: COLORS.secondary
+                  }}>Verify Now</Text>
+                </TouchableHighlight>
+              </View>
+            </Animated.View>     
+          )}
+
           {/* ---- Services */}
           <View style={[{
             width: width,
             gap: 8
           }]}>
-            <View style={{padding: 24, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+            <View style={{paddingHorizontal: 24, paddingVertical: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
               <Text style={[global.headingText, {color: COLORS.primary}]}>Services</Text>
               <TouchableOpacity onPress={() => router.push('/client-dashboard/services')}
                 activeOpacity={0.5}>
@@ -155,7 +275,7 @@ const HomeScreen = () => {
             width: width,
             gap: 8
           }]}>
-            <View style={{padding: 24, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+            <View style={{paddingHorizontal: 24, paddingVertical: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
               <Text style={[global.headingText, {color: COLORS.primary}]}>Popular Services Near You</Text>
               <TouchableOpacity onPress={() => {}}
                 activeOpacity={0.5}>
@@ -177,20 +297,22 @@ const HomeScreen = () => {
           </View>
         </View>
         {/* Background */}
-        <View 
-         style={{
+        <Image 
+          source={require('../../../../../assets/images/backgrounds/graphic-bg1.png')}
+           style={{
             width: '100%',
             height: 224,
             backgroundColor: COLORS.lightblue,
             overflow: 'hidden',
-            borderBottomEndRadius: 42,
-            borderBottomStartRadius: 42,
+            borderBottomLeftRadius: 24,
+            borderBottomRightRadius: 24,
             paddingHorizontal: 24,
             position: 'absolute',
             zIndex: 0,
             elevation: 0,
-         }}>
-         </View>
+            objectFit: 'cover',
+            
+         }} />
       </View>
     </ScrollView>
   )

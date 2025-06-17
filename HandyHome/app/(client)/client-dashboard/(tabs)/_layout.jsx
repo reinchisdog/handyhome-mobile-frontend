@@ -31,6 +31,7 @@ export default function DashboardLayout() {
       <Tabs.Screen
         name="(home)"
         options={{
+          unmountOnBlur: true,
           title: 'Home',
           tabBarIcon: ({ focused, color, size }) => {
             const iconName = focused ? 'home' : 'home-outline';
@@ -43,6 +44,7 @@ export default function DashboardLayout() {
         name="bookings"
         options={{
           title: 'Bookings',
+          unmountOnBlur: true,
           tabBarIcon: ({ focused, color, size }) => {
             const iconName = focused ? 'calendar-account' : 'calendar-account-outline';
             return <Icons1 name={iconName} color={color} size={size} />;
@@ -54,6 +56,7 @@ export default function DashboardLayout() {
         name="inbox"
         options={{
           title: 'Inbox',
+          unmountOnBlur: true,
           tabBarIcon: ({ focused, color, size }) => {
             const iconName = focused ? 'message-text' : 'message-text-outline';
             return <Icons1 name={iconName} color={color} size={size} />;
@@ -65,6 +68,7 @@ export default function DashboardLayout() {
         name="profile"
         options={{
           title: 'Profile',
+          unmountOnBlur: true,
           tabBarIcon: ({ focused, color, size }) => {
             const iconName = focused ? 'person' : 'person-outline';
             return <Icons2 name={iconName} color={color} size={size} />;
