@@ -3,6 +3,7 @@ import React from 'react'
 
 import Header from '../../../../../components/dashboard/Header';
 import InboxItem from '../../../../../components/dashboard/inbox/InboxItem'
+import ComingSoonScreen from '../../../../comingSoon'
 
 import { globalStyles as global } from '../../../../../styles/globalStyles';
 import { COLORS, FONT_SIZES } from '../../../../../styles/constants';
@@ -68,25 +69,25 @@ inboxData = [
 
 const InboxScreen = () => {
   return (
-    <View style={global.screenContainer}>
+    // <View style={global.screenContainer}>
 
-      <Header 
-      background={COLORS.primary} 
-      title = {
-        <Text style={[global.headingText, {color: '#fff'}]}>Inbox</Text>
-      }
-      titleAlign = 'center'
-      titlePosition = 'relative'
-      />
+    //   <Header 
+    //   background={COLORS.primary} 
+    //   title = {
+    //     <Text style={[global.headingText, {color: '#fff'}]}>Inbox</Text>
+    //   }
+    //   titleAlign = 'center'
+    //   titlePosition = 'relative'
+    //   />
 
-      {/* ------------------------------ Main Content ------------------------------ */}
-      <FlatList 
-        data = {inboxData}
-        renderItem = {({item}) => <InboxItem item={item}/>}
-        inverted
-      />
+    //   <FlatList 
+    //     data = {inboxData}
+    //     renderItem = {({item}) => <InboxItem item={item}/>}
+    //     inverted
+    //   />
 
-    </View>
+    // </View>
+    <ComingSoonScreen />
   )
 }
 

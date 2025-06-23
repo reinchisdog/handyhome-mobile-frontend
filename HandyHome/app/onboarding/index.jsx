@@ -1,5 +1,5 @@
 /* --------------------------------- IMPORTS -------------------------------- */
-import { Text, View , FlatList, Animated, TouchableOpacity, Easing, SafeAreaView } from 'react-native';
+import { Text, View , FlatList, Animated, TouchableOpacity, Easing, SafeAreaView, Image, useWindowDimensions } from 'react-native';
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter, useNavigation } from 'expo-router';
 import { useUser } from '../../context/UserContext'
@@ -8,7 +8,7 @@ import OnboardingSlides from '../../components/onboarding/Slides';
 import OnboardingItem from '../../components/onboarding/OnboardingItem';
 import Paginator from '../../components/onboarding/Paginator';
 // Styles and Icons
-import Icons from '@expo/vector-icons/AntDesign';
+import Arrows from '@expo/vector-icons/Entypo';
 import { globalStyles as global } from '../../styles/globalStyles';
 import { launchStyles as launch } from '../../styles/launchStyles';
 import { COLORS, FONT_SIZES } from '../../styles/constants';
@@ -18,6 +18,7 @@ export default function OnboardingScreen() {
   const router = useRouter();
   const navigation = useNavigation();
   const { completeOnboarding } = useUser();
+  const { width, height} = useWindowDimensions()
 
   useEffect(() => {
     navigation.setOptions({ headerShown: false })
@@ -63,9 +64,9 @@ export default function OnboardingScreen() {
   }
 
   return (
-    <SafeAreaView style={[ global.screenContainer, {paddingBottom: 24}]}>
+    <SafeAreaView style={[ global.screenContainer, {paddingBottom: 24, position: 'relative', maxWidth: width}]}>
       {/* ------------------------- Top-Half of Onboarding ------------------------- */}
-      <View style={{flex: 1}}>
+      <View style={{flex: 1, transform: [{translateY: 40}]}}>
         <FlatList 
           data={OnboardingSlides}
           renderItem={({item}) => <OnboardingItem item={item}/>}
@@ -103,6 +104,7 @@ export default function OnboardingScreen() {
         paddingHorizontal: 24, 
         justifyContent: 'space-between'
       }}>
+
         {/* ---------- Paginator */}
         <Paginator slides={OnboardingSlides} scrollX={scrollX}/>
 
@@ -119,7 +121,7 @@ export default function OnboardingScreen() {
           <Animated.View style={[launch.nextBtn, { width: buttonExpand }]}>
             <TouchableOpacity onPress={handleNext}>
             {(currentIndex < OnboardingSlides.length - 1) ?
-              <Icons name="right" size={24} color="white" /> 
+              <Arrows name="chevron-right" size={24} color="white" /> 
                 :
               <Text 
               style={[launch.textBtn, {color: 'white'}]}
@@ -132,6 +134,36 @@ export default function OnboardingScreen() {
         </View>
         
       </View>
+
+      {/* <Image 
+      source={require('../../assets/images/backgrounds/graphic-bg6.png')}
+      resizeMode="contain"
+      style={{
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        width: '100%',
+        zIndex: -1
+      }}
+      /> */}
+      <View style={{
+        // backgroundColor: 'green',
+        position: 'absolute',
+        bottom: 0,
+        zIndex: -1,
+        aspectRatio: '375/128',
+        width: width,
+        justifyContent: 'flex-end'
+      }}>
+        <Image 
+        source={require('../../assets/images/backgrounds/graphic-bg6.png')}
+        style={{
+          width: '100%',
+          height: '100%'
+        }}
+        />
+      </View>
+      
     </SafeAreaView>
   )
 }

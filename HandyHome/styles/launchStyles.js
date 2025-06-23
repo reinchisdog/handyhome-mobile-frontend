@@ -12,6 +12,7 @@ export const launchStyles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         height: 40,
+        position: 'relative'
     },
     skipBtn: {
         height: '100%',

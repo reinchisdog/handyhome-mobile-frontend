@@ -29,16 +29,6 @@ const ServiceItem = ({item}) => {
                 flex: 1,
                 aspectRatio: '1/1',
                 borderRadius: 30,
-                
-                shadowColor: "#000",
-                shadowOffset: {
-                    width: 0,
-                    height: 2,
-                },
-                shadowOpacity: 0.25,
-                shadowRadius: 4,
-
-                elevation: 2,
             }}>
                 {item.icon}
             </View>

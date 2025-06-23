@@ -1,13 +1,13 @@
 import { StyleSheet, Text, View, TouchableOpacity, Image, useWindowDimensions, Animated, Pressable } from 'react-native'
 import React, {useState, useEffect} from 'react'
 
-import { globalStyles as global } from '../../../../../../../styles/globalStyles'
-import { COLORS, FONTS, FONT_SIZES } from '../../../../../../../styles/constants'
+import { globalStyles as global } from '../../../../../styles/globalStyles'
+import { COLORS, FONTS, FONT_SIZES } from '../../../../../styles/constants'
 
 const reviewItems = [
   {
     name: "User's Name",
-    profilePicture: require('../../../../../../../assets/placeholder-base.png'),
+    profilePicture: require('../../../../../assets/placeholder-base.png'),
     rating: 5,
     date: "27 Sep 2024",
     ratingDescription: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ab placeat eveniet aliquid voluptas, asperiores eius, deserunt soluta quasi laborum laudantium voluptatum! Earum ea quis quo suscipit amet adipisci labore natus. Nemo velit eligendi neque deserunt, facilis ipsa sed doloribus minima vel repudiandae laboriosam quis soluta ut iste officia, quas atque excepturi similique est quisquam. Ducimus ea quidem numquam dolor corrupti! Sit perferendis consequuntur maxime atque! Cum, pariatur harum quo temporibus ab eos assumenda soluta facere omnis neque consequatur accusantium. Autem quos, mollitia veritatis tenetur quia odio. Eaque est doloribus ducimus.",
@@ -15,7 +15,7 @@ const reviewItems = [
   }, 
   {
     name: "User's Name",
-    profilePicture: require('../../../../../../../assets/placeholder-base.png'),
+    profilePicture: require('../../../../../assets/placeholder-base.png'),
     rating: 5,
     date: "27 Sep 2024",
     ratingDescription: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ab placeat eveniet aliquid voluptas, asperiores eius, deserunt soluta quasi laborum laudantium voluptatum! Earum ea quis quo suscipit amet adipisci labore natus. Nemo velit eligendi neque deserunt, facilis ipsa sed doloribus minima vel repudiandae laboriosam quis soluta ut iste officia, quas atque excepturi similique est quisquam. Ducimus ea quidem numquam dolor corrupti! Sit perferendis consequuntur maxime atque! Cum, pariatur harum quo temporibus ab eos assumenda soluta facere omnis neque consequatur accusantium. Autem quos, mollitia veritatis tenetur quia odio. Eaque est doloribus ducimus.",
@@ -23,7 +23,7 @@ const reviewItems = [
   }, 
   {
     name: "User's Name",
-    profilePicture: require('../../../../../../../assets/placeholder-base.png'),
+    profilePicture: require('../../../../../assets/placeholder-base.png'),
     rating: 5,
     date: "27 Sep 2024",
     ratingDescription: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ab placeat eveniet aliquid voluptas, asperiores eius, deserunt soluta quasi laborum laudantium voluptatum! Earum ea quis quo suscipit amet adipisci labore natus. Nemo velit eligendi neque deserunt, facilis ipsa sed doloribus minima vel repudiandae laboriosam quis soluta ut iste officia, quas atque excepturi similique est quisquam. Ducimus ea quidem numquam dolor corrupti! Sit perferendis consequuntur maxime atque! Cum, pariatur harum quo temporibus ab eos assumenda soluta facere omnis neque consequatur accusantium. Autem quos, mollitia veritatis tenetur quia odio. Eaque est doloribus ducimus.",
@@ -31,7 +31,7 @@ const reviewItems = [
   }, 
   {
     name: "User's Name",
-    profilePicture: require('../../../../../../../assets/placeholder-base.png'),
+    profilePicture: require('../../../../../assets/placeholder-base.png'),
     rating: 5,
     date: "27 Sep 2024",
     ratingDescription: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ab placeat eveniet aliquid voluptas, asperiores eius, deserunt soluta quasi laborum laudantium voluptatum! Earum ea quis quo suscipit amet adipisci labore natus. Nemo velit eligendi neque deserunt, facilis ipsa sed doloribus minima vel repudiandae laboriosam quis soluta ut iste officia, quas atque excepturi similique est quisquam. Ducimus ea quidem numquam dolor corrupti! Sit perferendis consequuntur maxime atque! Cum, pariatur harum quo temporibus ab eos assumenda soluta facere omnis neque consequatur accusantium. Autem quos, mollitia veritatis tenetur quia odio. Eaque est doloribus ducimus.",
@@ -39,7 +39,7 @@ const reviewItems = [
   }, 
   {
     name: "User's Name",
-    profilePicture: require('../../../../../../../assets/placeholder-base.png'),
+    profilePicture: require('../../../../../assets/placeholder-base.png'),
     rating: 5,
     date: "27 Sep 2024",
     ratingDescription: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ab placeat eveniet aliquid voluptas, asperiores eius, deserunt soluta quasi laborum laudantium voluptatum! Earum ea quis quo suscipit amet adipisci labore natus. Nemo velit eligendi neque deserunt, facilis ipsa sed doloribus minima vel repudiandae laboriosam quis soluta ut iste officia, quas atque excepturi similique est quisquam. Ducimus ea quidem numquam dolor corrupti! Sit perferendis consequuntur maxime atque! Cum, pariatur harum quo temporibus ab eos assumenda soluta facere omnis neque consequatur accusantium. Autem quos, mollitia veritatis tenetur quia odio. Eaque est doloribus ducimus.",
@@ -47,7 +47,7 @@ const reviewItems = [
   }, 
   {
     name: "User's Name",
-    profilePicture: require('../../../../../../../assets/placeholder-base.png'),
+    profilePicture: require('../../../../../assets/placeholder-base.png'),
     rating: 5,
     date: "27 Sep 2024",
     ratingDescription: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ab placeat eveniet aliquid voluptas, asperiores eius, deserunt soluta quasi laborum laudantium voluptatum! Earum ea quis quo suscipit amet adipisci labore natus. Nemo velit eligendi neque deserunt, facilis ipsa sed doloribus minima vel repudiandae laboriosam quis soluta ut iste officia, quas atque excepturi similique est quisquam. Ducimus ea quidem numquam dolor corrupti! Sit perferendis consequuntur maxime atque! Cum, pariatur harum quo temporibus ab eos assumenda soluta facere omnis neque consequatur accusantium. Autem quos, mollitia veritatis tenetur quia odio. Eaque est doloribus ducimus.",
@@ -55,7 +55,7 @@ const reviewItems = [
   }, 
   {
     name: "User's Name",
-    profilePicture: require('../../../../../../../assets/placeholder-base.png'),
+    profilePicture: require('../../../../../assets/placeholder-base.png'),
     rating: 5,
     date: "27 Sep 2024",
     ratingDescription: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ab placeat eveniet aliquid voluptas, asperiores eius, deserunt soluta quasi laborum laudantium voluptatum! Earum ea quis quo suscipit amet adipisci labore natus. Nemo velit eligendi neque deserunt, facilis ipsa sed doloribus minima vel repudiandae laboriosam quis soluta ut iste officia, quas atque excepturi similique est quisquam. Ducimus ea quidem numquam dolor corrupti! Sit perferendis consequuntur maxime atque! Cum, pariatur harum quo temporibus ab eos assumenda soluta facere omnis neque consequatur accusantium. Autem quos, mollitia veritatis tenetur quia odio. Eaque est doloribus ducimus.",
@@ -63,7 +63,7 @@ const reviewItems = [
   }, 
   {
     name: "User's Name",
-    profilePicture: require('../../../../../../../assets/placeholder-base.png'),
+    profilePicture: require('../../../../../assets/placeholder-base.png'),
     rating: 5,
     date: "27 Sep 2024",
     ratingDescription: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ab placeat eveniet aliquid voluptas, asperiores eius, deserunt soluta quasi laborum laudantium voluptatum! Earum ea quis quo suscipit amet adipisci labore natus. Nemo velit eligendi neque deserunt, facilis ipsa sed doloribus minima vel repudiandae laboriosam quis soluta ut iste officia, quas atque excepturi similique est quisquam. Ducimus ea quidem numquam dolor corrupti! Sit perferendis consequuntur maxime atque! Cum, pariatur harum quo temporibus ab eos assumenda soluta facere omnis neque consequatur accusantium. Autem quos, mollitia veritatis tenetur quia odio. Eaque est doloribus ducimus.",
@@ -71,7 +71,7 @@ const reviewItems = [
   }, 
   {
     name: "User's Name",
-    profilePicture: require('../../../../../../../assets/placeholder-base.png'),
+    profilePicture: require('../../../../../assets/placeholder-base.png'),
     rating: 5,
     date: "27 Sep 2024",
     ratingDescription: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ab placeat eveniet aliquid voluptas, asperiores eius, deserunt soluta quasi laborum laudantium voluptatum! Earum ea quis quo suscipit amet adipisci labore natus. Nemo velit eligendi neque deserunt, facilis ipsa sed doloribus minima vel repudiandae laboriosam quis soluta ut iste officia, quas atque excepturi similique est quisquam. Ducimus ea quidem numquam dolor corrupti! Sit perferendis consequuntur maxime atque! Cum, pariatur harum quo temporibus ab eos assumenda soluta facere omnis neque consequatur accusantium. Autem quos, mollitia veritatis tenetur quia odio. Eaque est doloribus ducimus.",
@@ -79,7 +79,7 @@ const reviewItems = [
   }, 
   {
     name: "User's Name",
-    profilePicture: require('../../../../../../../assets/placeholder-base.png'),
+    profilePicture: require('../../../../../assets/placeholder-base.png'),
     rating: 5,
     date: "27 Sep 2024",
     ratingDescription: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ab placeat eveniet aliquid voluptas, asperiores eius, deserunt soluta quasi laborum laudantium voluptatum! Earum ea quis quo suscipit amet adipisci labore natus. Nemo velit eligendi neque deserunt, facilis ipsa sed doloribus minima vel repudiandae laboriosam quis soluta ut iste officia, quas atque excepturi similique est quisquam. Ducimus ea quidem numquam dolor corrupti! Sit perferendis consequuntur maxime atque! Cum, pariatur harum quo temporibus ab eos assumenda soluta facere omnis neque consequatur accusantium. Autem quos, mollitia veritatis tenetur quia odio. Eaque est doloribus ducimus.",

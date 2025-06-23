@@ -3,7 +3,7 @@ import React from 'react'
 
 import { globalStyles as global } from '../../../styles/globalStyles';
 import { COLORS, FONT_SIZES, FONTS } from '../../../styles/constants';
-import Arrow from '@expo/vector-icons/AntDesign';
+import Arrow from '@expo/vector-icons/Entypo';
 
 const ProfileTab = ({icon, title, onPress, hasArrow}) => {
   return (
@@ -39,7 +39,7 @@ const ProfileTab = ({icon, title, onPress, hasArrow}) => {
 
         {/* ---------------------------------- Arrow --------------------------------- */}
         {(hasArrow) ?
-        <Arrow name="right" size={24} color={COLORS.accent}/>:
+        <Arrow name="chevron-right" size={24} color={COLORS.accent}/>:
         <></>
         }
       </View>

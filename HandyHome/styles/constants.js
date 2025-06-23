@@ -7,7 +7,9 @@ const COLORS = {
    lettersicons: '#3A454D',
    labels: '#9C9C9C',
    // labels: '#7f7f7f80',
-   strokes: '#3A454D40'
+   strokes: '#3A454D40',
+   red: '#EE4F4F',
+   screenbg: '#E5EDF3',
 }
 
 const FONT_SIZES = {

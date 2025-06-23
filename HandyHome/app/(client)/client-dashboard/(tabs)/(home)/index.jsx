@@ -81,7 +81,7 @@ const HomeScreen = () => {
     // showsHorizontalScrollIndicator={true}
     showsVerticalScrollIndicator={true}
     style={[global.screenContainer]}
-    contentContainerStyle={{ backgroundColor: COLORS.secondary }}
+    contentContainerStyle={{ backgroundColor: COLORS.screenbg }}
     stickyHeaderIndices={[0]}
     >
       <Header 
@@ -98,7 +98,6 @@ const HomeScreen = () => {
 
       <View 
       style={[{
-        backgroundColor: COLORS.secondary,
         width: '100%',
       }]}>
         {/* ------------------------------ Main Content ------------------------------ */}
@@ -163,15 +162,6 @@ const HomeScreen = () => {
               paddingVertical: 16,
               backgroundColor: '#fff',
               borderRadius: 20,
-              shadowColor: "#000",
-              shadowOffset: {
-                  width: 0,
-                  height: 2,
-              },
-              shadowOpacity: 0.25,
-              shadowRadius: 4,
-
-              elevation: 2,
 
               transform: [{translateX: verifyX}]
             }]}>  

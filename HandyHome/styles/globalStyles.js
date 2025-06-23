@@ -12,7 +12,8 @@ const { width } = Dimensions.get('window');
 export const globalStyles = StyleSheet.create({
     screenContainer: {
         flex: 1,
-        width: width
+        width: width,
+        backgroundColor: COLORS.screenbg
     },
     centerContainer: {
         justifyContent: 'center',
@@ -82,5 +83,26 @@ export const globalStyles = StyleSheet.create({
     tagText: {
         fontFamily: FONTS.roboto700,
         fontSize: FONT_SIZES.sm,
-    }
+    },
+    divider: {
+        backgroundColor: COLORS.strokes,
+        width: '100%',
+        height: 1,
+        borderRadius: 0.5
+    },
+    bottomModal: {
+        width: '100%',
+        padding: 24,
+        backgroundColor: '#fff',
+        borderTopLeftRadius: 12,
+        borderTopRightRadius: 12,
+        gap: 24
+    },
+    centerModal: {
+        width: '95%',
+        padding: 24,
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        gap: 24,
+    },
 })

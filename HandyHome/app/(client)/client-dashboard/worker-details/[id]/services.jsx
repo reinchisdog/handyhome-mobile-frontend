@@ -1,8 +1,11 @@
 import { StyleSheet, Text, View, ScrollView, FlatList, TouchableOpacity, Animated, useWindowDimensions } from 'react-native'
 import React, {useState, useEffect} from 'react'
+import { useNavigation } from 'expo-router'
 
-import { globalStyles as global } from '../../../../../../../styles/globalStyles'
-import { COLORS, FONTS, FONT_SIZES } from '../../../../../../../styles/constants'
+import { globalStyles as global } from '../../../../../styles/globalStyles'
+import { COLORS, FONTS, FONT_SIZES } from '../../../../../styles/constants'
+
+
 
 const specialtyItems = [
   "Leak Repair",
@@ -12,6 +15,8 @@ const specialtyItems = [
 
 const ReviewWorkServices = ({onScroll, paddingTop, minHeight, listRef}) => {
   const {height, width} = useWindowDimensions();
+  const navigation = useNavigation();
+
 
   return (
     <Animated.FlatList 
@@ -27,6 +32,7 @@ const ReviewWorkServices = ({onScroll, paddingTop, minHeight, listRef}) => {
       style={[global.tagContainer, {backgroundColor: COLORS.secondary}]}>
         <Text style={[global.tagText, {color: COLORS.primary}]}>{item}</Text>
       </View>
+      
     )}
     contentContainerStyle={{
       paddingTop: paddingTop,

@@ -1,8 +1,8 @@
 import { StyleSheet, Text, View, ScrollView, FlatList, TouchableOpacity, Animated } from 'react-native'
 import React, {useState, useEffect, useRef} from 'react'
 
-import { globalStyles as global } from '../../../../../../../styles/globalStyles'
-import { COLORS, FONTS, FONT_SIZES } from '../../../../../../../styles/constants'
+import { globalStyles as global } from '../../../../../styles/globalStyles'
+import { COLORS, FONTS, FONT_SIZES } from '../../../../../styles/constants'
 
 const availabilityItems = [
   {

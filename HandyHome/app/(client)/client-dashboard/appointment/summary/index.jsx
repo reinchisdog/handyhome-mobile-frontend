@@ -2,7 +2,7 @@ import { StyleSheet, Text, View, ScrollView, Pressable, ImageBackground, Touchab
 import React from 'react'
 import { useRouter } from 'expo-router'
 
-import Arrows from '@expo/vector-icons/AntDesign';
+import Arrows from '@expo/vector-icons/Entypo';
 import Icons from '@expo/vector-icons/MaterialCommunityIcons';
 
 import { globalStyles as global } from '../../../../../styles/globalStyles';
@@ -56,7 +56,7 @@ const ReviewSummary = () => {
                 </Text>
               </View>
             </View>
-            <Arrows name="right" size={24} color={COLORS.accent} />
+            <Arrows name="chevron-right" size={24} color={COLORS.accent} />
           </Pressable>
         </View>
 
@@ -99,7 +99,7 @@ const ReviewSummary = () => {
               <View style={[global.tagContainer, {backgroundColor: COLORS.lightblue}]}>
                 <Text style={[global.tagText, {color: COLORS.lettersicons}]}>{"15% off"}</Text>
               </View>
-              <Arrows name="right" size={24} color={COLORS.accent} />
+              <Arrows name="chevron-right" size={24} color={COLORS.accent} />
             </View>
             
           </Pressable>
@@ -113,7 +113,10 @@ const ReviewSummary = () => {
             styles.summaryBoxPressable, {
             backgroundColor: pressed ? 'rgb(210, 230, 255)' : 'white',
           }]}
-          onPress={() => router.push('client-dashboard/appointment/summary/details/worker')}
+          onPress={() => router.push({
+            pathname: 'client-dashboard/worker-details/[id]',
+            params: {id: "2"}
+          })}
           >
             <View style={[styles.left, {}]}>
               <ImageBackground
@@ -173,7 +176,7 @@ const ReviewSummary = () => {
               </View>
             </View>
 
-            <Arrows name="right" size={24} color={COLORS.accent} />
+            <Arrows name="chevron-right" size={24} color={COLORS.accent} />
           </Pressable>
 
           <Pressable 
@@ -181,6 +184,7 @@ const ReviewSummary = () => {
             styles.summaryBoxPressable, {
             backgroundColor: pressed ? 'rgb(210, 230, 255)' : 'white',
           }]}
+          onPress={console.log("Note")}
           >
             <Text style={styles.leftText}>Note</Text>
             <View style={styles.right}>
@@ -195,7 +199,7 @@ const ReviewSummary = () => {
               }}>
                 Lorem ipsum dolor sit amet consectetur, adipisicing elit. Libero fugiat id dolores! Adipisci debitis dignissimos numquam aperiam, quod et esse autem provident eius! Nulla, assumenda culpa reiciendis molestiae corrupti dolorum?
               </Text>
-              <Arrows name="right" size={24} color={COLORS.accent} />
+              <Arrows name="chevron-right" size={24} color={COLORS.accent} />
             </View>
             
           </Pressable>
@@ -242,6 +246,7 @@ const ReviewSummary = () => {
           </View>
         </View>
 
+        {/* -------------------------------- E-Receipt ------------------------------- */}
         <View style={styles.summaryBox}>
         <Pressable 
           style={({pressed}) => [
@@ -249,7 +254,7 @@ const ReviewSummary = () => {
             backgroundColor: pressed ? 'rgb(210, 230, 255)' : 'white',
             justifyContent: 'center'
           }]}
-          onPress={() => router.push('client-dashboard/appointment/summary/details/receipt')}
+          onPress={() => router.push('client-dashboard/e-receipt/[id]')}
           >
             <View style={{ alignItems: 'center' }}>
               <Text 

@@ -103,7 +103,7 @@ const AppointmentPayment = () => {
         </View>
       </ScrollView>
       {/* --------------------------------- Buttons -------------------------------- */}
-      <View style={[global.buttonsContainer, {backgroundColor: COLORS.secondary}]}>
+      <View style={[global.buttonsContainer, {backgroundColor: '#fff'}]}>
         <TouchableHighlight style={global.primaryBtn}
           underlayColor='#0072bc'
           onPress={() => {}}>

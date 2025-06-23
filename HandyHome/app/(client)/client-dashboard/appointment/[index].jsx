@@ -11,7 +11,7 @@ import DismissKeyboardWrapper from '../../../../components/DismissKeyboard'
 
 import { globalStyles as global } from '../../../../styles/globalStyles'
 import { COLORS, FONT_SIZES, FONTS } from '../../../../styles/constants'
-import Arrows from '@expo/vector-icons/AntDesign';
+import Arrows from '@expo/vector-icons/Entypo';
 import Icons from '@expo/vector-icons/MaterialIcons';
 
 const IMAGE_HEIGHT = 272;
@@ -46,7 +46,7 @@ const CientSchedule = () => {
             <TouchableOpacity
             onPress={() => router.back()}
             >
-               <Arrows name={"left"} size={24} color={COLORS.primary} />
+               <Arrows name={"chevron-left"} size={24} color={COLORS.primary} />
             </TouchableOpacity>}
          headerPosition='absolute'
          title={

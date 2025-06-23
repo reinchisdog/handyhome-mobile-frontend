@@ -4,7 +4,7 @@ import {useRouter} from 'expo-router'
 
 import { globalStyles as globla } from '../../styles/globalStyles'
 import { COLORS, FONT_SIZES, FONTS } from '../../styles/constants'
-import Icons from '@expo/vector-icons/AntDesign';
+import Arrows from '@expo/vector-icons/Entypo';
 
 const SubserviceItem = ({item}) => {
     const router = useRouter();
@@ -108,7 +108,7 @@ const SubserviceItem = ({item}) => {
                         }}
                         >{`\u20B1${item.price}`}</Text>
                     </View>
-                    <Icons name="right" size={24} color={COLORS.primary} />
+                    <Arrows name="chevron-right" size={24} color={COLORS.primary} />
                 </View>
             </View>
         </View>

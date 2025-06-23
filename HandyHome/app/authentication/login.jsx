@@ -7,7 +7,7 @@ import BasicInput from '../../components/authentication/BasicInput';
 import DismissKeyboardWrapper from '../../components/DismissKeyboard'
 /* ---------------------------- Styles and Icons ---------------------------- */
 import Icons from '@expo/vector-icons/MaterialCommunityIcons';
-import Arrows from '@expo/vector-icons/AntDesign';
+import Arrows from '@expo/vector-icons/Entypo';
 
 import { globalStyles as global } from '../../styles/globalStyles';
 import { authStyles as auth } from '../../styles/authStyles';
@@ -70,7 +70,7 @@ export default function LoginPage() {
         <View style={auth.headerContainer}>
           <TouchableOpacity
           onPress={() => {router.back()}}>
-            <Arrows name='left' size={24} color={'#fff'}/>
+            <Arrows name='chevron-left' size={24} color={'#fff'}/>
           </TouchableOpacity>
           <Text style={[auth.headerTitle, {color: '#fff'}]}>
             LOG IN

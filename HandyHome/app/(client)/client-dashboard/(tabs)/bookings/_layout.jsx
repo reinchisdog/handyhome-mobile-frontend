@@ -3,7 +3,7 @@ import React, {useEffect, useState} from 'react'
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 
 import Header from '../../../../../components/dashboard/Header';
-import OngoingScreen from './index';
+import OngoingScreen from './ongoing';
 import UpcomingScreen from './upcoming';
 import CompletedScreen from './completed';
 import CancelledScreen from './cancelled';

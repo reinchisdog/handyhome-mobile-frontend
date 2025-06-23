@@ -24,7 +24,6 @@ const CameraScreen = ({setShowCamera, setImage, cameraFace}) => {
       });
 
       if (!result.canceled) {
-         console.log(result.assets[0].uri);
          setImage(result.assets[0].uri);
          setShowCamera(false);
       }
@@ -38,9 +37,8 @@ const CameraScreen = ({setShowCamera, setImage, cameraFace}) => {
             flash: flash,
             enableShutterSound: true
          });
-
-         console.log(photo.path);
-         setImage(`file://${photo.path}`);
+         const normalizedUri = photo.path.startsWith('file://') ? photo.path : `file://${photo.path}`;
+         setImage(normalizedUri);
          setShowCamera(false);
       } catch (e) {
          console.log(e);
@@ -60,7 +58,12 @@ const CameraScreen = ({setShowCamera, setImage, cameraFace}) => {
             title={<></>}
             right={
                <TouchableOpacity activeOpacity={0.8}
-               onPress={() => setTorch(t => (t === "off" ? "on" : "off"))}>
+               onPress={() => 
+               {
+                  if (cameraFace === "back") setTorch(t => (t === "off" ? "on" : "off"));
+                  else () => {};
+               }
+               }>
                   <Icons 
                   name={(torch === "off")? "flashlight-off" : "flashlight"} 
                   size={24}

@@ -10,7 +10,7 @@ import AccountDetails from './accountDetails';
 import DismissKeyboardWrapper from '../../../components/DismissKeyboard';
 /* ---------------------------- Styles and Icons ---------------------------- */
 import Icons from '@expo/vector-icons/MaterialCommunityIcons';
-import Arrows from '@expo/vector-icons/AntDesign';
+import Arrows from '@expo/vector-icons/Entypo';
 
 import { globalStyles as global } from '../../../styles/globalStyles';
 import { authStyles as auth } from '../../../styles/authStyles';
@@ -55,7 +55,7 @@ const SignupPages = () => {
             if (step == 1) router.back()
             else setStep(step-1)
           }}>
-            <Arrows name='left' size={24} color={'#fff'}/>
+            <Arrows name='chevron-left' size={24} color={'#fff'}/>
           </TouchableOpacity>
           <Text style={[auth.headerTitle, {color: '#fff'}]}>
             SIGN UP

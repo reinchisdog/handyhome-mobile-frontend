@@ -11,9 +11,7 @@ import { globalStyles as global } from '../../../../../styles/globalStyles';
 const titleMap = {
   index: 'Review Summary',
   'details/addresses': 'My Addresses',
-  'details/worker': 'Service Provider',
   'details/payment': 'Payment Methods',
-  'details/receipt': 'E-Receipt',
 };
 
 const ReviewSummaryLayout = () => {
@@ -41,9 +39,7 @@ const ReviewSummaryLayout = () => {
     >
       <Stack.Screen name="index" />
       <Stack.Screen name="details/addresses" />
-      <Stack.Screen name="details/worker" />
       <Stack.Screen name="details/payment" />
-      <Stack.Screen name="details/receipt" />
     </Stack>
   )
 }

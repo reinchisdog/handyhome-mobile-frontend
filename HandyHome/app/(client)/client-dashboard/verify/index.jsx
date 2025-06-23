@@ -1,21 +1,24 @@
-import { StyleSheet, ScrollView, Text, View, TouchableOpacity, TouchableHighlight, TouchableWithoutFeedback, useWindowDimensions, Animated, Image, ImageBackground, Linking } from 'react-native'
+import { StyleSheet, ScrollView, Text, View, TouchableOpacity, TouchableHighlight, TouchableWithoutFeedback, useWindowDimensions, Animated, ImageBackground, Linking, Image } from 'react-native'
 import { useRouter } from 'expo-router';
-import React, {useState, useEffect, useRef} from 'react'
-import { useCameraPermission, useCameraDevice } from 'react-native-vision-camera'
+import React, {useState, useRef, useEffect} from 'react'
+import { useClientVerification } from '../../../../context/ClientVerificationContext';
+import { useCameraPermission } from 'react-native-vision-camera'
 
-import Header from '../../../components/dashboard/Header';
-import Checkbox from '../../../components/authentication/Checkbox';
-import DropdownBox from '../../../components/authentication/DropdownBox';
-import CameraScreen from '../../../components/authentication/CameraScreen';
-import Arrows from '@expo/vector-icons/AntDesign';
+import Header from '../../../../components/dashboard/Header';
+import Checkbox from '../../../../components/authentication/Checkbox';
+import DropdownBox from '../../../../components/authentication/DropdownBox';
+import CameraScreen from '../../../../components/authentication/CameraScreen';
+import Arrows from '@expo/vector-icons/Entypo';
 import Icons from '@expo/vector-icons/MaterialCommunityIcons';
 
-import { globalStyles as global } from '../../../styles/globalStyles';
-import { COLORS, FONTS, FONT_SIZES } from '../../../styles/constants';
+import { globalStyles as global } from '../../../../styles/globalStyles';
+import { COLORS, FONTS, FONT_SIZES } from '../../../../styles/constants';
 
 const ClientVerifyScreen = () => {
    const router = useRouter();
-   const {width, height} = useWindowDimensions();
+   const {width} = useWindowDimensions();
+
+   const { setClientVerification } = useClientVerification();
 
    const scrollRef = useRef();
 
@@ -26,8 +29,26 @@ const ClientVerifyScreen = () => {
    const progressBars = Array.from({ length: TOTAL_STEPS - 1 }, () => useRef(new Animated.Value(0)).current)
    const [iconColors, setIconColors] = useState(Array(TOTAL_STEPS).fill(COLORS.lettersicons));
 
+   const submitData = async () => {
+      if (!idType || !idImage || !clientImage) return;
+
+      console.log("Submitting");
+      const idImageBlob = await fetch(idImage).then(res => res.blob());
+      const clientImageBlob = await fetch(clientImage).then(res => res.blob());
+
+      setClientVerification({
+         validIdType: idType.value,
+         validIdImage: idImageBlob,
+         clientImage: clientImageBlob
+      })
+      router.replace('client-dashboard/verify/confirming')
+   }
+
    const handleNext = () => {
-      if (currStep >= TOTAL_STEPS - 1) return;
+      if (currStep >= TOTAL_STEPS - 1) {
+         submitData();
+         return;
+      }
 
       scrollRef.current?.scrollTo({ y: 0, animated: true });
 
@@ -69,13 +90,11 @@ const ClientVerifyScreen = () => {
 
    const handleImageShow = async () => {
       if (!hasPermission) {
-         console.log("No Permission")
          const granted = await requestPermission();
          if (!granted){
             Linking.openSettings();
          }
       } else {
-         console.log("Has Permission")
          setShowCamera(true);
       }
 
@@ -107,7 +126,7 @@ const ClientVerifyScreen = () => {
             <TouchableOpacity
             onPress={() => router.back()}
             >
-               <Arrows name={"left"} size={24} color={COLORS.primary} />
+               <Arrows name={"chevron-left"} size={24} color={COLORS.primary} />
             </TouchableOpacity>}
             title={
                <Text 
@@ -196,14 +215,14 @@ const ClientVerifyScreen = () => {
                      <IdCardContent 
                      idType={idType} 
                      setIdType={setIdType} 
-                     idImage={idImage} 
-                     setIdImage={setIdImage}
+                     image={idImage} 
+                     setImage={setIdImage}
                      onImageSelect={handleImageShow}/>
                   )}
                   {currStep === 2 && 
                      <ClientImageContent 
-                     idImage={clientImage} 
-                     setIdImage={setClientImage}
+                     image={clientImage} 
+                     setImage={setClientImage}
                      onImageSelect={handleImageShow}/>
                   }
                </Animated.View>
@@ -286,7 +305,7 @@ const AgreementContent = ({agree, setAgree}) => {
    )
 }
 
-const IdCardContent = ({idType, setIdType, idImage, setIdImage, onImageSelect}) => {
+const IdCardContent = ({idType, setIdType, image, setImage, onImageSelect}) => {
    const idTypes = [
       {
          value: "UMID",
@@ -315,9 +334,9 @@ const IdCardContent = ({idType, setIdType, idImage, setIdImage, onImageSelect}) 
          // transform: [{translateX: pageScrollX}]
       }}>
          {/* -------- Illustration */}
-         <View style={styles.illustrationCont}>
-            <Text>test</Text>
-         </View>
+         <Image 
+         source={require('../../../../assets/images/illustrations/Photo-Guide-1.png')}
+         style={styles.illustrationCont} />
 
          {/* -------- Note */}
          <View style={styles.noteCont}>
@@ -338,19 +357,19 @@ const IdCardContent = ({idType, setIdType, idImage, setIdImage, onImageSelect}) 
             <TouchableOpacity
             activeOpacity={0.9}
             onPress={
-               (idImage) ? 
+               (image) ? 
                () => {console.log("Has Image")} :
                onImageSelect
             }
             >
                <ImageBackground
-               source={{uri: idImage}}
+               source={{uri: image}}
                style={styles.imageContainer}
                imageStyle={styles.imageUpload}>
-                  {(idImage) ? 
+                  {(image) ? 
                      <TouchableOpacity
                      style={styles.imageDelete}
-                     onPress={() => {setIdImage(null); console.log("Deleted Image")}}
+                     onPress={() => {setImage(null); console.log("Deleted Image")}}
                      >
                         <Icons name='window-close' size={12} color={'#fff'}/>
                      </TouchableOpacity> :
@@ -367,7 +386,7 @@ const IdCardContent = ({idType, setIdType, idImage, setIdImage, onImageSelect}) 
    )
 }
 
-const ClientImageContent = ({idImage, setIdImage, onImageSelect}) => {
+const ClientImageContent = ({image, setImage, onImageSelect}) => {
 
    return (
       <View 
@@ -378,9 +397,9 @@ const ClientImageContent = ({idImage, setIdImage, onImageSelect}) => {
          // transform: [{translateX: pageScrollX}]
       }}>
          {/* -------- Illustration */}
-         <View style={styles.illustrationCont}>
-            <Text>test</Text>
-         </View>
+         <Image 
+         source={require('../../../../assets/images/illustrations/Photo-Guide-2.png')}
+         style={styles.illustrationCont} />
 
          {/* -------- Note */}
          <View style={styles.noteCont}>
@@ -394,19 +413,19 @@ const ClientImageContent = ({idImage, setIdImage, onImageSelect}) => {
             <TouchableOpacity
             activeOpacity={0.9}
             onPress={
-               (idImage) ? 
+               (image) ? 
                () => {console.log("Has Image")} :
                onImageSelect
             }
             >
                <ImageBackground
-               source={{uri: idImage}}
+               source={{uri: image}}
                style={styles.imageContainer}
                imageStyle={styles.imageUpload}>
-                  {(idImage) ? 
+                  {(image) ? 
                      <TouchableOpacity
                      style={styles.imageDelete}
-                     onPress={() => {setIdImage(null); console.log("Deleted Image")}}
+                     onPress={() => {setImage(null); console.log("Deleted Image")}}
                      >
                         <Icons name='window-close' size={12} color={'#fff'}/>
                      </TouchableOpacity> :
@@ -459,10 +478,9 @@ const styles = StyleSheet.create({
       color: COLORS.lettersicons
    },
    illustrationCont: {
-      width: '100%',
+      aspectRatio: '1/1',
       height: 148,
-      justifyContent: 'center',
-      alignItems: 'center'
+      margin: 'auto'
    },
    noteCont: {
       backgroundColor: COLORS.secondary,
