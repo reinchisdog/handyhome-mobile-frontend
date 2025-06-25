@@ -224,7 +224,7 @@ const HomeScreen = () => {
                   alignItems: 'center'
                 }}
                 underlayColor='#0072bc'
-                onPress={() => {router.push('client-dashboard/verify')}}>
+                onPress={() => {router.push('client-dashboard/verify-client')}}>
                   <Text style={{
                     fontFamily: FONTS.roboto700,
                     fontSize: FONT_SIZES.md,

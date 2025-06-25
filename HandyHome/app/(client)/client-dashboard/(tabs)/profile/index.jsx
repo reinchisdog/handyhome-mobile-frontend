@@ -173,6 +173,12 @@ export default ProfileScreen = () => {
                onPress={() => {router.push('client-dashboard/settings/payment')}}
             />
             <ProfileTab 
+               icon={<Icons1 name="contact-emergency" size={24} color={COLORS.primary} />}
+               title="Emergency Contacts"
+               hasArrow={true}
+               onPress={() => {router.push('client-dashboard/settings/contacts')}}
+            />
+            <ProfileTab 
                icon={<Icons2 name="message-question" size={24} color={COLORS.primary} />}
                title="FAQs"
                hasArrow={true}
@@ -200,7 +206,7 @@ export default ProfileScreen = () => {
                icon={<Icons2 name="wrench" size={24} color={COLORS.primary} />}
                title="Be a Service Provider"
                hasArrow={true}
-               onPress={() => {}}
+               onPress={() => {router.push('client-dashboard/verify-worker')}}
             />
             <ProfileTab 
                icon={<Icons2 name="logout" size={24} color={COLORS.primary} />}

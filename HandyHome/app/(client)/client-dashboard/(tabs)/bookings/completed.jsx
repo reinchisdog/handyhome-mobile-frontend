@@ -2,6 +2,7 @@ import { StyleSheet, Text, View, FlatList } from 'react-native'
 import React from 'react'
 
 import BookingItem from '../../../../../components/dashboard/booking/BookingItem'
+import { useRouter } from 'expo-router'
 
 const BookingItems = [
   {
@@ -49,6 +50,7 @@ const BookingItems = [
 ]
 
 const CompletedScreen = () => {
+  const router = useRouter();
   return (
     <FlatList 
       data={BookingItems}
@@ -56,7 +58,10 @@ const CompletedScreen = () => {
         <BookingItem item={item} 
         right = {{
           name: 'Rate',
-          function: () => {}
+          function: () => {router.push({
+            pathname: 'client-dashboard/booking-actions/rate/[id]',
+            params: {id: 2}
+          })}
         }}/>
       }
       inverted

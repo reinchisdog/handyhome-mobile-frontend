@@ -7,7 +7,7 @@ import { KeyboardAwareScrollView, KeyboardToolbar } from 'react-native-keyboard-
 import Header from '../../../../components/dashboard/Header'
 import ModalInput from '../../../../components/authentication/ModalInput'
 import BasicMultiline from '../../../../components/authentication/BasicMultiline'
-import DismissKeyboardWrapper from '../../../../components/DismissKeyboard'
+// import DismissKeyboardWrapper from '../../../../components/DismissKeyboard'
 
 import { globalStyles as global } from '../../../../styles/globalStyles'
 import { COLORS, FONT_SIZES, FONTS } from '../../../../styles/constants'
@@ -86,7 +86,7 @@ const CientSchedule = () => {
          />
 
          <KeyboardAwareScrollView 
-         bottomOffset={60}
+         bottomOffset={20}
          style={{flex: 1, backgroundColor: '#fff'}}
          onScroll={Animated.event(
             [{ nativeEvent: { contentOffset: { y: scrollY } } }],

@@ -58,7 +58,12 @@ const UpcomingScreen = () => {
         <BookingItem item={item} 
         left = {{
           name: 'Cancel',
-          function: () => {}
+          function: () => {
+            router.push({
+              pathname: '/client-dashboard/booking-actions/cancel/[id]',
+              params: {id: 2}
+            })
+          }
         }}
         right = {{
           name: 'Details',

@@ -7,7 +7,7 @@ import { useCameraPermission } from 'react-native-vision-camera'
 import Header from '../../../../components/dashboard/Header';
 import Checkbox from '../../../../components/authentication/Checkbox';
 import DropdownBox from '../../../../components/authentication/DropdownBox';
-import CameraScreen from '../../../../components/authentication/CameraScreen';
+import CameraScreen from '../../../../components/CameraScreen';
 import Arrows from '@expo/vector-icons/Entypo';
 import Icons from '@expo/vector-icons/MaterialCommunityIcons';
 

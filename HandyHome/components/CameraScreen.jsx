@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import * as ImagePicker from 'expo-image-picker'
 import { Camera, useCameraDevice } from 'react-native-vision-camera'
 
-import Header from '../dashboard/Header'
+import Header from './dashboard/Header'
 import Icons from '@expo/vector-icons/MaterialCommunityIcons';
 
 const CameraScreen = ({setShowCamera, setImage, cameraFace}) => {
@@ -139,5 +139,3 @@ const CameraScreen = ({setShowCamera, setImage, cameraFace}) => {
 }
 
 export default CameraScreen
-
-const styles = StyleSheet.create({})

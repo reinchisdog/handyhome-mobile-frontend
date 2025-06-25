@@ -95,7 +95,7 @@ export default function OnboardingScreen() {
           left: '50%',
           transform: [{ translateX: -133 }, { translateY: -210 }],
           zIndex: -1,
-        }}></View>
+        }} />
       </View>
       
       {/* ------------------------ Bottom-Half of Onboarding ----------------------- */}

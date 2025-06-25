@@ -99,7 +99,8 @@ const BookingItem = ({item, left, right}) => {
          </View>
          
          {/* --------------------------------- Buttons -------------------------------- */}
-         <View style={{
+         {(left || right) &&
+            <View style={{
             width: '100%',
             height: 32,
             flex: 3,
@@ -116,7 +117,7 @@ const BookingItem = ({item, left, right}) => {
 
          {
             // ---- First Button (Upcoming / Completed)
-            (left) ? 
+            (left) &&
             <TouchableHighlight
                underlayColor="#d8d8d8"
                style={[
@@ -141,11 +142,9 @@ const BookingItem = ({item, left, right}) => {
                   {left.name}
                </Text>
             </TouchableHighlight>
-            :
-            <></>
          }
 
-         {
+         {(right) &&
             // ---- Second Button
             <TouchableHighlight
                style={[
@@ -172,7 +171,8 @@ const BookingItem = ({item, left, right}) => {
                </Text>
             </TouchableHighlight>
          }
-         </View>
+            </View>
+         }
 
       </View>
    )
