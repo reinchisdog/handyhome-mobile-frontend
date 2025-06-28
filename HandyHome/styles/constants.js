@@ -9,6 +9,7 @@ const COLORS = {
    // labels: '#7f7f7f80',
    strokes: '#3A454D40',
    red: '#EE4F4F',
+   green: '#0EC05B',
    screenbg: '#E5EDF3',
 }
 

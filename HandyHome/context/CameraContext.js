@@ -112,6 +112,7 @@ const CameraScreen = ({visible, setVisible, setImage, cameraFace}) => {
       if(!uriPath.canceled) {
          setImage(uriPath.assets[0].uri);
          setVisible(false);
+         
       }
    }
 

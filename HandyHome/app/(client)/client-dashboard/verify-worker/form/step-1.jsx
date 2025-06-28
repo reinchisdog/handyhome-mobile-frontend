@@ -1,7 +1,7 @@
-import { StyleSheet, Text, View, Image, TouchableOpacity, ImageBackground } from 'react-native'
+import { StyleSheet, Text, View, Image, TouchableOpacity, ImageBackground, useWindowDimensions } from 'react-native'
 import React, { useEffect } from 'react'
 import { useCamera } from '../../../../../context/CameraContext';
-import { useWorkerVerification } from '../../../../../context/WorkerVerificationContext';
+import { useWorkerVerify } from '../../../../../context/WorkerVerificationContext';
 
 import Icons from '@expo/vector-icons/MaterialCommunityIcons'
 
@@ -9,6 +9,8 @@ import { globalStyles as global } from '../../../../../styles/globalStyles';
 import { COLORS, FONTS, FONT_SIZES } from '../../../../../styles/constants';
 
 const PhotoVerificationScreen = () => {
+   const {height} = useWindowDimensions();
+
    const { 
       openCamera,
       // forceCloseCamera,
@@ -18,9 +20,9 @@ const PhotoVerificationScreen = () => {
    } = useCamera();
 
    const {
-      workerVerification,
-      setWorkerVerification,
-   } = useWorkerVerification();
+      workerVerify,
+      setWorkerVerify,
+   } = useWorkerVerify();
 
    useEffect(() => {
       setCameraFace("front")
@@ -28,7 +30,7 @@ const PhotoVerificationScreen = () => {
 
    useEffect(() => {
       if (image) {
-         setWorkerVerification(prev => ({
+         setWorkerVerify(prev => ({
             ...prev,
             verificationPhoto: image
          }))
@@ -43,13 +45,15 @@ const PhotoVerificationScreen = () => {
       <View 
       style={{
          alignItems: 'center',
-         gap: 24
+         gap: 24,
+         minHeight: height - 144 - 48 - 64,
+         justifyContent: 'flex-start'
       }}>
          <Image 
          source={require('../../../../../assets/images/illustrations/Photo-Guide-2.png')}
-         style={styles.illustrationCont}/>
+         style={[styles.illustrationCont]}/>
 
-         <View style={{ gap: 16 }}>
+         <View style={{ gap: 16}}>
             {/* ---- Note */}
             <View style={styles.noteCont}>
                <Text style={styles.noteText}>
@@ -62,16 +66,16 @@ const PhotoVerificationScreen = () => {
             <TouchableOpacity
             activeOpacity={0.9}
             onPress={() => {
-               if (!workerVerification.verificationPhoto) openCamera()
+               if (!workerVerify.verificationPhoto) openCamera()
             }}>
                <ImageBackground
-               source={{uri: workerVerification.verificationPhoto}}
+               source={{uri: workerVerify.verificationPhoto}}
                style={styles.imageContainer}
                imageStyle={styles.imageUpload}>
-                  {(workerVerification.verificationPhoto) ? 
+                  {(workerVerify.verificationPhoto) ? 
                      <TouchableOpacity
                      style={styles.imageDelete}
-                     onPress={() => setWorkerVerification(prev => ({
+                     onPress={() => setWorkerVerify(prev => ({
                         ...prev,
                         verificationPhoto: null
                      }))}>
@@ -95,7 +99,7 @@ const styles = StyleSheet.create({
    illustrationCont: {
       aspectRatio: '1/1',
       height: 148,
-      margin: 'auto'
+      marginHorizontal: 'auto'
    },
    noteCont: {
       backgroundColor: COLORS.secondary,

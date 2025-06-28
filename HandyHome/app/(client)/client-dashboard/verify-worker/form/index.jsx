@@ -5,19 +5,23 @@ import Header from '../../../../../components/dashboard/Header';
 import Arrows from '@expo/vector-icons/Entypo'
 
 import PhotoVerificationScreen from './step-1';
+import CredentialsScreen from './step-2';
+import WorkSamplesScreen from './step-3';
+import OfferedServicesScreen from './step-4';
+import SummaryScreen from './step-5';
 
 import {globalStyles as global} from '../../../../../styles/globalStyles';
 import {COLORS, FONTS, FONT_SIZES} from '../../../../../styles/constants';
 import { useRouter } from 'expo-router';
+import { useWorkerVerify } from '../../../../../context/WorkerVerificationContext';
 
 const TITLE_CONT = 144;
 const HEADER_HEIGHT = StatusBar.currentHeight + 64 + 24 + TITLE_CONT;
 
-
-
 const FormLayoutScreen = () => {
    const {width, height} = useWindowDimensions();
    const router = useRouter();
+   const { workerVerify, submitWorkerVerify } = useWorkerVerify();
    
    const stepTitles = [
       `Photo \nVerification`,
@@ -59,8 +63,6 @@ const FormLayoutScreen = () => {
       }).start()
    }, [step])
    
-
-
    const handleNextStep = () => {
       if (step < stepTitles.length) {
          scrollViewRef.current?.scrollTo({ y: 0, animated: true })
@@ -82,8 +84,14 @@ const FormLayoutScreen = () => {
                }).start();
             });
          }, 300)
+      } else {
+         submitWorkerVerify();
       }
+
+      console.log(workerVerify)
    };
+
+   
 
    return (
       <View style={[global.screenContainer, {backgroundColor: '#fff', position: 'relative'}]}>
@@ -166,29 +174,31 @@ const FormLayoutScreen = () => {
             ref={scrollViewRef}
             style={{
                flex: 1,
-               paddingTop: TITLE_CONT
             }}
             contentContainerStyle={{
-               padding: 24
+               padding: 24,
+               paddingTop: TITLE_CONT + 24,
             }}
             onScroll={Animated.event([{nativeEvent: {contentOffset: {y: scrollY}}}], {
                useNativeDriver: false,
             })}>
                {(stepContent === 1) && <PhotoVerificationScreen />}
-               {(stepContent === 2) && <View  style={{width: '100%', height: height, backgroundColor: 'orange'}}/>}
-               {(stepContent === 3) && <View  style={{width: '100%', height: height, backgroundColor: 'yellow'}}/>}
-               {(stepContent === 4) && <View  style={{width: '100%', height: height, backgroundColor: 'green'}}/>}
-               {(stepContent === 5) && <View  style={{width: '100%', height: height, backgroundColor: 'blue'}}/>}
+               {(stepContent === 2) && <CredentialsScreen />}
+               {(stepContent === 3) && <WorkSamplesScreen />}
+               {(stepContent === 4) && <OfferedServicesScreen />}
+               {(stepContent === 5) && <SummaryScreen />}
             </ScrollView>
-            {(stepContent !== 2) &&
-               <View style={[global.buttonsContainer]}>
-                  <TouchableHighlight style={global.primaryBtn}
-                  underlayColor='#0072bc'
-                  onPress={handleNextStep}>
-                     <Text style={global.primaryBtnText}>Next</Text>
-                  </TouchableHighlight>
-               </View>
-            }
+
+            <View style={[global.buttonsContainer]}>
+               <TouchableHighlight style={global.primaryBtn}
+               underlayColor='#0072bc'
+               onPress={handleNextStep}>
+                  <Text style={global.primaryBtnText}>
+                     {(stepContent === 5) ? "Submit Application" : "Next"}
+                  </Text>
+               </TouchableHighlight>
+            </View>
+
          </Animated.View>
       </View>
    )

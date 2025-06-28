@@ -1,47 +1,94 @@
 /* --------------------------------- Imports -------------------------------- */
+import { useRouter } from 'expo-router';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const WorkerVerificationContext = createContext();
 
 export const WorkerVerificationProvider = ({ children }) => {
-   const [workerVerification, setWorkerVerification] = useState({
+   const router = useRouter();
+
+   const [workerVerify, setWorkerVerify] = useState({
       verificationPhoto: null,
-      validId1: {
-         type: null,
-         file: null,
-      },
-      validId2: {
-         type: null,
-         file: null,
-      },
+      validIds: [],           
       nbiClearance: null,
       brgyClearance: null,
-      certifications: [],        //max 5
-      experience: {
-         jobTitle: null,
-         company: null,
-         fromDate: null,
-         toDate: null
-      },
-      workSamples: [],           //max 5
-      offeredService: null,      //id
-      offeredSubService: null    //id
+      certifications: [],        
+      experience: null,             
+      workSamples: [],           
+      offeredService: null,      
+      offeredSubService: null    
    });
 
-   const clearWorkerVerification = () => {
-    setWorkerVerification(null);
+   /* ---- STRUCTURE
+      verificationPhoto: uri,
+      validIds[2]: [{
+         file: uri,
+         number: string,
+         type: {
+            title: string,
+            value: string,
+         },
+      }],
+      nbiClearance: uri,
+      brgyClearance: uri,
+      certifications: [{
+         date: Date,
+         file: uri,
+         name: string,
+         organization: string
+      }],
+      experience: {
+         company: string
+         title: string
+         fromDate: Date,
+         toDate: Date
+      },
+      workSamples: [uri],
+      offeredServices: {
+         id: int,
+         name: string
+      },
+      offeredSubServices: {
+         id: int,
+         name: string
+      }
+   */
+
+   const [fileInfo, setFileInfo] = useState({
+      nbiClearance: null,
+      brgyClearance: null,
+      certifications: []
+   })
+
+   const clearWorkerVerify = () => {
+    setWorkerVerify(null);
+   }
+
+   const convertFiles = async (w) => {
+
+   }
+
+   const submitWorkerVerify = async () => {
+      const body = await convertFiles(workerVerify)
+
+      const successful = true;
+
+      if (successful) router.replace('client-dashboard/verify-worker/success')      
    }
 
    return (
       <WorkerVerificationContext.Provider 
       value={{
-         workerVerification,
-         setWorkerVerification,
-         clearWorkerVerification
+         workerVerify,
+         setWorkerVerify,
+         clearWorkerVerify,
+         fileInfo,
+         setFileInfo,
+         submitWorkerVerify
       }}>
          {children}
       </WorkerVerificationContext.Provider>
    )
 }
 
-export const useWorkerVerification = () => useContext(WorkerVerificationContext);
+export const useWorkerVerify = () => useContext(WorkerVerificationContext);

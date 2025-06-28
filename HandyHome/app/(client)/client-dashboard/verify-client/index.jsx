@@ -41,7 +41,7 @@ const ClientVerifyScreen = () => {
          validIdImage: idImageBlob,
          clientImage: clientImageBlob
       })
-      router.replace('client-dashboard/verify/confirming')
+      router.replace('client-dashboard/verify-client/confirming')
    }
 
    const handleNext = () => {

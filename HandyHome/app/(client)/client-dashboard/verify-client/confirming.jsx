@@ -19,21 +19,21 @@ const SearchingScreen = () => {
     useRef(new Animated.Value(0)).current,
   ];
 
-/* -------------------------------- Animation ------------------------------- */
-const translateYs = ballAnims.map(anim =>
-    anim.interpolate({
+  /* -------------------------------- Animation ------------------------------- */
+  const translateYs = ballAnims.map(anim =>
+      anim.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0, -20], // goes up 20 units
+      })
+  );
+
+  const contAnim = useRef(new Animated.Value(0)).current;
+  const cont = contAnim.interpolate({
       inputRange: [0, 1],
-      outputRange: [0, -20], // goes up 20 units
-    })
-);
+      outputRange: [width / 2 + 120, 0],
+  });
 
-const contAnim = useRef(new Animated.Value(0)).current;
-const cont = contAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [width / 2 + 120, 0],
-});
-
-useEffect(() => {
+  useEffect(() => {
     const createBounce = anim =>
       Animated.sequence([
         Animated.timing(anim, {
@@ -59,7 +59,7 @@ useEffect(() => {
   
     Animated.timing(contAnim, {
         toValue: 1,
-        duration: 500,
+        duration: 300,
         easing: Easing.out(Easing.exp),
         useNativeDriver: true,
       }).start(() => {
@@ -173,14 +173,14 @@ const VerifyConfirming = () => {
 
   const submitVerificationDetails = async () => {
     setTimeout(() => {
-      console.log("Submitting Client Verification...")
-    }, 1000)
+      setSubmitting(false);
+      clearClientVerification();
+    }, 3000)
   }
 
   useEffect(() => {
     submitVerificationDetails()
-    setSubmitting(false);
-    clearClientVerification();
+    
   }, [])
 
   return (

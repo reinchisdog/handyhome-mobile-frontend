@@ -88,6 +88,7 @@ const DropdownBox = ({
       <Modal
       visible = {itemListView}
       transparent
+      statusBarTranslucent
       animationType='fade'
       onRequestClose={onDropDownExit}
       >
