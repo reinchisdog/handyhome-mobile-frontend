@@ -3,23 +3,23 @@ import { ScrollView, Text, View, TouchableOpacity, TouchableHighlight, FlatList,
 import { useRouter } from 'expo-router'
 import { useFocusEffect } from 'expo-router'
 import React, { useState, useRef, useEffect } from 'react'
-import { useUser } from '../../../../../context/UserContext'
+import { useUser } from '../../../../context/UserContext'
 /* ------------------------------- Components ------------------------------- */
-import Header from '../../../../../components/dashboard/Header';
-import TextLogo from '../../../../../components/logos/TextLogo';
+import Header from '../../../../components/dashboard/Header';
+import TextLogo from '../../../../components/logos/TextLogo';
 
-import PromoSlides from '../../../../../components/dashboard/home/PromoSlides';
-import PromoItem from '../../../../../components/dashboard/home/PromoItem';
-import Paginator from '../../../../../components/dashboard/home/Paginator';
+import PromoSlides from '../../../../components/dashboard/home/PromoSlides';
+import PromoItem from '../../../../components/dashboard/home/PromoItem';
+import Paginator from '../../../../components/dashboard/home/Paginator';
 
-import ServiceList from '../../../../../components/dashboard/home/ServiceList';
-import ServiceItem from '../../../../../components/dashboard/home/ServiceItem';
+import ServiceList from '../../../../components/dashboard/home/ServiceList';
+import ServiceItem from '../../../../components/dashboard/home/ServiceItem';
 
-import PopularItem from '../../../../../components/dashboard/home/PopularItem';
+import PopularItem from '../../../../components/dashboard/home/PopularItem';
 /* ---------------------------- Styles and Icons ---------------------------- */
 import Icons from '@expo/vector-icons/MaterialCommunityIcons';
-import { globalStyles as global } from '../../../../../styles/globalStyles';
-import { COLORS, FONTS, FONT_SIZES } from '../../../../../styles/constants';
+import { globalStyles as global } from '../../../../styles/globalStyles';
+import { COLORS, FONTS, FONT_SIZES } from '../../../../styles/constants';
 
 const HomeScreen = () => {
   /* ----------------------------- Initialization ----------------------------- */
@@ -288,7 +288,7 @@ const HomeScreen = () => {
         </View>
         {/* Background */}
         <Image 
-          source={require('../../../../../assets/images/backgrounds/graphic-bg1.png')}
+          source={require('../../../../assets/images/backgrounds/graphic-bg1.png')}
            style={{
             width: '100%',
             height: 224,

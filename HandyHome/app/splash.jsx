@@ -82,8 +82,10 @@ export default function SplashScreen() {
           router.replace('/onboarding');
         } else if (!user) {
           router.replace('/authentication');
-        } else {
+        } else if (user.role === "client") {
           router.replace('/client-dashboard');
+        } else if (user.role === "worker") {
+          router.replace('/worker-dashboard');
         }
       } catch (e) {
         console.error('Splash check error: ', e);

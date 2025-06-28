@@ -1,13 +1,13 @@
 import { StyleSheet, Text, View, ScrollView, SafeAreaView, Platform, StatusBar, Image, TouchableHighlight, TouchableOpacity, useWindowDimensions, ImageBackground, Modal } from 'react-native'
 import React, { useState } from 'react'
 import {useRouter} from 'expo-router'
-import {useUser} from '../../../../../context/UserContext';
+import {useUser} from '../../../../context/UserContext';
 
-import Header from '../../../../../components/dashboard/Header'
-import ProfileTab from '../../../../../components/dashboard/profile/ProfileTab'
+import Header from '../../../../components/dashboard/Header'
+import ProfileTab from '../../../../components/dashboard/profile/ProfileTab'
 
-import { globalStyles as global } from '../../../../../styles/globalStyles'
-import { COLORS, FONT_SIZES, FONTS } from '../../../../../styles/constants'
+import { globalStyles as global } from '../../../../styles/globalStyles'
+import { COLORS, FONT_SIZES, FONTS } from '../../../../styles/constants'
 import Icons1 from '@expo/vector-icons/MaterialIcons';
 import Icons2 from '@expo/vector-icons/MaterialCommunityIcons';
 import Arrows from '@expo/vector-icons/Entypo';
@@ -90,7 +90,7 @@ export default ProfileScreen = () => {
          >
             {/* --------------------------------- Header --------------------------------- */}
             <ImageBackground
-            source={require('../../../../../assets/images/backgrounds/graphic-bg1.png')} 
+            source={require('../../../../assets/images/backgrounds/graphic-bg1.png')} 
             style={{
                width: '100%',
                height: 224 + StatusBar.currentHeight,
@@ -113,7 +113,7 @@ export default ProfileScreen = () => {
                   paddingTop: Platform.OS === "ios" ? 0 : StatusBar.currentHeight,
                }}>
                   <Image 
-                     source={require('../../../../../assets/placeholder-base.png')}
+                     source={require('../../../../assets/placeholder-base.png')}
                      style={{
                         width: 100,
                         height: 100,

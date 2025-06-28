@@ -29,7 +29,7 @@ export default function DashboardLayout() {
       }}
     >
       <Tabs.Screen
-        name="(home)"
+        name="home"
         options={{
           unmountOnBlur: true,
           title: 'Home',
@@ -60,6 +60,18 @@ export default function DashboardLayout() {
           tabBarIcon: ({ focused, color, size }) => {
             const iconName = focused ? 'message-text' : 'message-text-outline';
             return <Icons1 name={iconName} color={color} size={size} />;
+          },
+        }}
+      />
+
+      <Tabs.Screen
+        name="analytics"
+        options={{
+          title: 'Analytics',
+          unmountOnBlur: true,
+          tabBarIcon: ({ focused, color, size }) => {
+            const iconName = focused ? 'insert-chart' : 'insert-chart-outlined';
+            return <Icons2 name={iconName} color={color} size={size} />;
           },
         }}
       />
