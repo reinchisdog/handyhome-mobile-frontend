@@ -140,13 +140,13 @@ export default ContactsScreen = () => {
 
 const NewContactModal = ({showModal, setShowModal}) => {
    const [newContact, setNewContact] = useState({
-      image: null,
+      email: "",
       name: "",
       phoneNumber: ""
    })
    const clearNewContact = () => {
       setNewContact({
-         image: null,
+         email: "",
          name: "",
          phoneNumber: ""
       })
@@ -211,6 +211,15 @@ const NewContactModal = ({showModal, setShowModal}) => {
                inputMode= "numeric"
                keyboardType="phone-pad"
                value={newContact.phoneNumber}
+               />
+
+               <BasicInput 
+               left={<Icons name='mail' size={24} color={COLORS.primary}/>}
+               placeholder='Email (Optional)'
+               onChangeText={(e) => setNewContact(prev => ({...prev, phoneNumber: e}))}
+               inputMode= "email"
+               keyboardType="email-address"
+               value={newContact.email}
                />
 
                <TouchableHighlight

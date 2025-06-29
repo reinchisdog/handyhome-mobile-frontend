@@ -110,7 +110,7 @@ export default ProfileScreen = () => {
                   </View>
 
                   <TouchableOpacity
-                  onPress={() => {}}
+                  onPress={() => {router.push('worker-dashboard/worker-details/[id]')}}
                   >
                      <Arrows name="chevron-right" size={24} color={COLORS.secondary} />
                   </TouchableOpacity>
@@ -128,14 +128,14 @@ export default ProfileScreen = () => {
                icon={<Icons2 name="timetable" size={24} color={COLORS.primary} />}
                title="Availability"
                hasArrow={true}
-               onPress={() => {}}
+               onPress={() => {router.push('worker-dashboard/settings/availability')}}
             />
-            <ProfileTab 
+            {/* <ProfileTab 
                icon={<Icons2 name="account-wrench" size={24} color={COLORS.primary} />}
                title="Service Specialization"
                hasArrow={true}
                onPress={() => {}}
-            />
+            /> */}
 
             <ProfileTab 
                icon={<Icons2 name="message-question" size={24} color={COLORS.primary} />}

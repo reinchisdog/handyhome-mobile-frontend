@@ -1,5 +1,6 @@
 const COLORS = {
    primary: '#0C81CC',
+   primaryPress: '#0B66A4',
    secondary: '#F8F8F8',
    accent: '#F7931E',
    lightblue: '#A4DCFF',
@@ -11,6 +12,7 @@ const COLORS = {
    red: '#EE4F4F',
    green: '#0EC05B',
    screenbg: '#E5EDF3',
+   modalbg: 'rgba(0, 0, 0, 0.2)'
 }
 
 const FONT_SIZES = {
