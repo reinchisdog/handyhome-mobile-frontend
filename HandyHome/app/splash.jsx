@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { Animated, Easing, useWindowDimensions, Image} from 'react-native'
-import { useUser } from '../context/UserContext';
+import { useAuth } from '../context/AuthContext';
 // Components
 import SplashIcon1 from '../assets/images/icons/SplashIcon1'
 // Styles and Icons
@@ -12,7 +12,7 @@ import { COLORS } from '../styles/constants';
 export default function SplashScreen() {
   /* ----------------------------- Initialization ----------------------------- */
     const router = useRouter();
-    const { user, hasOnboarded, isLoading } = useUser();
+    const { user, hasOnboarded, loading } = useAuth();
     const { height } = useWindowDimensions();
 
     const [ aniComplete, setAniComplete ] = useState(false);
@@ -82,9 +82,9 @@ export default function SplashScreen() {
           router.replace('/onboarding');
         } else if (!user) {
           router.replace('/authentication');
-        } else if (user.role === "client") {
+        } else if (user.role === "User") {
           router.replace('/client-dashboard');
-        } else if (user.role === "worker") {
+        } else if (user.role === "Worker") {
           router.replace('/worker-dashboard');
         }
       } catch (e) {
@@ -187,7 +187,7 @@ export default function SplashScreen() {
     }
 
     useEffect(() => {
-      if (isLoading) return;
+      if (loading) return;
 
       const handleAnimationNavigation = async () => {
         if (!aniComplete) {
@@ -207,7 +207,7 @@ export default function SplashScreen() {
       };
 
       handleAnimationNavigation();
-    }, [ user, hasOnboarded, isLoading, aniComplete ])
+    }, [ user, hasOnboarded, loading, aniComplete ])
 
   return (
     <Animated.View style={[global.centerContainer, {flex: 1, backgroundColor: screenColor}]}>

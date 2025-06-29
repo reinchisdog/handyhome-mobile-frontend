@@ -2,6 +2,7 @@
 import { View, Animated, useWindowDimensions, Easing } from 'react-native'
 import React, {useEffect, useState, useRef} from 'react'
 import {useRouter} from 'expo-router';
+import {useAuth} from '../../context/AuthContext'
 /* ---------------------------- Styles and Icons ---------------------------- */
 import { globalStyles as global } from '../../styles/globalStyles';
 import { authStyles as auth } from '../../styles/authStyles';
@@ -9,6 +10,7 @@ import { COLORS } from '../../styles/constants';
 
 const AuthLoading = () => {
     /* ----------------------------- Initialization ----------------------------- */
+    const {user} = useAuth();
     const {width, height} = useWindowDimensions();
     const router = useRouter();
 
@@ -64,7 +66,8 @@ const AuthLoading = () => {
             useNativeDriver: true,
           }).start(() => {
             setTimeout(() => {
-              router.replace('../client-dashboard/');
+                if (user.role === 'User') router.replace('client-dashboard');
+                else if (user.role === 'Worker') router.replace('worker-dashboard');
             }, 1500);
           });
           

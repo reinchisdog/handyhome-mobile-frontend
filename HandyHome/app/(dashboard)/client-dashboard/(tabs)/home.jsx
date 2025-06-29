@@ -3,7 +3,7 @@ import { ScrollView, Text, View, TouchableOpacity, TouchableHighlight, FlatList,
 import { useRouter } from 'expo-router'
 import { useFocusEffect } from 'expo-router'
 import React, { useState, useRef, useEffect } from 'react'
-import { useUser } from '../../../../context/UserContext'
+
 /* ------------------------------- Components ------------------------------- */
 import Header from '../../../../components/dashboard/Header';
 import TextLogo from '../../../../components/logos/TextLogo';

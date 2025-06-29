@@ -2,7 +2,7 @@
 import { Text, View , FlatList, Animated, TouchableOpacity, Easing, SafeAreaView, Image, useWindowDimensions } from 'react-native';
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter, useNavigation } from 'expo-router';
-import { useUser } from '../../context/UserContext'
+import { useAuth } from '../../context/AuthContext'
 // Components
 import OnboardingSlides from '../../components/onboarding/Slides';
 import OnboardingItem from '../../components/onboarding/OnboardingItem';
@@ -17,7 +17,7 @@ export default function OnboardingScreen() {
   /* ----------------------------- Initialization ----------------------------- */
   const router = useRouter();
   const navigation = useNavigation();
-  const { completeOnboarding } = useUser();
+  const { completeOnboarding } = useAuth();
   const { width, height} = useWindowDimensions()
 
   useEffect(() => {

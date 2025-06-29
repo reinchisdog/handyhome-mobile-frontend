@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View, ScrollView, SafeAreaView, Platform, StatusBar, Image, TouchableHighlight, TouchableOpacity, useWindowDimensions, ImageBackground, Modal } from 'react-native'
 import React, { useState } from 'react'
 import {useRouter} from 'expo-router'
-import {useUser} from '../../../../context/UserContext';
+import { useAuth } from '../../../../context/AuthContext';
 
 import Header from '../../../../components/dashboard/Header'
 import ProfileTab from '../../../../components/dashboard/profile/ProfileTab'
@@ -174,7 +174,7 @@ export default ProfileScreen = () => {
 
 const LogoutModal = ({showModal, setShowModal}) => {
    const router = useRouter();
-   const {logout} = useUser();
+   const { logout } = useAuth();
 
    const {width, height} = useWindowDimensions()
 
