@@ -20,12 +20,13 @@ export const launchStyles = StyleSheet.create({
     },
     textBtn: {
         textAlign: 'center',
-        fontFamily: FONTS.roboto400,
+        fontFamily: FONTS.roboto600,
         fontSize: FONT_SIZES.md,
+        color: COLORS.darkblue
     },
     nextBtn: {
         height: 40,
-        backgroundColor: COLORS.primary,
+        width: 40,
         borderRadius: 25,
         justifyContent: 'center',
         alignItems: 'center'
@@ -33,9 +34,10 @@ export const launchStyles = StyleSheet.create({
     title: {
         color: COLORS.primary,
         textAlign: 'center',
-        fontFamily: FONTS.roboto700,
-        fontSize: FONT_SIZES.xxxl,
-        marginBottom: 12
+        fontFamily: FONTS.nunito700,
+        fontSize: FONT_SIZES.xxl,
+        marginBottom: 12,
+        lineHeight: 28
     },
     description: {
         color: COLORS.lettersicons,

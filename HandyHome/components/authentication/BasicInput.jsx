@@ -42,19 +42,19 @@ export default function BasicInput({
   const labelY = useRef(new Animated.Value(0)).current;
   const animLabelY = labelY.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, -26]
+    outputRange: [0, -29]
   })
 
   const labelBackground = useRef(new Animated.Value(0)).current;
   const animLabelBG = labelBackground.interpolate({
     inputRange: [0, 1],
-    outputRange: ["#fff", "#F5F5F5"]
+    outputRange: ["#fff", COLORS.screenbg]
   })
 
   const labelColor = useRef(new Animated.Value(0)).current;
   const animLabelColor = labelColor.interpolate({
     inputRange: [0, 1],
-    outputRange: [COLORS.lettersicons, COLORS.primary]
+    outputRange: [COLORS.labels, COLORS.primary]
   })
   
   const labelOpacity = useRef(new Animated.Value(0)).current;

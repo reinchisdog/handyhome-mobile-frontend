@@ -105,4 +105,9 @@ export const globalStyles = StyleSheet.create({
         borderRadius: 12,
         gap: 24,
     },
+    errorText: {
+        fontFamily: FONTS.roboto400,
+        fontSize: FONT_SIZES.sm,
+        color: COLORS.red
+    }
 })

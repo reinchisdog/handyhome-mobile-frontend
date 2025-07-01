@@ -1,13 +1,18 @@
 import { 
-   StyleSheet, 
    Text, 
    View, 
    TouchableOpacity, 
    Animated,
    FlatList,
+   useWindowDimensions,
+   StatusBar,
+   Image,
+   Easing
  } from 'react-native'
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, {useEffect, useRef} from 'react'
+import React, {useEffect, useRef, useState} from 'react'
+import axios from 'axios';
+import { API_URL } from '../../../../../config';
 
 import Header from '../../../../../components/dashboard/Header';
 import Searchbar from '../../../../../components/dashboard/Searchbar';
@@ -15,157 +20,223 @@ import Searchbar from '../../../../../components/dashboard/Searchbar';
 import Icons from '@expo/vector-icons/AntDesign'
 import { globalStyles as global } from '../../../../../styles/globalStyles';
 import { COLORS, FONT_SIZES, FONTS } from '../../../../../styles/constants';
-import SubserviceItem from '../../../../../components/services/SubserviceItem';
+import SubserviceItem from '../../../../../components/SubserviceItem';
 
+const COLLAPSIBLE_HEIGHT = 100;
+const HEADER_HEIGHT = StatusBar.currentHeight + 64;
+const SEARCH_HEIGHT = 100
+const TOTAL_HEIGHT = COLLAPSIBLE_HEIGHT + HEADER_HEIGHT + SEARCH_HEIGHT
 
-const SubserviceItems = [
-   {
-      id: 1,
-      name: "Sub-Service",
-      description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolor nulla totam odio! Neque culpa tenetur quis deserunt vel vero delectus explicabo ex, quos, quidem tempora, qui repellendus eligendi earum inventore!',
-      price: 2000,
-      image: require('../../../../../assets/placeholder-base.png') 
-   },
-   {
-      id: 2,
-      name: "Sub-Service",
-      description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolor nulla totam odio! Neque culpa tenetur quis deserunt vel vero delectus explicabo ex, quos, quidem tempora, qui repellendus eligendi earum inventore!',
-      price: 2000,
-      image: require('../../../../../assets/placeholder-base.png') 
-   },
-   {
-      id: 3,
-      name: "Sub-Service",
-      description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolor nulla totam odio! Neque culpa tenetur quis deserunt vel vero delectus explicabo ex, quos, quidem tempora, qui repellendus eligendi earum inventore!',
-      price: 2000,
-      image: require('../../../../../assets/placeholder-base.png') 
-   },
-   {
-      id: 4,
-      name: "Sub-Service",
-      description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolor nulla totam odio! Neque culpa tenetur quis deserunt vel vero delectus explicabo ex, quos, quidem tempora, qui repellendus eligendi earum inventore!',
-      price: 2000,
-      image: require('../../../../../assets/placeholder-base.png') 
-   },
-   {
-      id: 5,
-      name: "Sub-Service",
-      description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolor nulla totam odio! Neque culpa tenetur quis deserunt vel vero delectus explicabo ex, quos, quidem tempora, qui repellendus eligendi earum inventore!',
-      price: 2000,
-      image: require('../../../../../assets/placeholder-base.png') 
-   },
-   {
-      id: 6,
-      name: "Sub-Service",
-      description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolor nulla totam odio! Neque culpa tenetur quis deserunt vel vero delectus explicabo ex, quos, quidem tempora, qui repellendus eligendi earum inventore!',
-      price: 2000,
-      image: require('../../../../../assets/placeholder-base.png') 
-   },
-]
-
-const COLLAPSIBLE_HEIGHT = 106;
 
 const SubServiceScreen = () => {
    /* ----------------------------- Initialization ----------------------------- */
-   const { id } = useLocalSearchParams();
+   const { height, width } = useWindowDimensions();
+   const { id, name } = useLocalSearchParams();
    const router = useRouter();
    const scrollY = useRef(new Animated.Value(0)).current;
 
    const headerHeight = scrollY.interpolate({
-      inputRange: [0, COLLAPSIBLE_HEIGHT],
-      outputRange: [COLLAPSIBLE_HEIGHT, 0],
+      inputRange: [0, TOTAL_HEIGHT],
+      outputRange: [TOTAL_HEIGHT, TOTAL_HEIGHT - SEARCH_HEIGHT],
       extrapolate: 'clamp',
    });
 
-   const headerPadding = scrollY.interpolate({
-      inputRange: [0, COLLAPSIBLE_HEIGHT],
-      outputRange: [24, 0],
-      extrapolate: 'clamp',
-    });
-
-    const headerOpacity = scrollY.interpolate({
+   const headerOpacity = scrollY.interpolate({
       inputRange: [0, COLLAPSIBLE_HEIGHT],
       outputRange: [1.0, 0.0],
       extrapolate: 'clamp',
-    });
+   });
+
+   const skeletonOpacity = useRef(new Animated.Value(0.5)).current;
+
+   /* -------------------------------- Functions ------------------------------- */
+   const [subServices, setSubServices] = useState([])
+
+   const [isSubLoading, setIsSubLoading] = useState(true);
+   useEffect(() => {
+      const animLoop = Animated.loop(
+         Animated.sequence([
+            Animated.timing(skeletonOpacity, {
+               toValue: 0.5,
+               duration: 250,
+               easing: Easing.inOut(Easing.ease),
+               useNativeDriver: true
+            }),
+            Animated.timing(skeletonOpacity, {
+               toValue: 0.2,
+               duration: 500,
+               easing: Easing.inOut(Easing.ease),
+               useNativeDriver: true
+            }),
+            Animated.timing(skeletonOpacity, {
+               toValue: 0.5,
+               duration: 250,
+               easing: Easing.inOut(Easing.ease),
+               useNativeDriver: true
+            }),
+         ])
+      )
+
+      if (isSubLoading) animLoop.start();
+      
+      return () => animLoop.stop();
+   }, [isSubLoading])
+
+   const getSubservices = async () => {
+      try {
+         setIsSubLoading(true);
+         const result = await axios.get(`${API_URL}/general/sub-services/${id}`)
+
+         setSubServices(Array.isArray(result?.data?.data) ? [...result.data.data] : []);
+      } catch (e) {
+
+      } finally {
+         setTimeout(() => {
+            setIsSubLoading(false);
+         }, 1000)
+      }
+   }
+
+   useEffect(() => {
+      getSubservices();
+   }, [])
 
    return (
-      <View style={global.screenContainer}>
-         
-         <View style={{backgroundColor: COLORS.primary}}>
-            {/* --------------------------------- Header --------------------------------- */}
-            <Header 
-               background={'transparent'}
-               left={
-               <TouchableOpacity
-                  onPress={() => router.back()}
-               >
-                  <Icons name="left" size={24} color={COLORS.secondary} />
-               </TouchableOpacity>}
-            />
+      <View style={[global.screenContainer, {position: 'relative'}]}>
+         {/* --------------------------------- Header --------------------------------- */}
+         <Header 
+         background='transparent'
+         left={
+         <TouchableOpacity onPress={() => router.back()}>
+            <Icons name="left" size={24} color={COLORS.secondary} />
+         </TouchableOpacity>}
+         headerPosition='absolute'
+         />
 
-            {/* --------------------------- Collapsible Section -------------------------- */}
+         {/* --------------------------- Collapsible Section -------------------------- */}
+         <Animated.View
+         style={{
+            height: headerHeight,
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'flex-end',
+            alignItems: 'flex-end',
+            position: 'absolute',
+            zIndex: 1,
+            backgroundColor: COLORS.primary,
+         }}>
+            
             <Animated.View
             style={{
-               height: headerHeight,
-               width: '100%',
-               paddingHorizontal: 24,
-               paddingBottom: headerPadding,
-               display: 'flex',
-               justifyContent: 'flex-end',
-               alignItems: 'flex-end'
+               width: width,
+               aspectRatio: '1500/548',
+               position: 'relative',
+               opacity: headerOpacity,
             }}>
-               <Animated.Text
+               <View
                style={{
-                  opacity: headerOpacity,
-                  textAlign: 'right',
-                  fontFamily: FONTS.roboto700,
-                  fontSize: FONT_SIZES.xxl,
-                  color: COLORS.secondary,
-                  textShadowColor: '#00000040',
-                  textShadowOffset: {
-                     width: 0,
-                     height: 2,
-                  },
-                  textShadow: 0.25,
-                  textShadowRadius: 4,
-
-                  elevation: 4
+                  position: 'absolute',
+                  bottom: 0,
+                  padding: 24,
+                  paddingBottom: 48,
+                  width: width,
+                  zIndex: 3
                }}>
-                  Service Type{"\n"}Services
-               </Animated.Text>
+                  <Text
+                  style={{
+                     textAlign: 'left',
+                     fontFamily: FONTS.roboto700,
+                     fontSize: FONT_SIZES.xxl,
+                     color: '#fff'
+                  }}>
+                     {`${name}\nServices`}
+                  </Text>
+               </View>
+               <Image 
+               source={require(`../../../../../assets/images/backgrounds/graphic-bg7.png`)}
+               style={{
+                  width: '100%',
+                  height: '100%',
+                  position: 'absolute',
+                  bottom: 0,
+                  zIndex: 2,
+                  objectFit: 'contain'
+               }}/>
             </Animated.View>
-         </View>
+
+            <View 
+            style={{
+               width: '100%',
+               height: 100,
+               paddingTop: 24,
+               paddingHorizontal: 24,
+               paddingBottom: 12,
+               backgroundColor: COLORS.screenbg,
+               zIndex: 1
+            }}>
+               <Searchbar />
+            </View>
+         </Animated.View>
          
-         {/* ---------------------------- Sticky Searchbar ---------------------------- */}
-         <View style={{
-            paddingHorizontal: 24,
-            paddingTop: 24,
-            paddingBottom: 12,
-            backgroundColor: 'COLORS.secondary'
-         }}>
-            <Searchbar />
-         </View>
          
+
          {/* --------------------------------- Content -------------------------------- */}
-         <FlatList
-            data={SubserviceItems}
-            renderItem={({item}) => <SubserviceItem item={item} /> }
+         {(isSubLoading) ? (
+            <View 
+            style={{
+               paddingHorizontal: 24,
+               paddingBottom: 48,
+               paddingTop: TOTAL_HEIGHT,
+               gap: 24
+            }}>
+               <Animated.View 
+               style={{
+                  width: '100%',
+                  height: 150,
+                  backgroundColor: COLORS.strokes,
+                  borderRadius: 8,
+                  opacity: skeletonOpacity
+               }}/>
+               <Animated.View 
+               style={{
+                  width: '100%',
+                  height: 150,
+                  backgroundColor: COLORS.strokes,
+                  borderRadius: 8,
+                  opacity: skeletonOpacity
+               }}/>
+               <Animated.View 
+               style={{
+                  width: '100%',
+                  height: 150,
+                  backgroundColor: COLORS.strokes,
+                  borderRadius: 8,
+                  opacity: skeletonOpacity
+               }}/>
+   
+            </View>
+         ) : (
+            <FlatList
+            data={subServices}
+            renderItem={({item}) => <SubserviceItem item={item} serviceName={name}/> }
             keyExtractor={(item) => item.id.toString()}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{
                paddingHorizontal: 24,
                paddingBottom: 48,
+               paddingTop: TOTAL_HEIGHT,
                gap: 24
             }}
             scrollEventThrottle={16}
             onScroll={Animated.event(
                [{ nativeEvent: { contentOffset: { y: scrollY } } }],
                { useNativeDriver: false }
-            )}
-         />
+            )}/>
+         )
+         }
+         
 
-        
+         
       </View>
    )
 }

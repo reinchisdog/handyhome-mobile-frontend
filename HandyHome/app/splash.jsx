@@ -82,7 +82,7 @@ export default function SplashScreen() {
           router.replace('/onboarding');
         } else if (!user) {
           router.replace('/authentication');
-        } else if (user.role === "User") {
+        } else if (user.role === "User" || user.role === "Guest") {
           router.replace('/client-dashboard');
         } else if (user.role === "Worker") {
           router.replace('/worker-dashboard');
@@ -188,26 +188,13 @@ export default function SplashScreen() {
 
     useEffect(() => {
       if (loading) return;
-
-      const handleAnimationNavigation = async () => {
-        if (!aniComplete) {
-          await new Promise(resolve => {
-            splashAnimation();
-            const checkComplete = () => {
-              if (aniComplete) {
-                resolve();
-              } else {
-                setTimeout(checkComplete, 50);
-              }
-            };
-            checkComplete();
-          });
-        }
-        await checkStatus();
-      };
-
-      handleAnimationNavigation();
-    }, [ user, hasOnboarded, loading, aniComplete ])
+      splashAnimation(); // fire animation only once loading is complete
+    }, [loading]);
+    
+    useEffect(() => {
+      if (!aniComplete) return;
+      checkStatus(); // do routing once animation is done
+    }, [aniComplete]);
 
   return (
     <Animated.View style={[global.centerContainer, {flex: 1, backgroundColor: screenColor}]}>

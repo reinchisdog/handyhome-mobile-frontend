@@ -13,20 +13,20 @@ import { authStyles as auth } from '../../../styles/authStyles';
 
 const PersonalDetails = ({signupData, setSignupData}) => {
   /* ----------------------------- Initialization ----------------------------- */
-  const [ formattedBirthDate, setFormattedBirthDate ] = useState(signupData.birthDate);
-  useEffect(() => {
-    let temp = formattedBirthDate;
+  // const [ formattedBirthDate, setFormattedBirthDate ] = useState(signupData.birthDate);
+  // useEffect(() => {
+  //   let temp = formattedBirthDate;
 
-    if(temp.length === 2 || temp.length === 5){
-      temp = `${temp}/`;
-      setFormattedBirthDate(temp);
-    }
+  //   if(temp.length === 2 || temp.length === 5){
+  //     temp = `${temp}/`;
+  //     setFormattedBirthDate(temp);
+  //   }
     
-    setSignupData((prev) => ({
-      ...prev,
-      birthDate: temp
-    }))
-  }, [formattedBirthDate])
+  //   setSignupData((prev) => ({
+  //     ...prev,
+  //     birthDate: temp
+  //   }))
+  // }, [formattedBirthDate])
 
   return (
     <View style={auth.inputsContainer}>
@@ -38,7 +38,7 @@ const PersonalDetails = ({signupData, setSignupData}) => {
           placeholder={"First Name"}
           onChangeText={(e) => setSignupData((prev) => ({
             ...prev,
-            firstName: e
+            first_name: e
           }))}
           value={signupData.firstName}
         />
@@ -48,14 +48,14 @@ const PersonalDetails = ({signupData, setSignupData}) => {
           placeholder={"Last Name"}
           onChangeText={(e) => setSignupData((prev) => ({
             ...prev,
-            lastName: e
+            last_name: e
           }))}
           value={signupData.lastName}
         />
       </View>
 
       {/* ------------------------------- Birth Date ------------------------------- */}
-      <View style={auth.inputSet}>
+      {/* <View style={auth.inputSet}>
         <Text style={auth.inputSetTitle}>BIRTH DATE</Text>
 
         <BasicInput 
@@ -66,7 +66,7 @@ const PersonalDetails = ({signupData, setSignupData}) => {
           onChangeText={(e) => setFormattedBirthDate(e.trim())}
           value={formattedBirthDate}
         />
-      </View>
+      </View> */}
 
       {/* --------------------------------- Gender --------------------------------- */}
       <View style={auth.inputSet}>

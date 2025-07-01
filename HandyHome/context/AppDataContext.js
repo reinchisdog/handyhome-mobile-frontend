@@ -7,10 +7,9 @@ import
 } from 'react';
 import { useAuth } from './AuthContext';
 import axios from 'axios';
+import {API_URL} from '../config'
 
 const AppDataContext = createContext();
-
-const API_URL = 'http://localhost:5001/api/v1';
 
 export const AppDataProvider = ({children}) => {
    const { user, token } = useAuth();
@@ -24,9 +23,10 @@ export const AppDataProvider = ({children}) => {
          setLoading(true);
 
          const res = await axios.get(`${API_URL}/general/services`);
-         setServices(res.data);
-      } catch (err) {
 
+         setServices(res.data.data);
+      } catch (err) {
+         console.log(err)
       } finally {
          setLoading(false);
       }

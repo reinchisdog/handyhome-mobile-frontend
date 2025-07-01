@@ -183,7 +183,7 @@ const ServiceItem = ({item, selectedItem, onPress}) => {
                height: 60,
                aspectRatio: '1/1',
                borderRadius: 30,
-               borderWidth: (item.id === selectedItem) ? 2 : 0,
+               borderWidth: (selectedItem != null && item.id === selectedItem) ? 2 : 0,
                borderColor: COLORS.lightblue,
             }}>
                <ServiceIconMap serviceName={item.name} />

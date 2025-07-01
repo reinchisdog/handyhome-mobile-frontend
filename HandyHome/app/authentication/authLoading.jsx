@@ -1,11 +1,10 @@
 /* --------------------------------- Imports -------------------------------- */
 import { View, Animated, useWindowDimensions, Easing } from 'react-native'
-import React, {useEffect, useState, useRef} from 'react'
+import React, {useEffect, useRef} from 'react'
 import {useRouter} from 'expo-router';
 import {useAuth} from '../../context/AuthContext'
 /* ---------------------------- Styles and Icons ---------------------------- */
 import { globalStyles as global } from '../../styles/globalStyles';
-import { authStyles as auth } from '../../styles/authStyles';
 import { COLORS } from '../../styles/constants';
 
 const AuthLoading = () => {
@@ -66,15 +65,12 @@ const AuthLoading = () => {
             useNativeDriver: true,
           }).start(() => {
             setTimeout(() => {
-                if (user.role === 'User') router.replace('client-dashboard');
-                else if (user.role === 'Worker') router.replace('worker-dashboard');
+              if (user.role === 'User' || user.role === 'Guest') router.replace('client-dashboard');
+              else if (user.role === 'Worker') router.replace('worker-dashboard');
             }, 1500);
           });
           
       }, []);
-      
-
-
     return (
     <View style={[global.screenContainer, global.centerContainer]}>
         <Animated.View

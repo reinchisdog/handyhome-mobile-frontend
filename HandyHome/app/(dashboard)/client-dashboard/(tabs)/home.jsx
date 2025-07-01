@@ -3,17 +3,17 @@ import { ScrollView, Text, View, TouchableOpacity, TouchableHighlight, FlatList,
 import { useRouter } from 'expo-router'
 import { useFocusEffect } from 'expo-router'
 import React, { useState, useRef, useEffect } from 'react'
-
+import { useAuth } from '../../../../context/AuthContext';
+import { useAppData } from '../../../../context/AppDataContext';
 /* ------------------------------- Components ------------------------------- */
 import Header from '../../../../components/dashboard/Header';
-import TextLogo from '../../../../components/logos/TextLogo';
+import TextLogo from '../../../../components/LogoText';
 
 import PromoSlides from '../../../../components/dashboard/home/PromoSlides';
 import PromoItem from '../../../../components/dashboard/home/PromoItem';
 import Paginator from '../../../../components/dashboard/home/Paginator';
 
-import ServiceList from '../../../../components/dashboard/home/ServiceList';
-import ServiceItem from '../../../../components/dashboard/home/ServiceItem';
+import ServiceItem from '../../../../components/ServiceItem';
 
 import PopularItem from '../../../../components/dashboard/home/PopularItem';
 /* ---------------------------- Styles and Icons ---------------------------- */
@@ -24,9 +24,10 @@ import { COLORS, FONTS, FONT_SIZES } from '../../../../styles/constants';
 const HomeScreen = () => {
   /* ----------------------------- Initialization ----------------------------- */
   const {width, height} = useWindowDimensions();
-  const [userName, setUsername] = useState('John Doe');
-  const [isVerified, setIsVerified] = useState(false);
-  const [showVerify, setShowVerify] = useState(true)
+  const { user } = useAuth();
+  const { services } = useAppData();
+  const isVerified = useState(true);     //CHANGE LATER
+  const [showVerify, setShowVerify] = useState(false)
   const router = useRouter();
 
   useFocusEffect(
@@ -85,7 +86,7 @@ const HomeScreen = () => {
     stickyHeaderIndices={[0]}
     >
       <Header 
-      title={<TextLogo width={140}/>}
+      title={<TextLogo size={24}/>}
       titlePosition='absolute'
       right={
         <TouchableOpacity
@@ -93,8 +94,7 @@ const HomeScreen = () => {
         onPress={() => {}}>
           <Icons name="bell" size={24} color={COLORS.primary}/>
         </TouchableOpacity>
-      }
-      />
+      }/>
 
       <View 
       style={[{
@@ -122,7 +122,7 @@ const HomeScreen = () => {
             style={[global.headingText, {
               color: COLORS.lettersicons
             }]}>
-              Hello, <Text style={[global.headingText, {color: COLORS.primary}]}>{`${userName} !`}</Text>
+              Hello, <Text style={[global.headingText, {color: COLORS.primary}]}>{`${user.full_name} !`}</Text>
             </Text>
           </View>
           
@@ -249,19 +249,26 @@ const HomeScreen = () => {
             </View>
 
             <FlatList 
-              data={ServiceList}
-              renderItem={({item}) => <ServiceItem item={item}/>}
+              data={services}
+              renderItem={({item}) => (
+                <ServiceItem 
+                item={item} 
+                onPress={() => {router.push({
+                  pathname: `client-dashboard/services/[subServices]`,
+                  params: {id: item.id, name: item.name}
+                })}}/>
+              )}
               horizontal
               showsHorizontalScrollIndicator = {false}
               contentContainerStyle={{
-                 paddingHorizontal: 24, 
-                 gap: 8
+                 paddingHorizontal: 20, 
+                 gap: 16
               }}
             />
           </View>
 
           {/* ---- Popular Services Near You */}
-          <View style={[{
+          {/* <View style={[{
             width: width,
             gap: 8
           }]}>
@@ -284,7 +291,7 @@ const HomeScreen = () => {
                  gap: 20
               }}
             />
-          </View>
+          </View> */}
         </View>
         {/* Background */}
         <Image 

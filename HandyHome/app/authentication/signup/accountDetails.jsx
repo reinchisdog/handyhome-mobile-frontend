@@ -8,9 +8,10 @@ import BasicInput from '../../../components/authentication/BasicInput';
 import Icons from '@expo/vector-icons/MaterialCommunityIcons';
 
 import { globalStyles as global } from '../../../styles/globalStyles';
+import { COLORS } from '../../../styles/constants';
 import { authStyles as auth } from '../../../styles/authStyles';
 
-const AccountDetails = ({signupData, setSignupData}) => {
+const AccountDetails = ({signupData, setSignupData, passErrors}) => {
   /* ----------------------------- Initialization ----------------------------- */
   const passwordReqList = [
     "At least 8 characters",
@@ -28,38 +29,6 @@ const AccountDetails = ({signupData, setSignupData}) => {
   }
   // ---- Verifies Password Validity
   const [ tempPass, setTempPass ] = useState("");
-  const [ passErrors, setPassErrors ] = useState([]);
-  useEffect(() => {
-    let tempArr = [];
-
-    // Character Length
-    if (tempPass.length >= 8) {
-      tempArr.push(0);
-    }
-    // Uppercase Letter
-    if (/(?=.*[A-Z])/.test(tempPass)) {
-      tempArr.push(1);
-    }
-    // Lowercase Letter
-    if (/(?=.*[a-z])/.test(tempPass)) {
-      tempArr.push(2);
-    }
-    // Number
-    if (/(?=.*\d)/.test(tempPass)) {
-      tempArr.push(3);
-    }
-    // Special Character
-    if (/(?=.*[!@#$%^&*()_\-+=\[\]{};':"\\|,.<>\/?`~])/.test(tempPass)) {
-      tempArr.push(4);
-    }
-    // No Spaces
-    if (/^\S*$/.test(tempPass) && tempPass.length > 1) {
-      tempArr.push(5);
-    }
-    console.log(tempArr); // Contains all passed rule indices (0-5)
-    setPassErrors(tempArr);
-  }, [tempPass]);
-  
 
   return (
     <View style={auth.inputsContainer}>
@@ -70,7 +39,7 @@ const AccountDetails = ({signupData, setSignupData}) => {
         {/* ---- Email */}
         <BasicInput 
           left={<Icons name="email" size={24} color="#3D3D3D"/>}
-          placeholder={"Email"}
+          placeholder={"Email (handy@home.com)"}
           inputMode='email'
           keyboardType='email-address'
           onChangeText={(e) => setSignupData((prev) => ({
@@ -83,12 +52,12 @@ const AccountDetails = ({signupData, setSignupData}) => {
         {/* ---- Phone Number */}
         <BasicInput 
         left={<Icons name="phone" size={24} color="#3D3D3D"/>}
-          placeholder={"Phone Number"}
+          placeholder={"Phone Number (09XXXXXXXXX)"}
           inputMode='numeric'
           keyboardType='numeric'
           onChangeText={(e) => setSignupData((prev) => ({
             ...prev,
-            phoneNumber: e
+            phone_number: e
           }))}
           value={signupData.phoneNumber}
         />
@@ -115,22 +84,20 @@ const AccountDetails = ({signupData, setSignupData}) => {
                 ...prev,
                 password: e
               }))
-              setTempPass(e)
             }}
             value={signupData.password}
           />
 
           <View>
           {passwordReqList.map((item, key) => (
-            <Text key={key}
+            <Text
+            key={key}
             style={[
-              auth.textGeneral,
-              (passErrors.includes(key)) ?  {color: 'green'} : 
-              {padding: 0}
-              ]}
-            >
-              {`\u2022  ${item}`}
-            </Text>
+              auth.textGeneral,{
+              color: passErrors.includes(key) ? COLORS.green : COLORS.labels
+            }]}>
+            {`\u2022  ${item}`}
+          </Text>
           ))}
           </View>
       </View>

@@ -1,12 +1,12 @@
 import { StyleSheet, Text, TouchableOpacity, View, FlatList, useWindowDimensions } from 'react-native'
 import React from 'react'
 import { useRouter } from 'expo-router';
+import { useAppData } from '../../../../context/AppDataContext';
 
 import Header from '../../../../components/dashboard/Header'
-import ServiceList from '../../../../components/dashboard/home/ServiceList';
-import ServiceItem from '../../../../components/dashboard/home/ServiceItem';
+import ServiceItem from '../../../../components/ServiceItem';
 
-import Icons from '@expo/vector-icons/AntDesign'
+import Icons from '@expo/vector-icons/Entypo'
 import { globalStyles as global } from '../../../../styles/globalStyles'
 import { COLORS, FONT_SIZES, FONTS } from '../../../../styles/constants'
 
@@ -14,6 +14,11 @@ const ServicesPage = () => {
   /* ----------------------------- Initialization ----------------------------- */
   const router = useRouter();
   const {width} = useWindowDimensions();
+
+  const numColumns = Math.floor((width - 48) / 72);
+  const gap = numColumns > 1 ? (width - 48 - (numColumns * 72)) / (numColumns - 1) : 0;
+
+  const { services } = useAppData();
 
   return (
     <View style={global.screenContainer}>
@@ -23,7 +28,7 @@ const ServicesPage = () => {
           <TouchableOpacity
             onPress={() => router.back()}
           >
-            <Icons name="left" size={24} color={COLORS.primary} />
+            <Icons name="chevron-left" size={24} color={COLORS.primary} />
           </TouchableOpacity>}
         title={
           <Text style={[global.headingText, {color: COLORS.primary}]}>
@@ -33,22 +38,23 @@ const ServicesPage = () => {
       />
 
       {/* ------------------------------ Service List ------------------------------ */}
-      <View style={{flex: 1, alignItems: 'center', paddingHorizontal: 24, borderBottomWidth: 24, borderBottomColor: '#fff', backgroundColor: COLORS.secondary}}>
+      <View style={{flex: 1, alignItems: 'center', padding: 24, borderBottomWidth: 24, borderBottomColor: '#fff'}}>
         <FlatList 
-          data={ServiceList}
-          renderItem={({item}) => <ServiceItem item={item}/>}
+          data={services}
+          renderItem={({item}) => (
+            <ServiceItem 
+            item={item} 
+            onPress={() => {router.push({
+              pathname: `client-dashboard/services/[subServices]`,
+              params: {id: item.id, name: item.name}
+            })}}/>
+          )}
           initialNumToRender={10}
           showsVerticalScrollIndicator = {false}
-          numColumns={4}
-          contentContainerStyle={{
-            justifyContent: 'flex-start',
-          }}
+          numColumns={numColumns}
           columnWrapperStyle={{
-            gap: 8,
-            paddingTop: 24,
-            
+            columnGap: gap,
           }}
-          ListFooterComponent={<View style={{height: 58}}></View>}
         />
       </View>
       

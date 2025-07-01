@@ -2,12 +2,12 @@ import { StyleSheet, Text, View, TouchableOpacity, ImageBackground, useWindowDim
 import React, { useRef } from 'react'
 import { useAppointment } from '../../../../context/AppointmentContext'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { KeyboardAwareScrollView, KeyboardToolbar } from 'react-native-keyboard-controller';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import Header from '../../../../components/dashboard/Header'
 import ModalInput from '../../../../components/authentication/ModalInput'
 import BasicMultiline from '../../../../components/authentication/BasicMultiline'
-// import DismissKeyboardWrapper from '../../../../components/DismissKeyboard'
+import { subServiceImages } from '../../../../components/SubServiceMap';
 
 import { globalStyles as global } from '../../../../styles/globalStyles'
 import { COLORS, FONT_SIZES, FONTS } from '../../../../styles/constants'
@@ -19,7 +19,7 @@ const IMAGE_HEIGHT = 272;
 const CientSchedule = () => {
    const router = useRouter();
 
-   const { id } = useLocalSearchParams();
+   const { id, mainName, subName } = useLocalSearchParams();
    const { width, height } = useWindowDimensions();
    const {appointment, setAppointment} = useAppointment();
 
@@ -64,9 +64,8 @@ const CientSchedule = () => {
                   fontSize: FONT_SIZES.xl,
                   color: COLORS.lettersicons,
                   flexShrink: 1
-               }}
-               >
-                  {"Service NameDasdasdasdasdadasdasd"}
+               }}>
+                  {subName}
                </Text>
                <View 
                style={[
@@ -78,7 +77,7 @@ const CientSchedule = () => {
                      global.tagText, {
                      color: COLORS.lettersicons
                   }]}>
-                     {"Service Category"}
+                     {mainName}
                   </Text>
                </View>
             </Animated.View>
@@ -95,7 +94,7 @@ const CientSchedule = () => {
          >  
             {/* ------------------------------ Header Image ------------------------------ */}
             <Image 
-            source={require('../../../../assets/placeholder-base.png')}
+            source={subServiceImages[id]}
             style={{
                width: width,
                height: IMAGE_HEIGHT,
@@ -128,16 +127,14 @@ const CientSchedule = () => {
                      style={{
                         flexDirection: 'row',
                         justifyContent: 'space-between'
-                     }}
-                     >
+                     }}>
                         <Text 
                         style={{
                            fontFamily: FONTS.roboto600,
                            fontSize: FONT_SIZES.xl,
                            color: COLORS.lettersicons
-                        }}
-                        >
-                           {"Service Name"}
+                        }}>
+                           {subName}
                         </Text>
                         <View 
                         style={[
@@ -149,7 +146,7 @@ const CientSchedule = () => {
                               global.tagText, {
                               color: COLORS.lettersicons
                            }]}>
-                              {"Service Category"}
+                              {mainName}
                            </Text>
                         </View>
                      </View>
@@ -158,10 +155,9 @@ const CientSchedule = () => {
                         fontFamily: FONTS.roboto500,
                         fontSize: FONT_SIZES.sm,
                         color: COLORS.strokes
-                     }}
-                     >
+                     }}>
                         SCHEDULE APPOINTMENT
-                        </Text>
+                     </Text>
                   </View>
                   {/* -------------------------------- Separator ------------------------------- */}
                   <View style={[style.contentBox, {
@@ -186,7 +182,7 @@ const CientSchedule = () => {
                   </View>
                   {/* ---------------------------------- Note ---------------------------------- */}
                   <View style={style.contentBox}>
-                     <Text style={style.contentTitle}>Note</Text>
+                     <Text style={style.contentTitle}>Note (Optional)</Text>
                      <BasicMultiline 
                      placeholder='Any special requests or instructions?'
                      numberOfLines={6}

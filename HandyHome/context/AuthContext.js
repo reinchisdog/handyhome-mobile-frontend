@@ -7,34 +7,40 @@ import
 } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios'
+import {API_URL} from '../config';
 
 const AuthContext = createContext();
-
-const API_URL = 'http://192.168.1.14:5001/api/v1';
 
 export const AuthProvider = ({children}) => {
    const [ user, setUser ] = useState(null);
    const [ token, setToken ] = useState(null);
    const [ hasOnboarded, setHasOnboarded ] = useState(null);
-   const [ loading, setLoading ] = useState(true);
+   const [ loading, setLoading ] = useState(false);
 
    const getOnboarding = async () => {
-      const onboarded = await AsyncStorage.getItem('onboarded');
+      const onboarded = JSON.parse(await AsyncStorage.getItem('onboarded'));
+      console.log(`Onboarded: ${onboarded}`)
       setHasOnboarded(onboarded);
    }
 
    const completeOnboarding = async () => {
-      setHasOnboarded(true);
+      await AsyncStorage.setItem(`onboarded`, 'true');
    }
 
    const loadToken = async () => {
-      const token = await AsyncStorage.getItem('token');
+      try {
+      const token = JSON.parse(await AsyncStorage.getItem('token'));
+      console.log('[loadToken] Raw token:', token);
 
       if (token) {
          setToken(token);
          await tryFetchUser(token)
       } else {
+         console.log('[loadToken] No token found');
          setLoading(false);
+      }
+      } catch (err) {
+         console.log('[loadToken] Error:', err);
       }
    }
 
@@ -46,9 +52,13 @@ export const AuthProvider = ({children}) => {
                headers: { Authorization: `Bearer ${token}` },
             }
          );
-         setUser(res.user);
+
+         console.log(res?.data?.user)
+
+         setUser(res?.data?.user);
          setLoading(false);
-      } catch {
+      } catch (err) {
+         console.log('Fetch user failed:', err.response?.data || err.message);
          logout();
       }
    }
@@ -56,44 +66,58 @@ export const AuthProvider = ({children}) => {
    const login = async (loginData) => {
       try {
 
-         console.log("1. Verifying Login Data... ", loginData);
+         setLoading(true);
 
-         const res = await axios.post(`${API_URL}/auth/login`, loginData, {
+         const result = await axios.post(`${API_URL}/auth/login`, loginData, {
             headers: {
                'Content-Type': 'application/json',
             },
          });
 
-         console.log("test");
+         console.log("[Result]", result);
 
-         const { user, token } = res.data.data;
+         const { user, token } = result.data.data;
 
-         console.log("2. Saving Token to Async...");
-         await AsyncStorage.setItem('token', token);
+         await AsyncStorage.setItem('token', JSON.stringify(token));
 
          setToken(token);
          setUser(user);
 
-         console.log("3. Succesful Login...");
          return { success: true };
       } catch (err){
-         console.log(err)
-         const message = err.response?.message || "An error has ocurred when trying to login. Please try again.";
+         console.log(err.message);
+         const message = err.message || "An error has ocurred when trying to login. Please try again.";
 
          return { success: false, message };
+      } finally {
+         setLoading(false);
       }
    }
    
    const logout = async () => {
-      setUser(null);
-      setToken(null);
-      await AsyncStorage.removeItem('token');
+      try {
+         setUser(null);
+         setToken(null);
+         await AsyncStorage.removeItem('token');
+
+         return { success: true };
+      } catch (err) {
+         const message = err.response?.message || "An error has ocurred when trying to login. Please try again.";
+         return { success: false, message };
+      }
+      
    }
 
+   
+
    useEffect(() => {
-      getOnboarding();
-      loadToken();
-   }, [])
+      const init = async () => {
+         await getOnboarding();
+         await loadToken();
+      };
+
+      init();
+   }, []);
 
    return (
       <AuthContext.Provider
@@ -104,7 +128,7 @@ export const AuthProvider = ({children}) => {
          user,
          loading,
          hasOnboarded,
-         completeOnboarding
+         completeOnboarding,
       }}>
          {children}
       </AuthContext.Provider>

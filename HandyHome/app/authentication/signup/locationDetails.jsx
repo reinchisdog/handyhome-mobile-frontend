@@ -131,9 +131,12 @@ const LocationDetails = ({signupData, setSignupData}) => {
           placeholder={"Block / No. / Street"}
           onChangeText={(e) => setSignupData((prev) => ({
             ...prev,
-            block: e
+            home_address: {
+              ...prev.home_address,
+              block: e
+            }
           }))}
-          value={signupData.block}
+          value={signupData.home_address.block}
         />
 
         {/* ---- Province/District */}
@@ -146,9 +149,13 @@ const LocationDetails = ({signupData, setSignupData}) => {
             setSelectedBarangay({});
             setSignupData(prev => ({
               ...prev,
-              province: e.title,
-              municipal: "",
-              barangay: ""
+              home_address: {
+                ...prev.home_address,
+                province: e.title,
+                municipal: "",
+                barangay: ""
+              }
+              
             }));
           }}
           
@@ -163,8 +170,11 @@ const LocationDetails = ({signupData, setSignupData}) => {
             setSelectedBarangay({});
             setSignupData(prev => ({
               ...prev,
-              municipal: e.title,
-              barangay: ""
+              home_address: {
+                ...prev.home_address,
+                municipal: e.title,
+                barangay: ""
+              }
             }));
           }}
           
@@ -178,7 +188,10 @@ const LocationDetails = ({signupData, setSignupData}) => {
             setSelectedBarangay(e);
             setSignupData(prev => ({
               ...prev,
-              barangay: e.title
+              home_address: {
+                ...prev.home_address,
+                barangay: e.title
+              }
             }));
           }}
           

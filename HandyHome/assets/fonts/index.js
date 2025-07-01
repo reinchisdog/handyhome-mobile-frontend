@@ -6,5 +6,9 @@ export const useCustomFonts = () => {
         'Roboto-500': require('./Roboto-Medium.ttf'),
         'Roboto-600': require('./Roboto-SemiBold.ttf'),
         'Roboto-700': require('./Roboto-Bold.ttf'),
+        'Nunito-400': require('./Nunito-Regular.ttf'),
+        'Nunito-500': require('./Nunito-Medium.ttf'),
+        'Nunito-600': require('./Nunito-SemiBold.ttf'),
+        'Nunito-700': require('./Nunito-Bold.ttf'),
     })
 }
