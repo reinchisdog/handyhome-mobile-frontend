@@ -1,19 +1,39 @@
 /* --------------------------------- Imports -------------------------------- */
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import {useAuth} from '../context/AuthContext';
+import axios from 'axios';
+import { API_URL } from '../config';
 
 const EmergencyContext = createContext();
 
 export const EmergencyProvider = ({ children }) => {
+   const {token} = useAuth();
+
    const [emergencyInfo, setEmergencyInfo] = useState({
-      bookingId: null,
-      emergencyMessage: null
+      message: null
    });
 
    const clearEmergency = () => {
       setEmergencyInfo({
-         bookingId: null,
-         emergencyMessage: null
+         message: null
       });
+   }
+
+   const handleEmergency = async (id) => {
+      try {
+         console.log("first")
+         await axios.post(`${API_URL}/emergency/notify-user-emergency-contacts/${id}`, emergencyInfo, {
+            headers: {
+               'Authorization': `Bearer ${token}`
+            }
+         })
+
+         console.log("second")
+
+         return {status: "success"}
+      } catch (err) {
+         return {status: "failed"}
+      } 
    }
 
    return (
@@ -21,7 +41,8 @@ export const EmergencyProvider = ({ children }) => {
       value={{
          emergencyInfo,
          setEmergencyInfo,
-         clearEmergency
+         clearEmergency,
+         handleEmergency
       }}>
          {children}
       </EmergencyContext.Provider>

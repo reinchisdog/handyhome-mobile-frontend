@@ -122,7 +122,7 @@ const HomeScreen = () => {
             style={[global.headingText, {
               color: COLORS.lettersicons
             }]}>
-              Hello, <Text style={[global.headingText, {color: COLORS.primary}]}>{`${user.full_name} !`}</Text>
+              Hello, <Text style={[global.headingText, {color: COLORS.primary}]}>{user?.full_name?.trim() || "there"}!</Text>
             </Text>
           </View>
           

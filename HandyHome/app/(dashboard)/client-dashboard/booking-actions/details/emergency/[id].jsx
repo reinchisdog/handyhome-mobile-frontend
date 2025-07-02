@@ -1,16 +1,16 @@
 import { StyleSheet, Text, View, Animated, TouchableHighlight, useWindowDimensions } from 'react-native'
 import React, {useState, useEffect, useRef} from 'react'
-import { useEmergency } from '../../../../../context/EmergencyContext';
-import { useRouter } from 'expo-router';
+import { useEmergency } from '../../../../../../context/EmergencyContext';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 
 import Icons from '@expo/vector-icons/MaterialCommunityIcons'
-import {globalStyles as global} from '../../../../../styles/globalStyles';
-import { COLORS, FONTS, FONT_SIZES } from '../../../../../styles/constants';
+import {globalStyles as global} from '../../../../../../styles/globalStyles';
+import { COLORS, FONTS, FONT_SIZES } from '../../../../../../styles/constants';
 
 export default EmergencyScreen = () => {
-   const {width, height} = useWindowDimensions();
    const router = useRouter();
-   const {emergencyInfo, clearEmergency} = useEmergency();
+   const {handleEmergency, clearEmergency} = useEmergency();
+   const {id} = useLocalSearchParams();
 
    const countdown = 5;
    const [timer, setTimer] = useState(countdown);
@@ -28,7 +28,14 @@ export default EmergencyScreen = () => {
     }, [timer])
 
    const handleSubmit = async () => {
-      setSubmitted(true)
+      const result = await handleEmergency(id)
+
+      if (result.status === "success") {
+         console.log("[Emergency] success");
+      } else if (result.status === "failed") {
+         console.log("[Emergency] failed");
+         handleCancel();
+      }
    }
 
    const handleCancel = () => {

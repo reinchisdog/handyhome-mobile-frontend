@@ -7,7 +7,7 @@ import { globalStyles as global } from '../styles/globalStyles'
 import { COLORS, FONT_SIZES, FONTS } from '../styles/constants'
 import Arrows from '@expo/vector-icons/Entypo';
 
-const SubserviceItem = ({item, serviceName}) => {
+const SubserviceItem = ({item, serviceName, serviceId}) => {
    const router = useRouter();
 
    return (
@@ -15,7 +15,7 @@ const SubserviceItem = ({item, serviceName}) => {
       onPress={() => {
          router.push({
             pathname: '/client-dashboard/appointment/[index]',
-            params: { id: item.id, mainName: serviceName, subName: item.name },
+            params: { id: item.id, subName: item.name, mainId: serviceId, mainName: serviceName, },
          });
       }}
       style={({pressed}) => [{

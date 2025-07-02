@@ -14,6 +14,7 @@ const AppDataContext = createContext();
 export const AppDataProvider = ({children}) => {
    const { user, token } = useAuth();
    const [ services, setServices ] = useState([]);
+   const [ profile, setProfile ] = useState(null);
    const [ loading, setLoading ] = useState(true);
 
    const fetchAppData = async () => {
@@ -32,14 +33,35 @@ export const AppDataProvider = ({children}) => {
       }
    }
 
+   const fetchUserData = async () => {
+      if (!user || !token) return;
+
+      try {
+         setLoading(true);
+
+         const res = await axios.get(`${API_URL}/user/fetch_user`, {
+            headers: {
+               'Authorization': `Bearer ${token}`
+            }
+         })
+         setProfile(res.data.data);
+      } catch (err) {
+         console.log(err)
+      } finally {
+         setLoading(false);
+      }
+   }
+
    useEffect(() => {
       fetchAppData();
+      fetchUserData();
    }, [user, token])
 
    return (
       <AppDataContext.Provider
       value={{
          services,
+         profile,
          loading
       }}>
          {children}

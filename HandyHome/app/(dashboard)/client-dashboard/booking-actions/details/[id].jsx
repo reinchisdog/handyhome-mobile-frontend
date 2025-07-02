@@ -6,6 +6,7 @@ import { useEmergency } from '../../../../../context/EmergencyContext'
 
 import Header from '../../../../../components/dashboard/Header'
 import BasicMultiline from '../../../../../components/authentication/BasicMultiline'
+import MainButton from '../../../../../components/MainButton';
 
 import { globalStyles as global } from '../../../../../styles/globalStyles'
 import { COLORS, FONTS, FONT_SIZES } from '../../../../../styles/constants'
@@ -74,10 +75,6 @@ export default BookingDetails = () => {
    }, [])
 
    const handleEmergencyShow = () => {
-      setEmergencyInfo(prev => ({
-         ...prev,
-         bookingId: id
-      }))
       setShowEmergency(true);
    }
 
@@ -97,7 +94,7 @@ export default BookingDetails = () => {
 
    return (
       <>
-         <EmergencyModal showModal={showEmergency} setShowModal={setShowEmergency}/>
+         <EmergencyModal showModal={showEmergency} setShowModal={setShowEmergency} bookingId={id}/>
          <ScrollView 
          style={global.screenContainer}
          stickyHeaderIndices={[0]}>
@@ -509,7 +506,7 @@ export default BookingDetails = () => {
    )
 }
 
-const EmergencyModal = ({showModal, setShowModal}) => {
+const EmergencyModal = ({showModal, setShowModal, bookingId}) => {
    const router = useRouter();
    const {clearEmergency, emergencyInfo, setEmergencyInfo} = useEmergency();
 
@@ -522,7 +519,10 @@ const EmergencyModal = ({showModal, setShowModal}) => {
 
    const goToEmergencyScreen = () => {
       setShowModal(false);
-      router.push('client-dashboard/booking-actions/details/emergency');
+      router.push({
+         pathname: 'client-dashboard/booking-actions/details/emergency/[id]',
+         params: {id: bookingId}
+      });
    }
 
    return (
@@ -573,7 +573,7 @@ const EmergencyModal = ({showModal, setShowModal}) => {
                   onChangeText = {(e) => {
                      setEmergencyInfo(prev => ({
                         ...prev,
-                        emergencyMessage: e
+                        message: e
                      }))
                   }}
                   value = {emergencyInfo}
@@ -581,14 +581,11 @@ const EmergencyModal = ({showModal, setShowModal}) => {
                   height = {56}
                />
 
-               <TouchableHighlight
-               underlayColor={'#0072bc'}
+               <MainButton 
+               text="Report"
+               type="primary"
                onPress={goToEmergencyScreen}
-               style={global.primaryBtn}>
-                  <Text style={global.primaryBtnText}>
-                     Report
-                  </Text>
-               </TouchableHighlight>
+               />
             </View>
          </KeyboardAvoidingView>  
 

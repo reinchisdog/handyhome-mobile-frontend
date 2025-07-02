@@ -1,12 +1,13 @@
-import { StyleSheet, Text, View, TouchableOpacity, ImageBackground, useWindowDimensions, Animated, Image, StatusBar } from 'react-native'
-import React, { useRef } from 'react'
-import { useAppointment } from '../../../../context/AppointmentContext'
+import { StyleSheet, Text, View, TouchableOpacity, Pressable, useWindowDimensions, Animated, Image, StatusBar } from 'react-native'
+import React, { useEffect, useRef, useState } from 'react'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
-import Header from '../../../../components/dashboard/Header'
-import ModalInput from '../../../../components/authentication/ModalInput'
-import BasicMultiline from '../../../../components/authentication/BasicMultiline'
+import Header from '../../../../components/dashboard/Header';
+import BasicMultiline from '../../../../components/authentication/BasicMultiline';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import MainButton from '../../../../components/MainButton';
+import ErroModal from '../../../../components/ErrorModal';
 import { subServiceImages } from '../../../../components/SubServiceMap';
 
 import { globalStyles as global } from '../../../../styles/globalStyles'
@@ -19,9 +20,8 @@ const IMAGE_HEIGHT = 272;
 const CientSchedule = () => {
    const router = useRouter();
 
-   const { id, mainName, subName } = useLocalSearchParams();
+   const { id, subName, mainId, mainName } = useLocalSearchParams();
    const { width, height } = useWindowDimensions();
-   const {appointment, setAppointment} = useAppointment();
 
    const scrollY = useRef(new Animated.Value(0)).current;
 
@@ -29,16 +29,92 @@ const CientSchedule = () => {
       inputRange: [IMAGE_HEIGHT-64-10-StatusBar.currentHeight, IMAGE_HEIGHT-64],
       outputRange: ['rgba(255, 255, 255, 0)', 'rgba(255, 255, 255, 1)'],
       extrapolate: 'clamp',
-    });
+   });
 
-    const headerText = scrollY.interpolate({
-      inputRange: [IMAGE_HEIGHT-64-10-StatusBar.currentHeight, IMAGE_HEIGHT-64],
-      outputRange: [0, 1],
-      extrapolate: 'clamp',
-    });
+   const headerText = scrollY.interpolate({
+   inputRange: [IMAGE_HEIGHT-64-10-StatusBar.currentHeight, IMAGE_HEIGHT-64],
+   outputRange: [0, 1],
+   extrapolate: 'clamp',
+   });
+
+   const [initialBook, setInitialBook] = useState({
+      date: null,
+      time: null,
+      service_id: mainId,
+      sub_service_id: id,
+      description: null
+   })
+   const [initialBookDisabled, setInitalBookDisabled] = useState(true);
+   const [initialBookLoading, setInitialBookLoading] = useState(false);
+
+   const validateInitialBook = () => {
+      const isNotEmpty = (
+         initialBook.date &&
+         initialBook.time 
+      )
+
+      return isNotEmpty
+   }
+
+   useEffect(() => {
+      if (validateInitialBook()) setInitalBookDisabled(false)
+      else setInitalBookDisabled(true)
+   }, [initialBook])
+
+   const [showPicker, setShowPicker] = useState(false);
+   const [pickerMode, setPickerMode] = useState('date');
+
+   const showPickerMode = (mode) => {
+      setPickerMode(mode);
+      setShowPicker(true);
+   }
+
+   const showDatePicker = () => {
+      console.log("date click")
+      showPickerMode('date')
+   }
+
+   const showTimePicker = () => {
+      console.log("time click")
+      showPickerMode('time')
+   }
+
+   const handleDateTime = (event, selectedValue) => {
+      const currenValue = selectedValue;
+      setShowPicker(false);
+
+      setInitialBook(prev => ({
+         ...prev,
+         [pickerMode]: currenValue
+      }))
+   }
+
+   const [errorModal, setErrorModal] = useState(false);
+   const [errorModalMessage, setErrorModalMessage] = useState(null);
+
+   const handleInitialBook = async () => {
+
+   }
 
    return (
       <View style={global.screenContainer}>
+         <ErroModal 
+         visible={errorModal}
+         setVisible={setErrorModal}
+         title="There is an error finding into HandyHome"
+         />
+
+         {showPicker &&
+            <DateTimePicker
+            value={(pickerMode === "date" ? initialBook.date : initialBook.time) || new Date()}
+            mode={pickerMode}
+            is24Hour={true}
+            display={(pickerMode === "date") ? "default" : "spinner"}
+            onChange={handleDateTime}
+            minimumDate={new Date(new Date().setDate(new Date().getDate() + 1))}
+            maximumDate={new Date(new Date().setMonth(new Date().getMonth() + 1))}
+          />
+         }
 
          <Header 
          background={headerColor}
@@ -81,8 +157,7 @@ const CientSchedule = () => {
                   </Text>
                </View>
             </Animated.View>
-         }
-         />
+         }/>
 
          <KeyboardAwareScrollView 
          bottomOffset={20}
@@ -90,8 +165,7 @@ const CientSchedule = () => {
          onScroll={Animated.event(
             [{ nativeEvent: { contentOffset: { y: scrollY } } }],
             { useNativeDriver: false }
-          )}
-         >  
+         )}>  
             {/* ------------------------------ Header Image ------------------------------ */}
             <Image 
             source={subServiceImages[id]}
@@ -99,8 +173,7 @@ const CientSchedule = () => {
                width: width,
                height: IMAGE_HEIGHT,
                objectFit: 'cover'
-            }}
-            />
+            }}/>
             {/* --------------------------------- Content -------------------------------- */}
             <View
             style={{
@@ -113,16 +186,14 @@ const CientSchedule = () => {
                backgroundColor: '#fff',
                gap: 24,
                justifyContent: 'space-between'
-            }}
-            >
+            }}>
                <View
                style={{
                   width: '100%',
                   gap: 24
-               }}
-               >
+               }}>
                   {/* ---------------------------- Content Category ---------------------------- */}
-                  <View style={[style.contentBox]}>
+                  <View style={[styles.contentBox]}>
                      <View
                      style={{
                         flexDirection: 'row',
@@ -160,51 +231,86 @@ const CientSchedule = () => {
                      </Text>
                   </View>
                   {/* -------------------------------- Separator ------------------------------- */}
-                  <View style={[style.contentBox, {
+                  <View style={[styles.contentBox, {
                      borderBottomWidth: 1,
                      borderBottomColor: COLORS.strokes
                   }]} />
                   {/* ---------------------------------- Date ---------------------------------- */}
-                  <View style={style.contentBox}>
-                     <Text style={style.contentTitle}>Date</Text>
-                     <ModalInput 
-                     right={<Icons name="calendar-month" size={24} color={COLORS.lettersicons}/>}
-                     placeholder='MM / DD / YYYY'
-                     />
+                  <View style={styles.contentBox}>
+                     <Text style={styles.contentTitle}>Date</Text>
+
+                     <Pressable 
+                     onPress={showDatePicker}
+                     style={styles.modalInputBox}>
+                     {!initialBook.date ?
+                        <Text style={[styles.modalInputText, {paddingHorizontal: 16, color: COLORS.strokes}]}>
+                           MM-DD-YYYY
+                        </Text> :
+                        <Text style={[styles.modalInputText, {paddingHorizontal: 16}]}>
+                           {initialBook.date.toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit'
+                           }).replaceAll('/', '-')}
+                        </Text> 
+                     }
+                        <Icons name='calendar-month' size={24} color={COLORS.lettersicons} />
+                     </Pressable>
                   </View>
+
                   {/* ---------------------------------- Time ---------------------------------- */}
-                  <View style={style.contentBox}>
-                     <Text style={style.contentTitle}>Time</Text>
-                     <ModalInput 
-                     right={<Icons name="access-time" size={24} color={COLORS.lettersicons}/>}
-                     placeholder='00:00 AM / PM'
-                     />
+                  <View style={styles.contentBox}>
+                     <Text style={styles.contentTitle}>Time</Text>
+
+                     <Pressable 
+                     onPress={showTimePicker}
+                     style={styles.modalInputBox}>
+                     {!initialBook.time ?
+                        <Text style={[styles.modalInputText, {paddingHorizontal: 16, color: COLORS.strokes}]}>
+                           00:00 AM / PM
+                        </Text> :
+                        <Text style={[styles.modalInputText, {paddingHorizontal: 16}]}>
+                           {initialBook.time.toLocaleTimeString('en-US', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              hour12: false, 
+                           })}
+                        </Text> 
+                     }
+                        <Icons name='access-time' size={24} color={COLORS.lettersicons} />
+                     </Pressable>
                   </View>
                   {/* ---------------------------------- Note ---------------------------------- */}
-                  <View style={style.contentBox}>
-                     <Text style={style.contentTitle}>Note (Optional)</Text>
+                  <View style={styles.contentBox}>
+                     <Text style={styles.contentTitle}>Note (Optional)</Text>
                      <BasicMultiline 
                      placeholder='Any special requests or instructions?'
                      numberOfLines={6}
+                     value={initialBook.description}
+                     onChangeText={(e) => setInitialBook(prev => ({
+                        ...prev,
+                        description: e
+                     }))}
                      />
                   </View>
                </View>
                
-
-               <TouchableOpacity 
-               style={[global.secondaryBtn, {}]}
+               <MainButton 
+               text="Find a Service Provider"
+               type="secondary"
                onPress={() => {router.replace('/client-dashboard/appointment/searching')}}
-               >
-                  <Text style={global.secondaryBtnText}>Find a Service Provider</Text>
-               </TouchableOpacity>
+               disabled={initialBookDisabled}
+               loading={initialBookLoading}/>
             </View>
          </KeyboardAwareScrollView>
+
+         
       </View>
    )
 }
 export default CientSchedule
 
-const style = StyleSheet.create({
+const styles = StyleSheet.create({
    contentBox: {
       width: '100%',
       gap: 16
@@ -213,5 +319,44 @@ const style = StyleSheet.create({
       fontFamily: FONTS.roboto700,
       fontSize: FONT_SIZES.md,
       color: COLORS.lettersicons
-   }
+   },
+   modalInputBox: {
+      display: 'flex',
+      flexDirection: 'row',
+      width: '100%',
+      height: 48,
+      alignItems: 'center',
+      borderWidth: 2,
+      borderColor: COLORS.strokes,
+      borderRadius: 8,
+      position: 'relative',
+      backgroundColor: 'white',
+      paddingHorizontal: 12
+   },
+   modalInputText: {
+      flex: 1,
+      paddingVertical: 12,
+      fontFamily: FONTS.roboto500,
+      fontSize: FONT_SIZES.sm,
+      letterSpacing: 0.2,
+      color: '#3D3D3D',
+      lineHeight: FONT_SIZES.sm*1.2
+   },
+   modalInputIcon: {
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100%',
+      aspectRatio: '1/1',
+    },
+   modalContent: {
+      flex: 1,
+      padding: 24,
+      gap: 24,
+   },
+   illustrationCont: {
+      aspectRatio: '1/1',
+      height: 148,
+      marginHorizontal: 'auto'
+   },
 })

@@ -218,7 +218,7 @@ const SubServiceScreen = () => {
          ) : (
             <FlatList
             data={subServices}
-            renderItem={({item}) => <SubserviceItem item={item} serviceName={name}/> }
+            renderItem={({item}) => <SubserviceItem item={item} serviceName={name} serviceId={id}/> }
             keyExtractor={(item) => item.id.toString()}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{

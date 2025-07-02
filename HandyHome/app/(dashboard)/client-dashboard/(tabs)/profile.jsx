@@ -1,7 +1,10 @@
 import { StyleSheet, Text, View, ScrollView, SafeAreaView, Platform, StatusBar, Image, TouchableHighlight, TouchableOpacity, useWindowDimensions, ImageBackground, Modal } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {useRouter} from 'expo-router'
 import { useAuth } from '../../../../context/AuthContext';
+import { useAppData } from '../../../../context/AppDataContext';
+import axios from 'axios';
+import { API_URL } from '../../../../config';
 
 import Header from '../../../../components/dashboard/Header'
 import ProfileTab from '../../../../components/dashboard/profile/ProfileTab'
@@ -70,15 +73,13 @@ const VerifiedText = () => {
 }
 
 export default ProfileScreen = () => {
-   const { height } = useWindowDimensions();
    const router = useRouter();
-
-   const [ isVerified, setIsVerified ] = useState(true);
+   const { user, token } = useAuth();
+   const { profile } = useAppData();
 
 
    const [showLogout, setShowLogout] = useState(false);
    const handleLogoutShow = () => {
-      console.log("Logout Click")
       setShowLogout(true);
    }
 
@@ -113,15 +114,15 @@ export default ProfileScreen = () => {
                   paddingTop: Platform.OS === "ios" ? 0 : StatusBar.currentHeight,
                }}>
                   <Image 
-                     source={require('../../../../assets/placeholder-base.png')}
-                     style={{
-                        width: 100,
-                        height: 100,
-                        aspectRatio: '1/1',
-                        flexShrink: 0,
-                        borderRadius: 50,
-                     }}
-                  />
+                  src={profile?.profile_photo_url}
+                  style={{
+                     width: 100,
+                     height: 100,
+                     aspectRatio: '1/1',
+                     flexShrink: 0,
+                     borderRadius: 50,
+                     backgroundColor: '#fff'
+                  }}/>
 
                   <View 
                   style={{
@@ -136,17 +137,18 @@ export default ProfileScreen = () => {
                         fontSize: FONT_SIZES.xl,
                         color: COLORS.lettersicons,
                      }}>
-                        John Doe
+                        {profile?.full_name || user?.full_name || ""}
                      </Text>
-                     {(isVerified) ?
-                     <VerifiedText /> :
-                     <VerifyButton /> 
-                     }
+                     {profile && (
+                        (profile.is_verified) ?
+                        <VerifiedText /> :
+                        <VerifyButton /> 
+                     )}
                      
                   </View>
 
                   <TouchableOpacity
-                     onPress={() => {router.push('client-dashboard/settings/accountInfo')}}
+                     onPress={() => {/*router.push('client-dashboard/settings/accountInfo'*/}}
                   >
                      <Arrows name="chevron-right" size={24} color={COLORS.secondary} />
                   </TouchableOpacity>

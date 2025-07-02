@@ -1,39 +1,20 @@
 import { StyleSheet, Text, View, FlatList, Pressable, TouchableOpacity, TouchableHighlight, useWindowDimensions, Image, Modal } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'expo-router';
-import { KeyboardProvider, KeyboardAvoidingView } from 'react-native-keyboard-controller'
+import {useAuth} from '../../../../context/AuthContext';
+import { API_URL } from '../../../../config';
+import { KeyboardProvider, KeyboardAvoidingView } from 'react-native-keyboard-controller';
+import axios from 'axios'
 
 import Icons from '@expo/vector-icons/MaterialIcons';
 import Arrows from '@expo/vector-icons/Entypo';
 import Header from '../../../../components/dashboard/Header';
 import BasicInput from '../../../../components/authentication/BasicInput';
+import MainButton from '../../../../components/MainButton'
 
 import { globalStyles as global } from '../../../../styles/globalStyles';
 import { COLORS, FONTS, FONT_SIZES } from '../../../../styles/constants';
 
-const contactList = [
-   {
-      name: 'Dad',
-      phoneNumber: '09123456789'
-   },
-   {
-      name: 'Sister',
-      phoneNumber: '09123456789'
-   },
-   {
-      name: 'Brother',
-      phoneNumber: '09123456789'
-   },
-   {
-      name: 'Uncle',
-      phoneNumber: '09123456789'
-   },
-   {
-      name: 'Aunt',
-      phoneNumber: '09123456789'
-   },
-   
-]
 
 const EmergencyContact = ({name}) => {
    const colorIndex = () => {
@@ -82,8 +63,54 @@ const EmergencyContact = ({name}) => {
 
 export default ContactsScreen = () => {
    const router = useRouter();
+   const { user, token } = useAuth()
+
+   const requestBody = {
+      name: user.full_name,
+      email: user.email,
+      phone_number: user.phone_number
+   }
+
+   console.log(requestBody);
 
    const [showNewContact, setShowNewContact] = useState(false);
+
+   const [contactList, setContactList] = useState([]);
+   const [getContactLoading, setContactLoading] = useState(true);
+
+   const getContactList = async () => {
+      try {
+         setContactLoading(true);
+
+         const result = await axios.get(`${API_URL}/user/get_contacts`, {
+            headers: {
+               'Authorization': `Bearer ${token}`
+            }
+         })
+
+         setContactList(result.data.data)
+      } catch (err) {
+         console.log(err);
+      } finally {
+         setContactLoading(false);
+      }
+   }
+
+   useEffect(() => {
+      setTimeout(() => {
+         getContactList();
+      }, 1000)
+   }, [user, token])
+
+   useEffect(() => {
+      if (!showNewContact) {
+         const delay = setTimeout(() => {
+            getContactList();
+         }, 500); 
+   
+         return () => clearTimeout(delay); // cleanup
+      }
+   }, [showNewContact]);
 
    return (
       <KeyboardProvider>
@@ -139,18 +166,45 @@ export default ContactsScreen = () => {
 }
 
 const NewContactModal = ({showModal, setShowModal}) => {
+   const { token } = useAuth()
+
    const [newContact, setNewContact] = useState({
-      email: "",
-      name: "",
-      phoneNumber: ""
+      email: null,
+      name: null,
+      phone_number: null
    })
+
+   const [newContactDisabled, setNewContactDisabled] = useState(false);
+   const [newContactLoading, setNewContactLoading] = useState(false);
+
    const clearNewContact = () => {
       setNewContact({
          email: "",
          name: "",
-         phoneNumber: ""
+         phone_number: ""
       })
    }
+   
+   const validateNewContact = () => {
+      const email = newContact.email?.trim() || "";
+      const phone = newContact.phone_number?.trim() || "";
+      const name = newContact.name?.trim() || "";
+      
+      const isNotEmpty = (email !== "" || phone !== "") && name !== "";
+      
+      const isValidEmail = email === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      const isValidPhone = phone === "" || /^09\d{9}$/.test(phone);
+      
+      return isNotEmpty && isValidEmail && isValidPhone;
+   }
+
+   useEffect(() => {
+      if (validateNewContact()) {
+         setNewContactDisabled(false);
+      } else {
+         setNewContactDisabled(true);
+      }
+   }, [newContact])
 
    const {width, height} = useWindowDimensions()
 
@@ -160,9 +214,25 @@ const NewContactModal = ({showModal, setShowModal}) => {
    }
 
    const handleNewContact = async () => {
-      setShowModal(false);
+      try {
+         setNewContactLoading(true);
+
+         const result = await axios.post(`${API_URL}/user/add_new_contact`, newContact, {
+            headers: {
+               'Authorization': `Bearer ${token}`
+            }
+         })
+
+         console.log(result.data.status);
+      } catch (err) {
+
+      } finally {
+         setNewContactLoading(false);
+         handleCloseModal();
+      }
    }
 
+   
    return (
       <Modal 
       animationType='slide'
@@ -207,29 +277,28 @@ const NewContactModal = ({showModal, setShowModal}) => {
                <BasicInput 
                left={<Icons name='phone' size={24} color={COLORS.primary}/>}
                placeholder='Contact Number'
-               onChangeText={(e) => setNewContact(prev => ({...prev, phoneNumber: e}))}
+               onChangeText={(e) => setNewContact(prev => ({...prev, phone_number: e}))}
                inputMode= "numeric"
                keyboardType="phone-pad"
-               value={newContact.phoneNumber}
+               value={newContact.phone_number}
                />
 
                <BasicInput 
                left={<Icons name='mail' size={24} color={COLORS.primary}/>}
                placeholder='Email (Optional)'
-               onChangeText={(e) => setNewContact(prev => ({...prev, phoneNumber: e}))}
+               onChangeText={(e) => setNewContact(prev => ({...prev, email: e}))}
                inputMode= "email"
                keyboardType="email-address"
                value={newContact.email}
                />
 
-               <TouchableHighlight
-               underlayColor={'#0072bc'}
+               <MainButton 
+               text={"Add New Contact"}
+               type="primary"
                onPress={handleNewContact}
-               style={global.primaryBtn}>
-                  <Text style={global.primaryBtnText}>
-                     Add New Contact
-                  </Text>
-               </TouchableHighlight>
+               loading={newContactLoading}
+               disabled={newContactDisabled}
+               />
             </View>
          </KeyboardAvoidingView>  
 
