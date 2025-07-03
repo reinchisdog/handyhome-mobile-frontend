@@ -4,11 +4,14 @@ import React from 'react'
 import { globalStyles as global} from '../../../styles/globalStyles'
 import { COLORS, FONT_SIZES, FONTS } from '../../../styles/constants'
 import Icons from '@expo/vector-icons/MaterialIcons';
+import { subServiceImages } from '../../SubServiceMap';
+import SmallButton from '../../../components/SmallButton'
 
 const BookingItem = ({item, left, right}) => {
 
    return (
-      <View style={{
+      <View 
+      style={{
          width: '100%',
          backgroundColor: '#fff',
          padding: 24,
@@ -17,27 +20,26 @@ const BookingItem = ({item, left, right}) => {
          borderColor: COLORS.lettersicons
       }}>
          {/* ------------------------------- Information ------------------------------ */}
-         <View style={[
+         <View 
+         style={[
             global.centerContainer, {
-            height: 100,
             width: '100%',
             flexDirection: 'row',
             justifyContent: 'space-between',
-            alignItems: 'center',
+            alignItems: 'stretch',
             gap: 24
          }]}>
 
             <Image 
-               source={item.image}
-               style={{
-                  height: 100,
-                  width: 100,
-                  aspectRatio: '1/1',
-                  borderRadius: 8,
-                  objectFit: 'cover',
-                  resizeMode: 'cover'
-               }}
-            />
+            source={subServiceImages[item?.serviceId] || require('../../../assets/placeholder-base.png')}
+            style={{
+               height: '100%',
+               width: 100,
+               borderRadius: 8,
+               objectFit: 'cover',
+               resizeMode: 'cover'
+            }}/>
+
             <View 
             style={{
                height: '100%',
@@ -46,31 +48,31 @@ const BookingItem = ({item, left, right}) => {
                gap: 8,
             }}>
                <View
-                  style={[
+               style={[
                   global.tagContainer,
                   global.centerContainer, {
                   backgroundColor: '#F2F2F7'
-                  }]}
-               >
+               }]}>
                   <Text
-                     style={[
+                  style={[
                      global.tagText,{
                      color: COLORS.primary
-                     }]}
-                  >
-                  {item.servCategory}
+                  }]}>
+                     {item.serviceCategory}
                   </Text>
                </View>
                <Text
                numberOfLines={1}
-                  style={[{
-                     fontFamily: FONTS.roboto700,
-                     fontSize: FONT_SIZES.lg,
-                     letterSpacing: 0.2,
-                     color: 'black'
-                  }]}
-               >{item.servName}</Text>
-               <View style={{
+               style={[{
+                  fontFamily: FONTS.roboto700,
+                  fontSize: FONT_SIZES.lg,
+                  letterSpacing: 0.2,
+                  color: 'black'
+               }]}>
+                  {item.serviceName}
+               </Text>
+               <View 
+               style={{
                   display: 'flex',
                   flexDirection: 'row',
                   alignItems: 'center',
@@ -83,94 +85,59 @@ const BookingItem = ({item, left, right}) => {
                      fontFamily: FONTS.roboto400,
                      fontSize: FONT_SIZES.sm,
                      color: COLORS.lettersicons,
+                     flexShrink: 1
                   }}>
-                     {item.workName}
+                     {item.worker.name}
                   </Text>
                </View>
                <Text
-                  style={[{
-                     fontFamily: FONTS.roboto500,
-                     fontSize: FONT_SIZES.lg,
-                     letterSpacing: 0.2,
-                     color: COLORS.accent
-                  }]}
-               >{`\u20B1 ${item.price}`}</Text>
+               style={[{
+                  fontFamily: FONTS.roboto500,
+                  fontSize: FONT_SIZES.lg,
+                  letterSpacing: 0.2,
+                  color: COLORS.accent
+               }]}>
+                  {`\u20B1 ${item.price}`}
+               </Text>
             </View>
          </View>
          
          {/* --------------------------------- Buttons -------------------------------- */}
          {(left || right) &&
-            <View style={{
-            width: '100%',
-            height: 32,
-            flex: 3,
-            flexDirection: 'row',
-            justifyContent: 'flex-end',
-            alignItems: 'center',
-            gap: 12
-         }}>
-            <View style={{
-               height: '100%',
-               maxWidth: '33.33%',
-               flex: 1,
-            }}></View>
-
-         {
-            // ---- First Button (Upcoming / Completed)
-            (left) &&
-            <TouchableHighlight
-               underlayColor="#d8d8d8"
-               style={[
-                  global.centerContainer, {
+            <View 
+            style={{
+               width: '100%',
+               height: 32,
+               flex: 3,
+               flexDirection: 'row',
+               justifyContent: 'flex-end',
+               alignItems: 'center',
+               gap: 12
+            }}>
+               <View 
+               style={{
                   height: '100%',
                   maxWidth: '33.33%',
                   flex: 1,
-                  backgroundColor: '#fff',
-                  borderRadius: 16,
-                  borderWidth: 2,
-                  borderColor: COLORS.strokes,
-               }]}
-               onPress={left.function}
-            >
-               <Text
-                  style={[{
-                     fontFamily: FONTS.roboto700,
-                     fontSize: FONT_SIZES.sm,
-                     color: COLORS.lettersicons
-                  }]}
-               >
-                  {left.name}
-               </Text>
-            </TouchableHighlight>
-         }
+               }}/>
 
-         {(right) &&
-            // ---- Second Button
-            <TouchableHighlight
-               style={[
-                  global.centerContainer, {
-                  height: '100%',
-                  maxWidth: '33.33%',
-                  flex: 1,
-                  backgroundColor: COLORS.primary,
-                  borderRadius: 16,
-                  borderWidth: 2,
-                  borderColor: COLORS.primary,
-               }]}
-               underlayColor={'#035082'}
-               onPress={right.function}   
-            >
-               <Text
-                  style={[{
-                     fontFamily: FONTS.roboto700,
-                     fontSize: FONT_SIZES.sm,
-                     color: '#fff'
-                  }]}
-               >
-                  {right.name}
-               </Text>
-            </TouchableHighlight>
-         }
+               {// ---- First Button (Upcoming / Completed)
+                  (left) &&
+                  <SmallButton 
+                  text={left.name}
+                  type='secondary'
+                  onPress={left.function}
+                  />
+               }
+
+               {// ---- Second Button
+               (right) &&
+                  <SmallButton 
+                  text={right.name}
+                  type='primary'
+                  onPress={right.function}
+                  />
+               }
             </View>
          }
 

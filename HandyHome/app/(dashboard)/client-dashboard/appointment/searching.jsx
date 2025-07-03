@@ -3,10 +3,13 @@ import { View, Animated, useWindowDimensions, Easing, Text, Image } from 'react-
 import React, {useEffect, useState, useRef} from 'react'
 import {useRouter} from 'expo-router';
 import { useAppointment } from '../../../../context/AppointmentContext';
+
+import ErrorModal from '../../../../components/ErrorModal';
 /* ---------------------------- Styles and Icons ---------------------------- */
 import { globalStyles as global } from '../../../../styles/globalStyles';
 import { launchStyles as launch } from '../../../../styles/launchStyles';
 import { COLORS, FONTS, FONT_SIZES } from '../../../../styles/constants';
+import { useAuth } from '../../../../context/AuthContext';
 
 const SearchingScreen = () => {
   const {width, height} = useWindowDimensions();
@@ -17,21 +20,21 @@ const SearchingScreen = () => {
     useRef(new Animated.Value(0)).current,
   ];
 
-/* -------------------------------- Animation ------------------------------- */
-const translateYs = ballAnims.map(anim =>
-    anim.interpolate({
+  /* -------------------------------- Animation ------------------------------- */
+  const translateYs = ballAnims.map(anim =>
+      anim.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0, -20], // goes up 20 units
+      })
+  );
+
+  const contAnim = useRef(new Animated.Value(0)).current;
+  const cont = contAnim.interpolate({
       inputRange: [0, 1],
-      outputRange: [0, -20], // goes up 20 units
-    })
-);
+      outputRange: [width / 2 + 120, 0],
+  });
 
-const contAnim = useRef(new Animated.Value(0)).current;
-const cont = contAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [width / 2 + 120, 0],
-});
-
-useEffect(() => {
+  useEffect(() => {
     const createBounce = anim =>
       Animated.sequence([
         Animated.timing(anim, {
@@ -48,7 +51,6 @@ useEffect(() => {
         }),
       ]);
   
-    // One looped animation with staggered starts
     const loop = Animated.loop(
       Animated.stagger(150, ballAnims.map(anim => createBounce(anim)))
     );
@@ -56,16 +58,11 @@ useEffect(() => {
     loop.start();
   
     Animated.timing(contAnim, {
-        toValue: 1,
-        duration: 500,
-        easing: Easing.out(Easing.exp),
-        useNativeDriver: true,
-      }).start(() => {
-        
-        // Next Step
-
-      });
-      
+      toValue: 1,
+      duration: 500,
+      easing: Easing.out(Easing.exp),
+      useNativeDriver: true,
+    }).start();    
   }, []);
 
   return (
@@ -117,6 +114,7 @@ useEffect(() => {
 
 const SearchingSuccess = () => {
   const {width, height} = useWindowDimensions();
+  const router = useRouter();
 
   const imageAnimation = useRef(new Animated.Value(0)).current;
 
@@ -138,7 +136,9 @@ const SearchingSuccess = () => {
       duration: 1000,
       useNativeDriver: true,
       easing: Easing.bezier(0.22, 1, 0.36, 1)
-    }).start();
+    }).start(() => {
+      router.replace(`client-dashboard/appointment/summary`);
+    });
     
   }, []);
 
@@ -186,41 +186,64 @@ const SearchingSuccess = () => {
 
 const AppointLoading = () => {
   /* ----------------------------- Initialization ----------------------------- */
-  const {appointment, setAppointment} = useAppointment();
-  const [workerDetails, setWorkerDetails] = useState(null);
   const router = useRouter();
+  const {
+    appointment, 
+    fetchAppointmentStatus, 
+    rejectInitialBooking,
+  } = useAppointment();
+  const {token} = useAuth();
+  const [initialAppointSuccess, setInitialAppointSuccess] = useState(false);
+  const [appointError, setAppointError] = useState(false);
+  const [appointErrorMessage, setAppointErrorMessage] = useState(null);
 
   useEffect(() => {
-    if (workerDetails) {
-      setAppointment((prev) => ({
-        ...prev,
-        workerDetails: workerDetails
-      }))
+    if (!appointment || !appointment.id || !token) return
+    
+    const start = Date.now();
+    const interval = setInterval(async () => {
+      const result = await fetchAppointmentStatus(appointment.id);
 
-      console.log(workerDetails)
+      if (result.success && result.status === "ready") {
+        clearInterval(interval);
+        // console.log("Booking Confirmed")
+        setInitialAppointSuccess(true);
+      } else if (!result.success) {
+        clearInterval(interval);
+        setAppointErrorMessage(result.message);
+      } else if (Date.now() - start >= 300000) {
+        clearInterval(interval);
+        // console.log("Timeout Reached. Rejecting booking...");
+        await rejectInitialBooking(bookingId);
+      }
 
-      setTimeout(() => {
-        router.replace('client-dashboard/appointment/summary')
-      }, 500)
-    }
+      return () => clearInterval(interval);
+    }, 3000)
+  }, [appointment, token]);
 
-    const getWorkerDetails = async () => {
-      setTimeout(() => {
-        setWorkerDetails("merp");
-      }, 500)
-    }
-
-    getWorkerDetails();
-
-  }, [workerDetails]);
+  const handleExit = () => {
+    router.replace('client-dashboard/')
+    setAppointError(false);
+  }
 
   return (
-    <View style={[global.screenContainer, global.centerContainer, {backgroundColor: '#fff'}]}>
-    {(!workerDetails) ?
-      <SearchingScreen /> :
-      <SearchingSuccess />
-    }
-    </View>
+    <>
+      <ErrorModal 
+      visible={appointError}
+      setVisible={setAppointError}
+      title={"Initial Booking Error"}
+      message={appointErrorMessage}      
+      onExit={handleExit}
+      buttonText={"Return to Home"}
+      />
+
+      <View style={[global.screenContainer, global.centerContainer, {backgroundColor: '#fff'}]}>
+      {(!initialAppointSuccess) ?
+        <SearchingScreen /> :
+        <SearchingSuccess />
+      }
+      </View>
+    </>
   );
 }
 

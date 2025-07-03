@@ -2,15 +2,17 @@
 import { View, Animated, useWindowDimensions, Easing, Text, Image, TouchableHighlight } from 'react-native'
 import React, {useEffect, useState, useRef} from 'react'
 import {useRouter} from 'expo-router';
-import { useAppointment } from '../../../../context/AppointmentContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import MainButton from '../../../../components/MainButton';
 /* ---------------------------- Styles and Icons ---------------------------- */
 import { globalStyles as global } from '../../../../styles/globalStyles';
 import { launchStyles as launch } from '../../../../styles/launchStyles';
-import { COLORS, FONTS, FONT_SIZES } from '../../../../styles/constants';
+import { COLORS } from '../../../../styles/constants';
 
 const SuccessScreen = () => {
+  const insets = useSafeAreaInsets();
   const route = useRouter();
-  const {width, height} = useWindowDimensions();
+  const {width} = useWindowDimensions();
 
   const imageAnimation = useRef(new Animated.Value(0)).current;
 
@@ -58,7 +60,7 @@ const SuccessScreen = () => {
           Booking Successful!
         </Text>
         <Text style={launch.description}>
-          Your [Service Name] is successfully booked.
+          Your service has been successfully booked.
           You can check your booking on the menu profile.
         </Text>
       </View>
@@ -76,12 +78,12 @@ const SuccessScreen = () => {
         zIndex: -1,
       }} />
 
-      <View style={[global.buttonsContainer, {position: 'absolute', bottom: 0}]}>
-        <TouchableHighlight style={global.secondaryBtn}
-        underlayColor="#d8d8d8"
-        onPress={() => route.replace('/client-dashboard/(tabs)/bookings/')}>
-          <Text style={global.secondaryBtnText}>View My Bookings</Text>
-        </TouchableHighlight>
+      <View style={[global.buttonsContainer, {position: 'absolute', bottom: 0, paddingBottom: insets.bottom}]}>
+        <MainButton 
+        text={'View My Bookings'}
+        type='secondary'
+        onPress={() => route.replace('/client-dashboard/(tabs)/bookings/')}
+        />
       </View>
     </View>
   );

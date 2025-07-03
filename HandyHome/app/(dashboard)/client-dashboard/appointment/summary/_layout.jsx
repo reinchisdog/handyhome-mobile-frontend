@@ -4,7 +4,7 @@ import React from 'react'
 
 import Header from '../../../../../components/dashboard/Header';
 
-import Arrow from '@expo/vector-icons/AntDesign';
+import Arrow from '@expo/vector-icons/Entypo';
 import { COLORS } from '../../../../../styles/constants';
 import { globalStyles as global } from '../../../../../styles/globalStyles';
 
@@ -24,7 +24,7 @@ const ReviewSummaryLayout = () => {
         <Header 
         left={
           <TouchableOpacity onPress={() => router.back()}>
-            <Arrow name="left" size={24} color={COLORS.primary} />
+            <Arrow name="chevron-left" size={24} color={COLORS.primary} />
           </TouchableOpacity>
         }
         titlePosition='absolute'
@@ -35,9 +35,8 @@ const ReviewSummaryLayout = () => {
         }
         />
       ),
-    })}
-    >
-      <Stack.Screen name="index" />
+    })}>
+      <Stack.Screen name="index"/>
       <Stack.Screen name="details/addresses" />
       <Stack.Screen name="details/payment" />
     </Stack>

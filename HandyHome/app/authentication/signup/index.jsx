@@ -1,15 +1,15 @@
 /* --------------------------------- Imports -------------------------------- */
-import { Text, View , TouchableHighlight, TouchableOpacity, ImageBackground} from 'react-native'
+import { Text, View , TouchableHighlight, TouchableOpacity, ImageBackground, ScrollView} from 'react-native'
 import React, { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'expo-router';
 import axios from 'axios';
 import {API_URL} from '../../../config'
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 /* ------------------------------- Components ------------------------------- */
 import PersonalDetails from './personalDetails';
 import LocationPrompt from '../../../components/authentication/LocationPrompt';
 import LocationDetails from './locationDetails';
 import AccountDetails from './accountDetails';
-import DismissKeyboardWrapper from '../../../components/DismissKeyboard';
 import Header from '../../../components/dashboard/Header';
 import MainButton from '../../../components/MainButton';
 import ErrorModal from '../../../components/ErrorModal';
@@ -23,6 +23,7 @@ import { COLORS } from '../../../styles/constants';
 
 const SignupPages = () => {
     /* ----------------------------- Initialization ----------------------------- */
+    const insets = useSafeAreaInsets();
     const router = useRouter();
     const [step, setStep] = useState(1);
     /* -------------------------------- Functions ------------------------------- */
@@ -138,12 +139,12 @@ const SignupPages = () => {
           },
         });
 
-        const status = result.data.status || "failed";
+        const status = result?.data?.status || "error";
 
         if (status === "success") {
           router.push('authentication/signup/verify');
 
-        } else if (status === "error") {
+        } else if (status === "failed" || status === "error") {
           const message = result.data.message || 'Sign-up failed.';
           throw new Error(message);
         }
@@ -167,7 +168,7 @@ const SignupPages = () => {
     }
 
   return (
-    <DismissKeyboardWrapper>
+    <>
       <ErrorModal 
       visible={errorModal} 
       setVisible={setErrorModal} 
@@ -199,54 +200,69 @@ const SignupPages = () => {
         </ImageBackground>
 
         {/* ---------------------------------- Main ---------------------------------- */}
-        {step === 1 && <PersonalDetails signupData={signupData} setSignupData={setSignupData}/>}
         {step === 2 && <LocationPrompt setSignupData={setSignupData} setStep={setStep}/>}
+
+        <ScrollView>
+        {step === 1 && <PersonalDetails signupData={signupData} setSignupData={setSignupData}/>}
         {step === 3 && <LocationDetails signupData={signupData} setSignupData={setSignupData}/>}
-        {step === 4 && <AccountDetails signupData={signupData} setSignupData={setSignupData} passErrors={passErrors}/>}
+        {step === 4 && ( 
+          <><AccountDetails signupData={signupData} setSignupData={setSignupData} passErrors={passErrors}/>
+          
+          <View style={[global.buttonsContainer, {paddingBottom: insets.bottom + 24}]}>
+            <View style={{flexDirection: 'row', gap: 8, alignItems: 'center'}}>
+              <TouchableOpacity
+              style={{
+                width: 24,
+                height: 24,
+                aspectRatio: '1/1',
+                borderWidth: 1.5,
+                borderColor: signupData.terms_agreed ? COLORS.green : COLORS.labels,
+                borderRadius: 4,
+                backgroundColor: signupData.terms_agreed ? COLORS.green : 'transparent',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}
+              onPress={() => setSignupData(prev => ({
+                ...prev,
+                terms_agreed: !prev.terms_agreed
+              }))}>
+                {signupData.terms_agreed && <Icons name='check' size={20} color={'#fff'} />}
+              </TouchableOpacity>
+
+              <Text style={[auth.textGeneral, {flexShrink: 1}]}>
+                By continuing, you agree to HandyHome’s 
+                <Text style={auth.textLinks}> Terms & Conditions</Text> and 
+                <Text style={auth.textLinks}> Privacy Policy</Text>
+              </Text>
+            </View>
+            
+            <MainButton 
+            text={"SIGN UP" }
+            type={"primary"}
+            onPress={handleSignUp}
+            loading={signupLoading}
+            disabled={signupDisabled}
+            />
+
+          </View></>
+        )
+        
+
+        }
+        </ScrollView>
 
         {/* --------------------------------- Buttons -------------------------------- */}
-        <View style={[global.buttonsContainer, {position: 'absolute', bottom: 0}]}>
-          {(step == 4) &&
-          <View style={{flexDirection: 'row', gap: 8, alignItems: 'center'}}>
-            <TouchableOpacity
-            style={{
-              width: 24,
-              height: 24,
-              aspectRatio: '1/1',
-              borderWidth: 1.5,
-              borderColor: signupData.terms_agreed ? COLORS.green : COLORS.labels,
-              borderRadius: 4,
-              backgroundColor: signupData.terms_agreed ? COLORS.green : 'transparent',
-              justifyContent: 'center',
-              alignItems: 'center'
-            }}
-            onPress={() => setSignupData(prev => ({
-              ...prev,
-              terms_agreed: !prev.terms_agreed
-            }))}>
-              {signupData.terms_agreed && <Icons name='check' size={20} color={'#fff'} />}
-            </TouchableOpacity>
-
-            <Text style={[auth.textGeneral, {flexShrink: 1}]}>
-              By continuing, you agree to HandyHome’s 
-              <Text style={auth.textLinks}> Terms & Conditions</Text> and 
-              <Text style={auth.textLinks}> Privacy Policy</Text>
-            </Text>
-          </View>
-            
-          }
-
+        {step !== 4 && <View style={[global.buttonsContainer, {paddingBottom: insets.bottom + 24}]}>
           <MainButton 
-          text={(step == 4) ? "SIGN UP" : "Continue"}
-          type={(step == 4) ? "primary" : "secondary"}
-          onPress={() => (step == 4) ? 
-            handleSignUp() : setStep(step+1)}
+          text={"Continue"}
+          type={"secondary"}
+          onPress={() => setStep(step+1)}
           loading={signupLoading}
           disabled={signupDisabled}
           />
-        </View>
+        </View>}
       </View>
-    </DismissKeyboardWrapper>
+    </>
   )
 }
 

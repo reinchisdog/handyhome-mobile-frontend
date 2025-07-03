@@ -1,6 +1,8 @@
 import { StyleSheet, Text, View, FlatList, Image, TouchableHighlight } from 'react-native'
-import React from 'react'
-import { useRouter } from 'expo-router'
+import React, { useState } from 'react'
+import { useRouter, useFocusEffect } from 'expo-router';
+import axios from 'axios';
+import { API_URL } from '../../../../../config';
 
 import Icons1 from '@expo/vector-icons/MaterialCommunityIcons';
 import Icons2 from '@expo/vector-icons/MaterialIcons';
@@ -65,7 +67,21 @@ const BookingItems = [
 ]
 
 const UpcomingScreen = () => {
-  const router = useRouter();
+   const router = useRouter();
+
+   const [bookingList, setBookingList] = useState([])
+   const [bookingLoading, setBookingLoading] = useState(false);
+   const fetchBookingList = async () => {
+      try {
+         setBookingLoading(true)
+
+         const result = await axios.get()
+      } catch (err) {
+         console.log(err);
+      } finally {
+         setBookingLoading(false)
+      }
+   }
 
   return (
     <FlatList 

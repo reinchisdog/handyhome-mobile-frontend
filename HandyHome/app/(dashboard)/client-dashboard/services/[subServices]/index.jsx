@@ -17,7 +17,7 @@ import { API_URL } from '../../../../../config';
 import Header from '../../../../../components/dashboard/Header';
 import Searchbar from '../../../../../components/dashboard/Searchbar';
 
-import Icons from '@expo/vector-icons/AntDesign'
+import Icons from '@expo/vector-icons/Entypo'
 import { globalStyles as global } from '../../../../../styles/globalStyles';
 import { COLORS, FONT_SIZES, FONTS } from '../../../../../styles/constants';
 import SubserviceItem from '../../../../../components/SubserviceItem';
@@ -108,7 +108,7 @@ const SubServiceScreen = () => {
          background='transparent'
          left={
          <TouchableOpacity onPress={() => router.back()}>
-            <Icons name="left" size={24} color={COLORS.secondary} />
+            <Icons name="chevron-left" size={24} color={COLORS.secondary} />
          </TouchableOpacity>}
          headerPosition='absolute'
          />

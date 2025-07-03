@@ -21,14 +21,11 @@ export const EmergencyProvider = ({ children }) => {
 
    const handleEmergency = async (id) => {
       try {
-         console.log("first")
          await axios.post(`${API_URL}/emergency/notify-user-emergency-contacts/${id}`, emergencyInfo, {
             headers: {
                'Authorization': `Bearer ${token}`
             }
          })
-
-         console.log("second")
 
          return {status: "success"}
       } catch (err) {

@@ -17,8 +17,10 @@ import Arrows from '@expo/vector-icons/Entypo';
 import { globalStyles as global } from '../../../styles/globalStyles';
 import { authStyles as auth } from '../../../styles/authStyles';
 import { COLORS, FONTS, FONT_SIZES } from '../../../styles/constants';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const SignupVerifyScreen = () => {
+   const insets = useSafeAreaInsets()
    const router = useRouter();
 
    const [code, setCode] = useState({
@@ -46,11 +48,13 @@ const SignupVerifyScreen = () => {
             }
          })
 
-         const status = result.data.status || "failed";
+         console.log(result.data)
+
+         const status = result?.data?.status || "error";
 
          if (status === "success") {
             router.replace('authentication/signup/verifyLoading');
-         } else if (status === "error") {
+         } else if (status === "failed" || status === "error") {
             const message = result.data.message || 'Verification failed.';
             throw new Error(message);
          }
@@ -83,7 +87,7 @@ const SignupVerifyScreen = () => {
 
 
    return (
-      <DismissKeyboardWrapper>
+      <>
          <ErrorModal 
          visible={errorModal} 
          setVisible={setErrorModal} 
@@ -111,7 +115,7 @@ const SignupVerifyScreen = () => {
             </ImageBackground>
 
             {/* ---------------------------------- Main ---------------------------------- */}
-            <View style={auth.inputsContainer}>
+            <View style={[auth.inputsContainer, {flex: 1}]}>
                <View style={auth.inputSet}>
                   {/* ---- Code */}
                   <BasicInput 
@@ -128,7 +132,7 @@ const SignupVerifyScreen = () => {
             </View>
 
             {/* --------------------------------- Buttons -------------------------------- */}
-            <View style={[global.buttonsContainer, {position: 'absolute', bottom: 0}]}>
+            <View style={[global.buttonsContainer, {paddingBottom: insets.bottom}]}>
                <MainButton 
                text="Verify"
                type="secondary"
@@ -138,7 +142,7 @@ const SignupVerifyScreen = () => {
                />
             </View>
          </View>
-      </DismissKeyboardWrapper>
+      </>
    )
 }
 

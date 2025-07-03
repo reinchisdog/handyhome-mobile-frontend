@@ -1,71 +1,71 @@
-import { StyleSheet, Text, View, FlatList } from 'react-native'
-import React from 'react'
+import { FlatList, ActivityIndicator } from 'react-native';
+import { useRouter, useFocusEffect } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import {API_URL} from '../../../../../config';
+import { useAuth } from '../../../../../context/AuthContext'
+
+import { COLORS } from '../../../../../styles/constants';
 
 import BookingItem from '../../../../../components/dashboard/booking/BookingItem'
-import { useRouter } from 'expo-router'
-
-const BookingItems = [
-  {
-    image: require('../../../../../assets/placeholder-base.png'),
-    servCategory: "Service Category ",
-    servName: "Service Name (Oldest)",
-    workName: "Worker's Name",
-    price: 300
-  },
-  {
-    image: require('../../../../../assets/placeholder-base.png'),
-    servCategory: "Service Category",
-    servName: "Service Name",
-    workName: "Worker's Name",
-    price: 300
-  },
-  {
-    image: require('../../../../../assets/placeholder-base.png'),
-    servCategory: "Service Category",
-    servName: "Service Name",
-    workName: "Worker's Name",
-    price: 300
-  },
-  {
-    image: require('../../../../../assets/placeholder-base.png'),
-    servCategory: "Service Category",
-    servName: "Service Name",
-    workName: "Worker's Name",
-    price: 300
-  },
-  {
-    image: require('../../../../../assets/placeholder-base.png'),
-    servCategory: "Service Category",
-    servName: "Service Name",
-    workName: "Worker's Name",
-    price: 300
-  },
-  {
-    image: require('../../../../../assets/placeholder-base.png'),
-    servCategory: "Service Category",
-    servName: "Service Name (Latest)",
-    workName: "Worker's Name",
-    price: 300
-  },
-]
 
 const CancelledScreen = () => {
   const router = useRouter();
+  const {token} = useAuth();
+
+  const [bookingList, setBookingList] = useState([]);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  
+  const fetchBooking = async () => {
+    if (loading || !hasMore) return;
+    setLoading(true);
+
+    try {
+      const result = await axios.get(`${API_URL}/user/book/fetch_bookings`, {
+        params: {
+            status: "Completed",
+            page: page,
+            limit: 5
+        },
+        headers : {
+            'Authorization' : `Bearer ${token}`
+        }
+      }, );
+
+      const newData = result?.data?.data?.bookings || [];
+
+      setBookingList(prev => [...prev, ...newData]);
+      setPage(prev => prev + 1);
+      setHasMore(newData.length > 0);
+    } catch (err) {
+        console.error('Failed to fetch bookings:', err);
+    } finally {
+        setTimeout(() => {
+          setLoading(false);
+        }, 1000)
+    }
+  }
+
+  useEffect(() => {
+    fetchBooking();
+  }, [])
+
   return (
     <FlatList 
-      data={BookingItems}
-      renderItem={({item}) => 
-        <BookingItem item={item} 
-        right = {{
-          name: 'Rebook',
-          function: () => {router.push({
-            pathname: 'client-dashboard/appointment/[index]',
-            params: {id: 2}
-          })}
-        }}/>
-      }
-      inverted
-    />
+    inverted
+    data={bookingList}
+    keyExtractor={(item) => item.id.toString()}
+    onEndReached={fetchBooking}
+    onEndReachedThreshold={0.5}
+    initialNumToRender={10}
+    maxToRenderPerBatch={10}
+    windowSize={21}
+    ListFooterComponent={loading ? <ActivityIndicator color={COLORS.accent}  style={{paddingVertical: 24}}/> : null}
+    renderItem={({item}) => 
+    <BookingItem item={item}/>
+    }/>
   )
 }
   

@@ -1,6 +1,7 @@
 /* --------------------------------- IMPORTS -------------------------------- */
-import { Text, View , FlatList, Animated, TouchableOpacity, Easing, SafeAreaView, useWindowDimensions, ImageBackground, Pressable } from 'react-native';
+import { Text, View , FlatList, Animated, TouchableOpacity, Easing, useWindowDimensions, ImageBackground, Pressable } from 'react-native';
 import React, { useState, useRef, useEffect } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useNavigation } from 'expo-router';
 import { useAuth } from '../../context/AuthContext'
 // Components

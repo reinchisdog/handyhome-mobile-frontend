@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react'
+import { COLORS, FONT_SIZES, FONTS } from '../../styles/constants'
 
 const RadioGroup = ({items, direction = "column", value, setValue}) => {
 
@@ -47,7 +48,11 @@ const RadioGroup = ({items, direction = "column", value, setValue}) => {
           </TouchableOpacity>
 
           {/* TITLE */}
-          <Text onPress={() => setValue(item.val)}>{item.name}</Text>
+          <Text style={{
+            fontFamily: FONTS.roboto400,
+            fontSize: FONT_SIZES.sm,
+            color: COLORS.lettersicons
+          }} onPress={() => setValue(item.val)}>{item.name}</Text>
         </View>
       ))}
     </View>

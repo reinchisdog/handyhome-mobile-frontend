@@ -4,8 +4,7 @@ import { COLORS, FONTS, FONT_SIZES } from '../styles/constants';
 
 import MainButton from './MainButton';
 
-export default ErrorModal = ({visible, setVisible, title, message}) => {
-   
+export default ErrorModal = ({visible, setVisible, title, message, onExit, buttonText}) => {
    return (
       <Modal
       visible={visible}
@@ -35,9 +34,9 @@ export default ErrorModal = ({visible, setVisible, title, message}) => {
                }}>{message}</Text>
 
                <MainButton 
-               text="Ok"
+               text={buttonText || "Ok"}
                type="secondary"
-               onPress={() => setVisible(false)}
+               onPress={onExit ? onExit : () => setVisible(false)}
                />
             </View>
          </View>

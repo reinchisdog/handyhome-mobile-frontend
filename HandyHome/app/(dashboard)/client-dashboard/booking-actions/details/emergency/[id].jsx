@@ -28,6 +28,7 @@ export default EmergencyScreen = () => {
     }, [timer])
 
    const handleSubmit = async () => {
+      console.log("[Booking ID]", id);
       const result = await handleEmergency(id)
 
       if (result.status === "success") {

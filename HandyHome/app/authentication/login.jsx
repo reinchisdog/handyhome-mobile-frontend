@@ -1,8 +1,9 @@
 /* --------------------------------- Imports -------------------------------- */
-import { Text, View, TouchableHighlight, TouchableOpacity, ImageBackground} from 'react-native'
+import { Text, View, TouchableHighlight, TouchableOpacity, ImageBackground, StatusBar} from 'react-native'
 import React, { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../context/AuthContext'
+import { SafeAreaView } from 'react-native-safe-area-context';
 /* ------------------------------- Components ------------------------------- */
 import BasicInput from '../../components/authentication/BasicInput';
 import DismissKeyboardWrapper from '../../components/DismissKeyboard';
@@ -177,15 +178,17 @@ export default function LoginPage() {
                   </Text>
                </TouchableOpacity>
             </View>
-
+                  
             {/* --------------------------------- Buttons -------------------------------- */}
             <View style={[global.buttonsContainer, {position: 'absolute', bottom: 0}]}>
-               <MainButton 
-               text="LOG IN"
-               type="primary"
-               loading={isLoginLoading}
-               onPress={handleLogin}
-               />
+               <SafeAreaView>
+                  <MainButton 
+                  text="LOG IN"
+                  type="primary"
+                  loading={isLoginLoading}
+                  onPress={handleLogin}
+                  />
+               </SafeAreaView>
             </View>
          </View>
       </DismissKeyboardWrapper>

@@ -58,13 +58,10 @@ const bookingHistory = [
 ]
 
 export default BookingDetails = () => {
-   const {setEmergencyInfo} = useEmergency();
    const [showEmergency, setShowEmergency] = useState(false)
 
    const router = useRouter();
    const {id, status} = useLocalSearchParams();
-
-   const bookingStatus = status;
 
    const [statusActive, setStatusActive] = useState([])
    useEffect(() => {
@@ -95,6 +92,7 @@ export default BookingDetails = () => {
    return (
       <>
          <EmergencyModal showModal={showEmergency} setShowModal={setShowEmergency} bookingId={id}/>
+
          <ScrollView 
          style={global.screenContainer}
          stickyHeaderIndices={[0]}>
@@ -105,7 +103,7 @@ export default BookingDetails = () => {
                   </TouchableOpacity>
                }
                right={
-                  (bookingStatus === "ongoing") ?
+                  (status === "Ongoing") ?
                   <TouchableOpacity onPress={handleEmergencyShow}>
                      <Icons name="alarm-light" size={24} color={COLORS.red} />
                   </TouchableOpacity> : null
@@ -115,7 +113,7 @@ export default BookingDetails = () => {
                   Booking Details
                   </Text>
                }
-               titlePosition={(bookingStatus === "ongoing") ? "relative" : "absolute"}
+               titlePosition={(status === "Ongoing") ? "relative" : "absolute"}
             />
             <View style={styles.content}>
                {/* ----------------------------- Booking Status ----------------------------- */}

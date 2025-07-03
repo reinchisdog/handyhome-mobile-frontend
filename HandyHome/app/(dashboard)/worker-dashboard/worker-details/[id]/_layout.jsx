@@ -9,161 +9,153 @@ import {
    ScrollView
 } from 'react-native';
 import React, { useState, useRef, useEffect } from 'react';
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { TabView, TabBar } from 'react-native-tab-view';
 import { useNavigation, useRouter } from 'expo-router';
+import { useAppData } from '../../../../../context/AppDataContext';
+import { useAuth } from '../../../../../context/AuthContext';
 
 import ReviewWorkAbout from './about';
 import ReviewWorkServices from './services';
 import ReviewWorkReviews from './reviews';
 
-const Tabs = createMaterialTopTabNavigator();
-
 import Icons from '@expo/vector-icons/MaterialIcons';
-import Arrows from '@expo/vector-icons/AntDesign';
+import Arrows from '@expo/vector-icons/Entypo';
 import { globalStyles as global } from '../../../../../styles/globalStyles';
 import { COLORS, FONTS, FONT_SIZES } from '../../../../../styles/constants';
 
 import Header from '../../../../../components/dashboard/Header'
 
-const HEADER_HEIGHT = 314;
-const LAYOUT_HEADER_HEIGHT = 64;
-const STATUSBAR_HEIGHT = StatusBar.currentHeight;
-
+const HEADER_HEIGHT = StatusBar.currentHeight + 64;
+const WORKER_PROFILE_HEIGHT = 140;
+const WORKER_INFO_HEIGHT = 154;
+const TOTAL_HEIGHT = HEADER_HEIGHT + WORKER_PROFILE_HEIGHT + WORKER_INFO_HEIGHT
 
 export default function ProfileWorkerLayout() {
+   const { worker, fetchWorkerData, profile } = useAppData();
    const {width, height} = useWindowDimensions();
-   const [HeaderHeight, setHeaderHeight] = useState(0);
-
-   // useEffect(() => {
-   //    console.log(HeaderHeight)
-   // }, [HeaderHeight])
 
    const scrollY = useRef(new Animated.Value(0)).current;
 
    const headerY = scrollY.interpolate({
-      inputRange: [0, HEADER_HEIGHT],
-      outputRange: [0, -HEADER_HEIGHT],
+      inputRange: [0, TOTAL_HEIGHT - HEADER_HEIGHT],
+      outputRange: [0, -TOTAL_HEIGHT + HEADER_HEIGHT],
       extrapolate: 'clamp'
    });
 
    const tabY = scrollY.interpolate({
-      inputRange: [0, HEADER_HEIGHT],
-      outputRange: [HEADER_HEIGHT, 0],
+      inputRange: [HEADER_HEIGHT, TOTAL_HEIGHT],
+      outputRange: [TOTAL_HEIGHT, HEADER_HEIGHT],
       extrapolate: 'clamp'
    })
 
    const router = useRouter();
 
    return (
-      <>
+      <View style={[global.screenContainer, {position: 'relative', backgroundColor: '#fff'}]}>
          <Header 
          left={
             <TouchableOpacity
             onPress={() => router.back()}
             >
-               <Arrows name={"left"} size={24} color={COLORS.primary} />
+               <Arrows name={"chevron-left"} size={24} color={COLORS.primary} />
             </TouchableOpacity>}
          title = {
             <Text style={[global.headingText, {color: COLORS.primary}]}>Service Provider</Text>
          }
          titleAlign = 'center'
          titlePosition = 'absolute'
+         headerPosition='absolute'
          />
-         <View style={[global.screenContainer, {position: 'relative', overflow: 'hidden', backgroundColor: '#fff'}]}>
-            
-
-            {/* --------------------------- Content Tabs Render -------------------------- */}
-            <WorkerTabView 
-               onScroll={Animated.event(
-                  [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-                  { useNativeDriver: true }
-               )}
-               tabY={tabY}
-            />
-
-            {/* ------------------------------ Header Render ----------------------------- */}
-            <Animated.View
-            onLayout={({nativeEvent}) => {
-               setHeaderHeight(nativeEvent.layout.height);
-            }}
+         
+         <Animated.View
+         style={{
+            backgroundColor: '#fff',
+            position: 'absolute',
+            top: HEADER_HEIGHT,
+            width: '100%',
+            zIndex: 2,
+            transform: [{translateY: headerY}]
+         }}
+         >
+            {/* ------------------------------ Basic Profile ----------------------------- */}
+            <ImageBackground
+            source={require('../../../../../assets/images/backgrounds/graphic-bg4.png')}
             style={{
-               backgroundColor: '#fff',
-               position: 'absolute',
-               width: '100%',
-               transform: [{translateY: headerY}],
-               zIndex: 1,
+               width: width,
+               height: WORKER_PROFILE_HEIGHT,
+               backgroundColor: COLORS.lightblue,
+               borderBottomLeftRadius: 42,
+               borderBottomRightRadius: 42,
+               backgroundColor: COLORS.lightblue,
+               paddingHorizontal: 24,
+               paddingTop: 8,
+               overflow: 'hidden'
+            }}
+            imageStyle={{
+               objectFit: 'cover',
+               resizeMode: 'cover'
             }}
             >
-               {/* ------------------------------ Basic Profile ----------------------------- */}
-               <ImageBackground
-               // source={require('../../../../../../../assets/placeholder-base.png')}
+               <View
                style={{
-                  width: width,
-                  height: 160,
-                  backgroundColor: COLORS.lightblue,
-                  overflow: 'hidden',
-                  borderBottomEndRadius: 42,
-                  borderBottomStartRadius: 42,
-                  backgroundColor: COLORS.lightblue,
-                  paddingHorizontal: 24,
-                  paddingTop: 8
-               }}
-               >
-                  <View
+                  width: '100%',
+                  flexDirection: 'row',
+                  gap: 8,
+                  justifyContent: 'flex-start',
+                  alignItems: 'center'
+               }}>
+                  <ImageBackground
+                  src={profile?.profile_photo_url}
                   style={{
-                     width: '100%',
-                     flexDirection: 'row',
-                     gap: 8,
-                     justifyContent: 'flex-start',
-                     alignItems: 'center'
+                     aspectRatio: '1/1',
+                     height: 82,
+                     width: 82,
+                     position: 'relative',
+                     justifyContent: 'flex-end',
+                     alignItems: 'flex-end'
+                  }}
+                  imageStyle={{
+                     borderRadius: 41
+                  }}
+                  >
+                  <View style={{
+                  backgroundColor: '#fff',
+                  borderRadius: 12
                   }}>
-                     <ImageBackground
-                     source={require('../../../../../assets/placeholder-base.png')}
+                     <Icons name="verified" size={24} color={COLORS.primary} />
+                  </View>
+                  
+                  </ImageBackground>
+
+
+                  <View style={{gap: 6, flexShrink: 1}}>
+                     <Text numberOfLines={1}
                      style={{
-                        aspectRatio: '1/1',
-                        height: 82,
-                        width: 82,
-                        position: 'relative',
-                        justifyContent: 'flex-end',
-                        alignItems: 'flex-end'
-                     }}
-                     imageStyle={{
-                        borderRadius: 41
-                     }}
-                     >
-                     <View style={{
-                     backgroundColor: '#fff',
-                     borderRadius: 12
+                        flexShrink: 1,
+                        flexWrap: 'wrap',
+                        fontFamily: FONTS.roboto600,
+                        fontSize: FONT_SIZES.md,
+                        color: COLORS.primary
                      }}>
-                        <Icons name="verified" size={24} color={COLORS.primary} />
-                     </View>
-                     
-                     </ImageBackground>
+                        {worker?.user?.name}
+                     </Text>
 
-
-                     <View style={{gap: 6, flexShrink: 1}}>
-                        <Text numberOfLines={1}
-                        style={{
-                           flexShrink: 1,
-                           flexWrap: 'wrap',
-                           fontFamily: FONTS.roboto600,
-                           fontSize: FONT_SIZES.md,
-                           color: COLORS.primary
-                        }}
-                        >
-                           {"Worker's Name"}
-                        </Text>
-                        <Text numberOfLines={1}
-                        style={{
-                           flexShrink: 1,
-                           flexWrap: 'wrap',
-                           fontFamily: FONTS.roboto400,
-                           fontSize: FONT_SIZES.sm,
-                           color: COLORS.labels
-                        }}>
-                           {"Affiliations"}
-                        </Text>
+                     {/* <Text numberOfLines={1}
+                     style={{
+                        flexShrink: 1,
+                        flexWrap: 'wrap',
+                        fontFamily: FONTS.roboto400,
+                        fontSize: FONT_SIZES.sm,
+                        color: COLORS.labels
+                     }}>
+                        {worker?.user?.id}
+                     </Text> */}
+                     <View style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 8
+                     }}>
+                        <Icons name='phone' size={16} color={COLORS.lettersicons}/>
                         <Text numberOfLines={1}
                         style={{
                            flexShrink: 1,
@@ -172,60 +164,74 @@ export default function ProfileWorkerLayout() {
                            fontSize: FONT_SIZES.sm,
                            color: COLORS.lettersicons
                         }}>
-                           Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos quis voluptatibus, ad dolorem, beatae error maxime, eaque vitae libero quas expedita atque nostrum maiores perspiciatis voluptate aut voluptas laboriosam aliquam?
+                           {worker?.user?.phone_number}
                         </Text>
                      </View>
-                  </View>
-               </ImageBackground>
-               
-               {/* ----------------------------- Worker Summary ----------------------------- */}
-               <View 
-               style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: 24,
-               }}>
-                  {/* ---- Customers */}
-                  <View style={styles.summaryItem}>
-                     <View style={styles.summaryIcon}>
-                        <Icons name="people" size={30} color={COLORS.primary}/>
-                     </View>
-                     <Text style={styles.summaryCount}>{150}</Text>
-                     <Text style={styles.summaryTitle}>Customers</Text>
-                  </View>
-
-                  {/* ---- Experience */}
-                  <View style={styles.summaryItem}>
-                     <View style={styles.summaryIcon}>
-                        <Icons name="work" size={30} color={COLORS.primary}/>
-                     </View>
-                     <Text style={styles.summaryCount}>{5}</Text>
-                     <Text style={styles.summaryTitle}>Years Exp.</Text>
-                  </View>
-
-                  {/* ---- Rating */}
-                  <View style={styles.summaryItem}>
-                     <View style={styles.summaryIcon}>
-                        <Icons name="star-rate" size={30} color={COLORS.primary}/>
-                     </View>
-                     <Text style={styles.summaryCount}>{4.9}</Text>
-                     <Text style={styles.summaryTitle}>Rating</Text>
-                  </View>
-
-                  {/* ---- Review */}
-                  <View style={styles.summaryItem}>
-                     <View style={styles.summaryIcon}>
-                        <Icons name="rate-review" size={30} color={COLORS.primary}/>
-                     </View>
-                     <Text style={styles.summaryCount}>{98}</Text>
-                     <Text style={styles.summaryTitle}>Reviews</Text>
+                     
                   </View>
                </View>
-            </Animated.View>
+            </ImageBackground>
+            
+            {/* ----------------------------- Worker Summary ----------------------------- */}
+            <View 
+            style={{
+               flexDirection: 'row',
+               justifyContent: 'space-between',
+               alignItems: 'center',
+               height: WORKER_INFO_HEIGHT,
+               paddingHorizontal: 24
+            }}>
+               {/* ---- Customers */}
+               <View style={styles.summaryItem}>
+                  <View style={styles.summaryIcon}>
+                     <Icons name="people" size={30} color={COLORS.primary}/>
+                  </View>
+                  <Text style={styles.summaryCount}>{worker?.worker?.customer_count}</Text>
+                  <Text style={styles.summaryTitle}>Customers</Text>
+               </View>
+
+               {/* ---- Experience */}
+               <View style={styles.summaryItem}>
+                  <View style={styles.summaryIcon}>
+                     <Icons name="work" size={30} color={COLORS.primary}/>
+                  </View>
+                  <Text style={styles.summaryCount}>{5}</Text>
+                  <Text style={styles.summaryTitle}>Years Exp.</Text>
+               </View>
+
+               {/* ---- Rating */}
+               <View style={styles.summaryItem}>
+                  <View style={styles.summaryIcon}>
+                     <Icons name="star-rate" size={30} color={COLORS.primary}/>
+                  </View>
+                  <Text style={styles.summaryCount}>{worker?.worker?.rating}</Text>
+                  <Text style={styles.summaryTitle}>Rating</Text>
+               </View>
+
+               {/* ---- Review */}
+               <View style={styles.summaryItem}>
+                  <View style={styles.summaryIcon}>
+                     <Icons name="rate-review" size={30} color={COLORS.primary}/>
+                  </View>
+                  <Text style={styles.summaryCount}>{worker?.worker?.total_reviews}</Text>
+                  <Text style={styles.summaryTitle}>Reviews</Text>
+               </View>
+            </View>
+         </Animated.View>
+
+            {/* --------------------------- Content Tabs Render -------------------------- */}
+            <WorkerTabView 
+            onScroll={Animated.event(
+               [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+               { useNativeDriver: true }
+            )}
+            tabY={tabY}
+            />
+
+            {/* ------------------------------ Header Render ----------------------------- */}
+            
          
-         </View>
-      </>
+      </View>
    )
 }
 
@@ -258,8 +264,8 @@ const WorkerTabView = ({onScroll, tabY}) => {
             return (
                <ReviewWorkAbout 
                onScroll={onScroll} 
-               paddingTop={HEADER_HEIGHT+36} 
-               minHeight={height-STATUSBAR_HEIGHT-LAYOUT_HEADER_HEIGHT-36}
+               paddingTop={TOTAL_HEIGHT+36} 
+               minHeight={height-HEADER_HEIGHT}
                listRef={scrollviewRef}
                />
             );
@@ -268,8 +274,8 @@ const WorkerTabView = ({onScroll, tabY}) => {
             return (
                <ReviewWorkServices 
                onScroll={onScroll} 
-               paddingTop={HEADER_HEIGHT+36} 
-               minHeight={height-STATUSBAR_HEIGHT-LAYOUT_HEADER_HEIGHT-36}
+               paddingTop={TOTAL_HEIGHT+36} 
+               minHeight={height-HEADER_HEIGHT}
                listRef={flatlistRef}
                />
             );
@@ -277,8 +283,8 @@ const WorkerTabView = ({onScroll, tabY}) => {
             return (
                <ReviewWorkReviews 
                onScroll={onScroll} 
-               paddingTop={HEADER_HEIGHT+36} 
-               minHeight={height-STATUSBAR_HEIGHT-LAYOUT_HEADER_HEIGHT-36}
+               paddingTop={TOTAL_HEIGHT+36} 
+               minHeight={height-HEADER_HEIGHT}
                listRef={flatlistRef}
                />
             );

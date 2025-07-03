@@ -15,6 +15,7 @@ export const AppDataProvider = ({children}) => {
    const { user, token } = useAuth();
    const [ services, setServices ] = useState([]);
    const [ profile, setProfile ] = useState(null);
+   const [ worker, setWorker ] = useState(null)
    const [ loading, setLoading ] = useState(true);
 
    const fetchAppData = async () => {
@@ -52,9 +53,30 @@ export const AppDataProvider = ({children}) => {
       }
    }
 
+   const fetchWorkerData = async () => {
+      if (!user || !token) return;
+
+      try {
+         setLoading(true);
+
+         const res = await axios.get(`${API_URL}/worker`, {
+            headers: {
+               'Authorization': `Bearer ${token}`
+            }
+         })
+         setWorker(res.data.data);
+         console.log(res.data.data);
+      } catch (err) {
+         console.log(err)
+      } finally {
+         setLoading(false);
+      }
+   }
+
    useEffect(() => {
       fetchAppData();
       fetchUserData();
+      if (user?.role === "Worker") fetchWorkerData();
    }, [user, token])
 
    return (
@@ -62,6 +84,8 @@ export const AppDataProvider = ({children}) => {
       value={{
          services,
          profile,
+         worker,
+         fetchWorkerData,
          loading
       }}>
          {children}

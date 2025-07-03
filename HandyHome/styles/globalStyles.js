@@ -76,9 +76,9 @@ export const globalStyles = StyleSheet.create({
     tagContainer: {
         paddingHorizontal: 10,
         borderRadius: 8,
-        height: 22,
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        padding: 4
     },
     tagText: {
         fontFamily: FONTS.roboto700,

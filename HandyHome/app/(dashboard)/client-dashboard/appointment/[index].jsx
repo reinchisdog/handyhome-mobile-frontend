@@ -2,6 +2,11 @@ import { StyleSheet, Text, View, TouchableOpacity, Pressable, useWindowDimension
 import React, { useEffect, useRef, useState } from 'react'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAuth } from '../../../../context/AuthContext';
+import { useAppointment } from '../../../../context/AppointmentContext';
+import axios from 'axios';
+import { API_URL } from '../../../../config';
 
 import Header from '../../../../components/dashboard/Header';
 import BasicMultiline from '../../../../components/authentication/BasicMultiline';
@@ -18,10 +23,14 @@ import Icons from '@expo/vector-icons/MaterialIcons';
 const IMAGE_HEIGHT = 272;
 
 const CientSchedule = () => {
+   /* ----------------------------- Initialization ----------------------------- */
+   const insets = useSafeAreaInsets();
    const router = useRouter();
 
    const { id, subName, mainId, mainName } = useLocalSearchParams();
    const { width, height } = useWindowDimensions();
+   const { token } = useAuth();
+   const { setAppointment } = useAppointment();
 
    const scrollY = useRef(new Animated.Value(0)).current;
 
@@ -37,30 +46,7 @@ const CientSchedule = () => {
    extrapolate: 'clamp',
    });
 
-   const [initialBook, setInitialBook] = useState({
-      date: null,
-      time: null,
-      service_id: mainId,
-      sub_service_id: id,
-      description: null
-   })
-   const [initialBookDisabled, setInitalBookDisabled] = useState(true);
-   const [initialBookLoading, setInitialBookLoading] = useState(false);
-
-   const validateInitialBook = () => {
-      const isNotEmpty = (
-         initialBook.date &&
-         initialBook.time 
-      )
-
-      return isNotEmpty
-   }
-
-   useEffect(() => {
-      if (validateInitialBook()) setInitalBookDisabled(false)
-      else setInitalBookDisabled(true)
-   }, [initialBook])
-
+   /* ---------------------------- DateTime Handlers --------------------------- */
    const [showPicker, setShowPicker] = useState(false);
    const [pickerMode, setPickerMode] = useState('date');
 
@@ -70,12 +56,12 @@ const CientSchedule = () => {
    }
 
    const showDatePicker = () => {
-      console.log("date click")
+      // console.log("date click")
       showPickerMode('date')
    }
 
    const showTimePicker = () => {
-      console.log("time click")
+      // console.log("time click")
       showPickerMode('time')
    }
 
@@ -89,19 +75,93 @@ const CientSchedule = () => {
       }))
    }
 
-   const [errorModal, setErrorModal] = useState(false);
-   const [errorModalMessage, setErrorModalMessage] = useState(null);
+   /* ---------------------------- Booking Handlers ---------------------------- */
+   const [initialBook, setInitialBook] = useState({
+      date: null,
+      time: null,
+      service_id: mainId,
+      sub_service_id: id,
+      description: null
+   })
+   const [initialBookDisabled, setInitalBookDisabled] = useState(true);
+   const [initialBookLoading, setInitialBookLoading] = useState(false);
 
    const handleInitialBook = async () => {
+      try {
+         setInitialBookLoading(true);
 
+         const formatDate = (date) => {
+            const d = new Date(date);
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const year = d.getFullYear();
+            return `${month}-${day}-${year}`;
+         };
+   
+         const formatTime = (time) => {
+            const t = new Date(time);
+            const hours = String(t.getHours()).padStart(2, '0');
+            const minutes = String(t.getMinutes()).padStart(2, '0');
+            return `${hours}:${minutes}`;
+         };
+   
+         const tempBooking = {
+            ...initialBook,
+            date: initialBook.date ? formatDate(initialBook.date) : null,
+            time: initialBook.time ? formatTime(initialBook.time) : null,
+         };
+
+         const result = await axios.post(`${API_URL}/user/book`, tempBooking, {
+            headers: {
+               'Authorization' : `Bearer ${token}`
+            }
+         })
+         
+         const status = result?.data?.status || "error"
+         const message = result?.data?.message
+
+         if (status === "success") {
+            // console.log(result.data.data);
+            setAppointment(result.data.data);
+            router.replace('client-dashboard/appointment/searching');
+         }
+         else if (status === "failed" || status === "error")
+            throw new Error(message)
+
+      } catch (err) {
+         const message = err?.message || "There is an unexpected error trying to create a booking"
+         setErrorModalMessage(message)
+         setErrorModal(true)
+      } finally {
+         setInitialBookLoading(false);
+      }
    }
 
+   const validateInitialBook = () => {
+      return (
+         initialBook.date instanceof Date &&
+         initialBook.time instanceof Date
+      );
+   }
+
+   useEffect(() => {
+      if (validateInitialBook()) {
+         setInitalBookDisabled(false)
+      } else {
+         setInitalBookDisabled(true)
+      }
+   }, [initialBook])
+
+   const [errorModal, setErrorModal] = useState(false);
+   const [errorModalMessage, setErrorModalMessage] = useState(null);
+   
    return (
-      <View style={global.screenContainer}>
+      <View style={[global.screenContainer, {paddingBottom: insets.bottom}]}>
          <ErroModal 
          visible={errorModal}
          setVisible={setErrorModal}
-         title="There is an error finding into HandyHome"
+         title="Initial Booking Error"
+         message={errorModalMessage}
          />
 
          {showPicker &&
@@ -111,7 +171,7 @@ const CientSchedule = () => {
             is24Hour={true}
             display={(pickerMode === "date") ? "default" : "spinner"}
             onChange={handleDateTime}
-            minimumDate={new Date(new Date().setDate(new Date().getDate() + 1))}
+            minimumDate={new Date(new Date().setHours(0, 0, 0, 0))}
             maximumDate={new Date(new Date().setMonth(new Date().getMonth() + 1))}
           />
          }
@@ -298,7 +358,7 @@ const CientSchedule = () => {
                <MainButton 
                text="Find a Service Provider"
                type="secondary"
-               onPress={() => {router.replace('/client-dashboard/appointment/searching')}}
+               onPress={handleInitialBook}
                disabled={initialBookDisabled}
                loading={initialBookLoading}/>
             </View>

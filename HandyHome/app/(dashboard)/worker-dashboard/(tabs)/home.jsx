@@ -1,12 +1,18 @@
 /* --------------------------------- Imports -------------------------------- */
-import { ScrollView, Text, View, TouchableOpacity, TouchableHighlight, FlatList, useWindowDimensions, Animated, Image, Easing, StyleSheet } from 'react-native'
-import { useRouter } from 'expo-router'
-import { useFocusEffect } from 'expo-router'
-import React, { useState, useRef, useEffect } from 'react'
-import { useAuth } from '../../../../context/AuthContext'
+import { ScrollView, Text, View, TouchableOpacity, TouchableHighlight, FlatList, useWindowDimensions, Animated, Image, Easing, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
+import React, { useState, useRef, useEffect } from 'react';
+import { useAuth } from '../../../../context/AuthContext';
+import { useAppData } from '../../../../context/AppDataContext';
+import { subServiceImages } from '../../../../components/SubServiceMap';
+import { API_URL } from '../../../../config';
+import axios from 'axios';
 /* ------------------------------- Components ------------------------------- */
 import Header from '../../../../components/dashboard/Header';
 import TextLogo from '../../../../components/logos/TextLogo';
+import SmallButton from '../../../../components/SmallButton';
+import ErrorModal from '../../../../components/ErrorModal'
 
 /* ---------------------------- Styles and Icons ---------------------------- */
 import Icons1 from '@expo/vector-icons/MaterialCommunityIcons';
@@ -60,225 +66,384 @@ const IncomingItems = [
 
 export default HomeScreen = () => {
    /* ----------------------------- Initialization ----------------------------- */
-   const {width, height} = useWindowDimensions();
-   const [userName, setUsername] = useState('John Doe');
-   const router = useRouter();
+   const { user, token } = useAuth();
+   const skeletonOpacity = useRef(new Animated.Value(0.5)).current;
 
    /* -------------------------------- Functions ------------------------------- */
-   const handleReject = async (id) => {
+   const [incomingRequests, setIncomingRequests] = useState([])
 
+   const [incomingReqLoading, setIncomingReqLoading] = useState(true);
+   useEffect(() => {
+      const animLoop = Animated.loop(
+         Animated.sequence([
+            Animated.timing(skeletonOpacity, {
+               toValue: 0.5,
+               duration: 250,
+               easing: Easing.inOut(Easing.ease),
+               useNativeDriver: true
+            }),
+            Animated.timing(skeletonOpacity, {
+               toValue: 0.2,
+               duration: 500,
+               easing: Easing.inOut(Easing.ease),
+               useNativeDriver: true
+            }),
+            Animated.timing(skeletonOpacity, {
+               toValue: 0.5,
+               duration: 250,
+               easing: Easing.inOut(Easing.ease),
+               useNativeDriver: true
+            }),
+         ])
+      )
+
+      if (incomingReqLoading) animLoop.start();
+      
+      return () => animLoop.stop();
+   }, [incomingReqLoading])
+
+   const fetchIncomingRequests = async () => {
+      try {
+         setIncomingReqLoading(true);
+
+         const result = await axios.get(`${API_URL}/worker/bookings/pending`, {
+            headers: {
+               'Authorization' : `Bearer ${token}`
+            }
+         })
+
+         setIncomingRequests([...result.data.data]);
+         return true;
+
+      } catch (err) {
+         console.log(err)
+         return false;
+      } finally {
+         setTimeout(() => {
+            setIncomingReqLoading(false);
+         }, 1000)
+      }
+   }
+
+   useFocusEffect(
+      React.useCallback(() => {
+         let intervalId;
+      
+         const startPolling = async () => {
+            const result = await fetchIncomingRequests(); 
+            if (result) {
+               intervalId = setInterval(fetchIncomingRequests, 15000); 
+            }  
+            
+         };
+      
+         startPolling();
+      
+         return () => {
+            clearInterval(intervalId); 
+         };
+      }, [user, token])
+   );
+
+   const [buttonLoading, setButtonLoading] = useState(false);
+
+   const handleReject = async (id) => {
+      try {
+         setButtonLoading(true);
+
+         const result = await axios.put(`${API_URL}/worker/bookings/${id}/reject_booking`, null, {
+            headers: {
+               'Authorization' : `Bearer ${token}`
+            }
+         })
+
+         const status = result?.data?.status || "error"
+         const message = result?.data?.message
+
+         if (status === "success") 
+            console.log(result.data)
+         else if (status === "failed" || status === "error")
+            throw new Error(message)
+
+         
+         fetchIncomingRequests();
+      } catch (err) {
+         const message = err?.message || "An unexpected error has occurred when rejecting the booking request."
+         showModal("Booking Rejection Error", message)
+      } finally {
+         setButtonLoading(false);
+      }
    }
 
    const handleAccept = async (id) => {
+      try {
+         setButtonLoading(true);
 
+         const result = await axios.put(`${API_URL}/worker/bookings/${id}/confirm_booking`, null, {
+            headers: {
+               'Authorization' : `Bearer ${token}`
+            }
+         })
+
+         const status = result?.data?.status || "error"
+         const message = result?.data?.message
+
+         if (status === "success") 
+            console.log(result.data)
+         else if (status === "failed" || status === "error")
+            throw new Error(message)
+
+         
+         fetchIncomingRequests();
+      } catch (err) {
+         const message = err?.message || "An unexpected error has occurred when accepting the booking request."
+         showModal("Booking Acceptance Error", message)
+      } finally {
+         setButtonLoading(false);
+      }
+   }
+
+   const [showModalError, setShowModalError] = useState(false);
+   const [errorTitle, setErrorTitle] = useState(null);
+   const [errorMessage, setErrorMessage] = useState(null);
+
+   const showModal = (title, message) => {
+      setErrorTitle(title);
+      setErrorMessage(message);
+      setShowModalError(true);
    }
 
    return (
-      <ScrollView 
-      // showsHorizontalScrollIndicator={true}
-      showsVerticalScrollIndicator={true}
-      style={[global.screenContainer]}
-      contentContainerStyle={{ backgroundColor: COLORS.screenbg }}
-      stickyHeaderIndices={[0]}
-      >
-         <Header 
-         title={<TextLogo width={140}/>}
-         titlePosition='absolute'
-         right={
-         <TouchableOpacity
-         activeOpacity={0.5}
-         onPress={() => {}}>
-            <Icons1 name="bell" size={24} color={COLORS.primary}/>
-         </TouchableOpacity>
-         }
+      <>
+         <ErrorModal 
+         visible={showModalError}
+         setVisible={setShowModalError}
+         title={errorTitle}
+         message={errorMessage}
          />
 
-         <View 
-         style={[{
-         width: '100%',
-         }]}>
-            {/* ------------------------------ Main Content ------------------------------ */}
+         <ScrollView 
+         // showsHorizontalScrollIndicator={true}
+         showsVerticalScrollIndicator={true}
+         style={[global.screenContainer]}
+         contentContainerStyle={{ backgroundColor: COLORS.screenbg }}
+         stickyHeaderIndices={[0]}>
+            <Header 
+            title={<TextLogo width={140}/>}
+            titlePosition='absolute'
+            right={
+            <TouchableOpacity
+            activeOpacity={0.5}
+            onPress={() => {}}>
+               <Icons1 name="bell" size={24} color={COLORS.primary}/>
+            </TouchableOpacity>
+            }/>
+
             <View 
             style={[{
-               paddingVertical: 24,
-               flex: 1,
-               gap: 24,
-               zIndex: 1,
+            width: '100%',
             }]}>
-
-               {/* ---- User Greeting */}
+               {/* ------------------------------ Main Content ------------------------------ */}
                <View 
                style={[{
-                  paddingHorizontal: 24,
-                  flexDirection: 'row',
-                  height: 42,
-                  width: '100%',
-                  alignItems: 'center'
+                  paddingVertical: 24,
+                  flex: 1,
+                  gap: 24,
+                  zIndex: 1,
                }]}>
-                  <Text 
-                  style={[global.headingText, {
-                  color: COLORS.lettersicons
-                  }]}>
-                  Hello, <Text style={[global.headingText, {color: COLORS.primary}]}>{`${userName} !`}</Text>
-                  </Text>
-               </View>
 
-               {/* ---- Upcoming Booking(s) */}
-               <View 
-               style={{
-                  borderRadius: 20,
-                  backgroundColor: '#fff',
-                  marginHorizontal: 24,
-               }}>
-                  {/* ---- Information */}
-                  <View
-                  style={{
+                  {/* ---- User Greeting */}
+                  <View 
+                  style={[{
+                     paddingHorizontal: 24,
                      flexDirection: 'row',
-                     padding: 18,
-                     borderBottomWidth: 1,
-                     borderColor: COLORS.strokes,
-                     alignItems: 'center',
-                     justifyContent: 'space-between',
-                     gap: 8
+                     height: 42,
+                     width: '100%',
+                     alignItems: 'center'
+                  }]}>
+                     <Text 
+                     style={[global.headingText, {
+                     color: COLORS.lettersicons
+                     }]}>
+                     Hello, <Text style={[global.headingText, {color: COLORS.primary}]}>{`${user?.full_name || "There"} !`}</Text>
+                     </Text>
+                  </View>
+
+                  {/* ---- Upcoming Booking(s) */}
+                  <View 
+                  style={{
+                     borderRadius: 20,
+                     backgroundColor: '#fff',
+                     marginHorizontal: 24,
                   }}>
+                     {/* ---- Information */}
                      <View
                      style={{
-                        flex: 1,
-                        gap: 12
+                        flexDirection: 'row',
+                        padding: 18,
+                        borderBottomWidth: 1,
+                        borderColor: COLORS.strokes,
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 8
                      }}>
-                        {/* ---- Service */}
-                        <View style={{flexDirection: 'row', gap: 16, alignItems: 'center'}}>
-                           <Icons1 name='pipe-wrench' size={24} color={COLORS.primary}/>
-                           <Text numberOfLines={1}
-                           style={{
-                              fontFamily: FONTS.roboto500,
-                              fontSize: FONT_SIZES.md,
-                              color: COLORS.lettersicons,
-                              flexShrink: 1
-                           }}>
-                              Leak Repair
-                           </Text>
+                        <View
+                        style={{
+                           flex: 1,
+                           gap: 12
+                        }}>
+                           {/* ---- Service */}
+                           <View style={{flexDirection: 'row', gap: 16, alignItems: 'center'}}>
+                              <Icons1 name='pipe-wrench' size={24} color={COLORS.primary}/>
+                              <Text numberOfLines={1}
+                              style={{
+                                 fontFamily: FONTS.roboto500,
+                                 fontSize: FONT_SIZES.md,
+                                 color: COLORS.lettersicons,
+                                 flexShrink: 1
+                              }}>
+                                 Leak Repair
+                              </Text>
+                           </View>
+                           {/* ---- Location */}
+                           <View style={{flexDirection: 'row', gap: 16, alignItems: 'center'}}>
+                              <Icons2 name='location-on' size={24} color={COLORS.red}/>
+                              <Text numberOfLines={1}
+                              style={{
+                                 fontFamily: FONTS.roboto400,
+                                 fontSize: FONT_SIZES.md,
+                                 color: COLORS.labels,
+                                 flexShrink: 1
+                              }}>
+                                 Sta. Mesa, Manila
+                              </Text>
+                           </View>
                         </View>
-                        {/* ---- Location */}
-                        <View style={{flexDirection: 'row', gap: 16, alignItems: 'center'}}>
-                           <Icons2 name='location-on' size={24} color={COLORS.red}/>
-                           <Text numberOfLines={1}
-                           style={{
-                              fontFamily: FONTS.roboto400,
-                              fontSize: FONT_SIZES.md,
-                              color: COLORS.labels,
-                              flexShrink: 1
-                           }}>
-                              Sta. Mesa, Manila
-                           </Text>
-                        </View>
+
+                        <TouchableOpacity
+                        onPress={() => {}}
+                        style={{
+                           justifyContent: 'center',
+                           alignItems: 'flex-end',
+                           width: 48,
+                        }}
+                        >
+                           <Arrows name='chevron-right' size={24} color={COLORS.accent}/>
+                        </TouchableOpacity>
                      </View>
 
-                     <TouchableOpacity
-                     onPress={() => {}}
+                     {/* ---- Date */}
+                     <View
                      style={{
-                        justifyContent: 'center',
-                        alignItems: 'flex-end',
-                        width: 48,
-                     }}
-                     >
-                        <Arrows name='chevron-right' size={24} color={COLORS.accent}/>
-                     </TouchableOpacity>
+                        flexDirection: 'row',
+                        padding: 18,
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 8
+                     }}>
+                        <Text numberOfLines={1}
+                        style={{
+                           fontFamily: FONTS.roboto500,
+                           fontSize: FONT_SIZES.md,
+                           color: COLORS.lettersicons,
+                           flexShrink: 1
+                        }}>
+                           Tomorrow
+                        </Text>
+                        <Text numberOfLines={1}
+                        style={{
+                           fontFamily: FONTS.roboto500,
+                           fontSize: FONT_SIZES.md,
+                           color: COLORS.lettersicons,
+                        }}>
+                           10:30 AM
+                        </Text>
+                     </View>
                   </View>
 
-                  {/* ---- Date */}
+                  {/* ---- Incoming Request(s) */}
                   <View
                   style={{
-                     flexDirection: 'row',
-                     padding: 18,
-                     alignItems: 'center',
-                     justifyContent: 'space-between',
-                     gap: 8
+                     paddingHorizontal: 24,
+                     gap: 12
                   }}>
-                     <Text numberOfLines={1}
+                     <Text
                      style={{
-                        fontFamily: FONTS.roboto500,
+                        fontFamily: FONTS.roboto600,
                         fontSize: FONT_SIZES.md,
-                        color: COLORS.lettersicons,
-                        flexShrink: 1
+                        color: COLORS.primary,
+                        textAlign: 'left'
                      }}>
-                        Tomorrow
+                        Incoming Requests
                      </Text>
-                     <Text numberOfLines={1}
-                     style={{
-                        fontFamily: FONTS.roboto500,
-                        fontSize: FONT_SIZES.md,
-                        color: COLORS.lettersicons,
-                     }}>
-                        10:30 AM
-                     </Text>
+
+                     {incomingReqLoading ? (
+                        <Animated.View
+                        style={{
+                           borderRadius: 20,
+                           width: '100%',
+                           backgroundColor: COLORS.strokes,
+                           opacity: skeletonOpacity,
+                           height: 160
+                        }}
+                        />
+
+                     ) : (
+                        <FlatList 
+                        scrollEnabled={false}
+                        data={incomingRequests}
+                        renderItem={({item}) => (
+                           <IncomingItem 
+                           item={item}
+                           left = {{
+                              name: 'Reject',
+                              function: () => handleReject(item.id)
+                           }}
+                           right = {{
+                              name: 'Accept',
+                              function: () => handleAccept(item.id)
+                           }}
+                           loading={buttonLoading}/>
+                        )}
+                        style={{
+                           backgroundColor: '#fff',
+                           borderRadius: 20
+                        }}
+                        contentContainerStyle={{
+                           gap: 1
+                        }}/>
+                     )
+
+                     }
+                     
+
+
                   </View>
                </View>
-
-               {/* ---- Incoming Request(s) */}
-               <View
+               {/* Background */}
+               <Image 
+               source={require('../../../../assets/images/backgrounds/graphic-bg1.png')}
                style={{
+                  width: '100%',
+                  height: 224,
+                  backgroundColor: COLORS.lightblue,
+                  overflow: 'hidden',
+                  borderBottomLeftRadius: 24,
+                  borderBottomRightRadius: 24,
                   paddingHorizontal: 24,
-                  gap: 12
-               }}>
-                  <Text
-                  style={{
-                     fontFamily: FONTS.roboto600,
-                     fontSize: FONT_SIZES.md,
-                     color: COLORS.primary,
-                     textAlign: 'left'
-                  }}>
-                     Incoming Requests
-                  </Text>
-
-                  <FlatList 
-                  scrollEnabled={false}
-                  data={IncomingItems}
-                  renderItem={({item}) => (
-                     <IncomingItem 
-                     item={item}
-                     left = {{
-                        name: 'Reject',
-                        function: () => handleReject(item.id)
-                     }}
-                     right = {{
-                        name: 'Accept',
-                        function: () => handleAccept(item.id)
-                     }}/>
-                  )}
-                  style={{
-                     backgroundColor: '#fff',
-                     borderRadius: 20
-                  }}
-                  contentContainerStyle={{
-                     gap: 1
-                  }}
-                  />
-               </View>
+                  position: 'absolute',
+                  zIndex: 0,
+                  elevation: 0,
+                  objectFit: 'cover',
+                  
+               }} />
             </View>
-            {/* Background */}
-            <Image 
-            source={require('../../../../assets/images/backgrounds/graphic-bg1.png')}
-            style={{
-               width: '100%',
-               height: 224,
-               backgroundColor: COLORS.lightblue,
-               overflow: 'hidden',
-               borderBottomLeftRadius: 24,
-               borderBottomRightRadius: 24,
-               paddingHorizontal: 24,
-               position: 'absolute',
-               zIndex: 0,
-               elevation: 0,
-               objectFit: 'cover',
-               
-            }} />
-         </View>
-      </ScrollView>
+         </ScrollView>
+      </>
    )
 }
 
-const IncomingItem = ({item, left, right}) => {
+const IncomingItem = ({item, left, right, loading}) => {
 
    return (
       <View 
@@ -294,50 +459,54 @@ const IncomingItem = ({item, left, right}) => {
          <View 
          style={[
             global.centerContainer, {
-            height: 78,
             width: '100%',
             flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            gap: 24
+            alignItems: 'stretch',
+            gap: 24,
          }]}>
 
             <Image 
-            source={item.image}
+            source={subServiceImages[item?.sub_services?.id]}
             style={{
-               height: 78,
                width: 70,
+               height: '100%',
                borderRadius: 8,
                objectFit: 'cover',
-               resizeMode: 'cover'
+               resizeMode: 'cover',
+               backgroundColor: COLORS.strokes
             }}/>
 
             <View 
             style={{
-               height: '100%',
                flex: 1,
                alignItems: 'flex-start',
                gap: 8,
             }}>
+               {/* ---- Service Name */}
                <View 
                style={{
                   flexDirection: 'row',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  width: '100%'
+                  width: '100%',
+                  gap: 8
                }}>
                   <View
                   style={[
                      global.tagContainer,
                      global.centerContainer, {
-                     backgroundColor: '#F2F2F7'
+                     backgroundColor: '#F2F2F7',
+                     flexShrink: 1,
+                     padding: 4
                   }]}>
                      <Text
+                     numberOfLines={1}
                      style={[
                         global.tagText,{
-                        color: COLORS.primary
+                        color: COLORS.primary,
+                        flexShrink: 1
                      }]}>
-                        {item.servCategory}
+                        {item?.services?.name}
                      </Text>
                   </View>
 
@@ -352,17 +521,17 @@ const IncomingItem = ({item, left, right}) => {
                   </Text>
                </View>
 
-               {/* ---- Service Name */}
+               {/* ---- SubService Name */}
                <Text
                numberOfLines={1}
                style={[{
                   fontFamily: FONTS.roboto700,
                   fontSize: FONT_SIZES.lg,
                   letterSpacing: 0.2,
-                  color: 'black',
+                  color: COLORS.lettersicons,
                   flexShrink: 1
                }]}>
-                  {item.servName}
+                  {item?.sub_services?.name}
                </Text>
 
                {/* ---- Location */}
@@ -378,10 +547,10 @@ const IncomingItem = ({item, left, right}) => {
                   style={{
                      fontFamily: FONTS.roboto400,
                      fontSize: FONT_SIZES.sm,
-                     color: COLORS.lettersicons,
+                     color: COLORS.labels,
                      flexShrink: 1
                   }}>
-                     {item.location}
+                     {`${item?.municipal}, ${item?.province}`}
                   </Text>
                </View>
             </View>
@@ -407,58 +576,23 @@ const IncomingItem = ({item, left, right}) => {
          {
             // ---- First Button (Upcoming / Completed)
             (left) &&
-            <TouchableHighlight
-               underlayColor="#d8d8d8"
-               style={[
-                  global.centerContainer, {
-                  height: '100%',
-                  maxWidth: '33.33%',
-                  flex: 1,
-                  backgroundColor: '#fff',
-                  borderRadius: 16,
-                  borderWidth: 2,
-                  borderColor: COLORS.strokes,
-               }]}
-               onPress={left.function}
-            >
-               <Text
-                  style={[{
-                     fontFamily: FONTS.roboto700,
-                     fontSize: FONT_SIZES.sm,
-                     color: COLORS.lettersicons
-                  }]}
-               >
-                  {left.name}
-               </Text>
-            </TouchableHighlight>
+            <SmallButton 
+            text={left.name}
+            type='secondary'
+            onPress={left.function}
+            loading={loading}
+            />
          }
 
-         {(right) &&
+         {
             // ---- Second Button
-            <TouchableHighlight
-               style={[
-                  global.centerContainer, {
-                  height: '100%',
-                  maxWidth: '33.33%',
-                  flex: 1,
-                  backgroundColor: COLORS.primary,
-                  borderRadius: 16,
-                  borderWidth: 2,
-                  borderColor: COLORS.primary,
-               }]}
-               underlayColor={'#035082'}
-               onPress={right.function}   
-            >
-               <Text
-                  style={[{
-                     fontFamily: FONTS.roboto700,
-                     fontSize: FONT_SIZES.sm,
-                     color: '#fff'
-                  }]}
-               >
-                  {right.name}
-               </Text>
-            </TouchableHighlight>
+            (right) &&
+            <SmallButton 
+            text={right.name}
+            type='primary'
+            onPress={right.function}
+            loading={loading}
+            />
          }
             </View>
          }

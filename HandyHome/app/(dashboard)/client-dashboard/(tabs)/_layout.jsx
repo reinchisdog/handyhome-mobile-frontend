@@ -1,11 +1,14 @@
-import { TouchableOpacity } from 'react-native';
+import { StatusBar, TouchableOpacity } from 'react-native';
 import { Tabs } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { COLORS, FONT_SIZES, FONTS } from '../../../../styles/constants';
 import Icons1 from '@expo/vector-icons/MaterialCommunityIcons';
 import Icons2 from '@expo/vector-icons/MaterialIcons';
 
 export default function DashboardLayout() {
+  const insets = useSafeAreaInsets()
+
   return (
     <Tabs
       screenOptions={{
@@ -15,7 +18,7 @@ export default function DashboardLayout() {
           fontFamily: FONTS.roboto700,
         },
         tabBarStyle: {
-          height: 70,
+          height: 70 + insets.bottom,
           borderRadius: 18,
           paddingVertical: 10,
         },
