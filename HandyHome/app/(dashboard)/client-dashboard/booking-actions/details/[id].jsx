@@ -552,7 +552,7 @@ export default BookingDetails = () => {
                         backgroundColor: pressed ? 'rgb(210, 230, 255)' : 'white',
                         marginBottom: 0
                      }]}
-                     onPress={() => router.push('client-dashboard/worker-details/[id]')}
+                     // onPress={() => router.push('client-dashboard/worker-details/[id]')}
                      >
                         <View style={[styles.left, {}]}>
                            <ImageBackground

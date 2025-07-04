@@ -237,7 +237,7 @@ export default function ProfileWorkerLayout() {
          </Animated.View>
 
          {/* --------------------------- Content Tabs Render -------------------------- */}
-         <WorkerTabView 
+         {/* <WorkerTabView 
          onScroll={Animated.event(
             [{ nativeEvent: { contentOffset: { y: scrollY } } }],
             { useNativeDriver: true }
@@ -246,7 +246,7 @@ export default function ProfileWorkerLayout() {
          flatlistRef={flatlistRef}
          scrollviewRef={scrollviewRef}
          handleResetScroll={handleResetScroll}
-         />
+         /> */}
 
          {/* ------------------------------ Modal Thingy ----------------------------- */}
          <Animated.View
