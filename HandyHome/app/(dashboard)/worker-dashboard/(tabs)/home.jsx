@@ -311,7 +311,7 @@ export default HomeScreen = () => {
                   </View>
 
                   {/* ---- Ongoing Booking */}
-                  <View 
+                  {latestBookLoading && <View 
                   style={{
                      borderRadius: 20,
                      backgroundColor: '#fff',
@@ -439,19 +439,19 @@ export default HomeScreen = () => {
                         )}
                         
                      </View>
-                  </View>
+                  </View>}
 
                   {!latestBooking && !latestBookLoading && (
                      <View 
                      style={{
                         borderRadius: 20,
-                        width: '100%',
                         backgroundColor: '#fff',
                         height: 160,
                         justifyContent: 'center',
                         alignItems: 'center',
                         gap: 8,
                         paddingHorizontal: 12,
+                        marginHorizontal: 24
                      }}>
                         <Text
                         style={{

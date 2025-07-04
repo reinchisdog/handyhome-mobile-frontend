@@ -307,10 +307,11 @@ export default ReviewSummary = () => {
               styles.summaryBoxPressable, {
               backgroundColor: pressed ? 'rgb(210, 230, 255)' : 'white',
             }]}
-            onPress={() => router.push({
-              pathname: 'client-dashboard/worker-details/[id]',
-              params: {id: reviewSummary?.worker?.users?.user_id}
-            })}>
+            // onPress={() => router.push({
+            //   pathname: 'client-dashboard/worker-details/[id]',
+            //   params: {id: reviewSummary?.worker?.users?.user_id}
+            // })}
+            >
               <View style={[styles.left, {}]}>
                 <ImageBackground
                 src={reviewSummary?.worker?.users?.profile_photo_url}

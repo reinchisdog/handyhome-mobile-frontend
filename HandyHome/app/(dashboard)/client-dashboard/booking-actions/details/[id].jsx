@@ -92,6 +92,7 @@ export default BookingDetails = () => {
          const message = result?.data?.message
          
          if(status === "success") {
+            console.log('[DETAILS CLIENT]', result.data.data);
             setDetails(result.data.data);
             setTimeout(() => {
                setDetailsLoading(false);

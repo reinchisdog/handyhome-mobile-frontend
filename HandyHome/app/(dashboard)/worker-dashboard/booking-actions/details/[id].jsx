@@ -90,6 +90,7 @@ export default BookingDetails = () => {
          const message = result?.data?.message
          
          if(status === "success") {
+            console.log('[FETCH DETAILS]', result.data.data);
             setDetails(result.data.data);
             setTimeout(() => {
                setDetailsLoading(false);
@@ -648,7 +649,7 @@ export default BookingDetails = () => {
 
             </ScrollView>
 
-            {status === "Ongoing" &&
+            {details?.status === "Ongoing" &&
                <View style={[global.buttonsContainer, {paddingBottom: insets.bottom, backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24}]} >
                <MainButton 
                text="Mark as Complete"

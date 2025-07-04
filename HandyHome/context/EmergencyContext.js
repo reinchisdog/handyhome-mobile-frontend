@@ -21,14 +21,18 @@ export const EmergencyProvider = ({ children }) => {
 
    const handleEmergency = async (id) => {
       try {
-         await axios.post(`${API_URL}/emergency/notify-user-emergency-contacts/${id}`, emergencyInfo, {
+         console.log('[EMERGENCY ID]', id);
+         const result = await axios.post(`${API_URL}/emergency/notify-user-emergency-contacts/${id}`, emergencyInfo, {
             headers: {
                'Authorization': `Bearer ${token}`
             }
          })
 
+         console.log(result);
+
          return {status: "success"}
       } catch (err) {
+         console.log(err.status);
          return {status: "failed"}
       } 
    }
