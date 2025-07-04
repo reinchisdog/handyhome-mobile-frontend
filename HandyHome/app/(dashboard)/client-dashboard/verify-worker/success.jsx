@@ -1,15 +1,18 @@
 import { View, Animated, useWindowDimensions, Easing, Text, TouchableHighlight, StyleSheet } from 'react-native'
 import React, {useEffect, useState, useRef} from 'react'
 import {useRouter} from 'expo-router';
-import { useClientVerification } from '../../../../context/ClientVerificationContext';
+// import { useClientVerification } from '../../../../context/ClientVerificationContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 /* ------------------------------- Components ------------------------------- */
 import SuccessCheck from '../../../../assets/images/illustrations/SuccessCheck';
+import MainButton from '../../../../components/MainButton';
 /* ---------------------------- Styles and Icons ---------------------------- */
 import { globalStyles as global } from '../../../../styles/globalStyles';
 import { launchStyles as launch } from '../../../../styles/launchStyles';
 import { COLORS, FONTS, FONT_SIZES } from '../../../../styles/constants';
 
 const SuccessScreen = () => {
+   const insets = useSafeAreaInsets();
    const route = useRouter();
    const {width, height} = useWindowDimensions();
  
@@ -32,7 +35,7 @@ const SuccessScreen = () => {
    }, []);
  
    return (
-      <View style={[global.screenContainer, global.centerContainer, {backgroundColor: '#fff'}]}>
+      <View style={[global.screenContainer, global.centerContainer, {backgroundColor: '#fff', paddingBottom: insets.bottom}]}>
          <View style={[
             global.centerContainer, {
             flex: 1,
@@ -61,11 +64,11 @@ const SuccessScreen = () => {
             </View>
       
             <View style={[global.buttonsContainer, {position: 'absolute', bottom: 0}]}>
-               <TouchableHighlight style={global.secondaryBtn}
-               underlayColor="#d8d8d8"
-               onPress={() => route.replace('/client-dashboard/(tabs)/')}>
-               <Text style={global.secondaryBtnText}>Back To Home</Text>
-               </TouchableHighlight>
+               <MainButton 
+               text="Back to Home"
+               type="secondary"
+               onPress={() => route.replace('/client-dashboard/(tabs)/')}
+               />
             </View>
          </View>
       </View>

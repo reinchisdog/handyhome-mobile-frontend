@@ -68,11 +68,15 @@ export const AuthProvider = ({children}) => {
 
          setLoading(true);
 
+         console.log(`[1] Loggin In`)
+
          const result = await axios.post(`${API_URL}/auth/login`, loginData, {
             headers: {
                'Content-Type': 'application/json',
             },
          });
+
+         console.log(`[2] Finish Loggin In`)
 
          console.log("[Result]", result);
 
@@ -85,6 +89,7 @@ export const AuthProvider = ({children}) => {
 
          return { success: true };
       } catch (err){
+         
          console.log(err.message);
          const message = err.message || "An error has ocurred when trying to login. Please try again.";
 

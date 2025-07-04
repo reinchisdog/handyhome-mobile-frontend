@@ -1,18 +1,21 @@
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableHighlight, View } from 'react-native';
 import React from 'react';
 import {useRouter} from 'expo-router'
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import Header from '../../../../components/dashboard/Header'
 import Arrows from '@expo/vector-icons/Entypo'
+import MainButton from '../../../../components/MainButton';
 
 import {globalStyles as global} from '../../../../styles/globalStyles';
 import { COLORS, FONTS, FONT_SIZES } from '../../../../styles/constants';
 
 export default InitialWorkerVerification = () => {
+   const insets = useSafeAreaInsets()
    const router = useRouter()
 
    return (
-      <View style={[global.screenContainer, {backgroundColor: '#fff'}]}>
+      <View style={[global.screenContainer, {backgroundColor: '#fff', paddingBottom: insets.bottom}]}>
          <Header 
          left={
             <TouchableOpacity
@@ -66,11 +69,11 @@ export default InitialWorkerVerification = () => {
          </ScrollView>
          
          <View style={global.buttonsContainer}>
-            <TouchableHighlight style={global.primaryBtn}
-            underlayColor='#0072bc'
-            onPress={() => router.push('client-dashboard/verify-worker/overview')}>
-               <Text style={global.primaryBtnText}>See Details</Text>
-            </TouchableHighlight>
+            <MainButton 
+            text="See Details"
+            type="primary"
+            onPress={() => router.push('client-dashboard/verify-worker/overview')}
+            />
          </View>
       </View>
    )

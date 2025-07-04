@@ -58,7 +58,7 @@ const AppointmentReceipt = () => {
          try {
             setReceiptLoading(true);
 
-            const result = await axios.get(`${API_URL}/user/book/${id}/view_review_summary`, {
+            const result = await axios.get(`${API_URL}/user/book/${id}/fetch_booking`, {
                headers: {
                   'Authorization' : `Bearer ${token}`
                }
@@ -112,7 +112,7 @@ const AppointmentReceipt = () => {
                  height: '100%'
                }}/>
             ) : (
-               <Text style={styles.righText}>{`#${receipt?.booking?.id}`}</Text>
+               <Text style={styles.righText}>{`#${receipt?.id}`}</Text>
             )}
             
          </View>
@@ -128,7 +128,7 @@ const AppointmentReceipt = () => {
                  height: '100%'
                }}/>
             ) : (
-               <Text style={styles.righText}>{`#${receipt?.booking?.full_name}`}</Text>
+               <Text style={styles.righText}>{`#${receipt?.user?.name}`}</Text>
             )}
          </View>
          <View style={styles.summaryBoxView}>
@@ -143,7 +143,7 @@ const AppointmentReceipt = () => {
                  height: '100%'
                }}/>
             ) : (
-               <Text style={styles.righText}>{receipt?.booking?.phone_number}</Text>
+               <Text style={styles.righText}>{receipt?.user?.phone_number}</Text>
             )}
          </View>
          <View style={styles.summaryBoxView}>
@@ -159,7 +159,7 @@ const AppointmentReceipt = () => {
                }}/>
             ) : (
                <Text numberOfLines={3} style={[styles.righText, {flexShrink: 1, textAlign: 'right'}]}>
-                  {receipt && `${receipt?.booking?.block}, ${receipt?.booking?.barangay}, ${receipt?.booking?.municipal}, ${receipt?.booking?.province}`}
+                  {receipt && `${receipt?.user?.full_address}`}
                </Text>
             )}   
          </View>
@@ -186,7 +186,7 @@ const AppointmentReceipt = () => {
                  height: '100%'
                }}/>
             ) : (
-               <Text style={styles.righText}>{receipt?.booking?.sub_services?.name}</Text>
+               <Text style={styles.righText}>{receipt?.serviceName}</Text>
             )}
          </View>
          {/* <View style={styles.summaryBoxView}>
@@ -205,7 +205,7 @@ const AppointmentReceipt = () => {
                  height: '100%'
                }}/>
             ) : (
-               <Text style={styles.righText}>{receipt?.worker?.users?.full_name}</Text>
+               <Text style={styles.righText}>{receipt?.worker?.name}</Text>
             )}
          </View>
          <View style={styles.summaryBoxView}>
@@ -221,15 +221,15 @@ const AppointmentReceipt = () => {
               }}/>
             ): (
               <Text style={styles.righText}>
-                {receipt?.booking?.date && receipt?.booking?.time
+                {receipt?.date && receipt?.booking?.time
                   ? `${new Date(
-                      `${receipt.booking.date}T${receipt.booking.time}`
+                      `${receipt.date}T${receipt.booking.time}`
                     ).toLocaleDateString("en-US", {
                       month: "long",
                       day: "numeric",
                       year: "numeric"
                     })} | ${new Date(
-                      `${receipt.booking.date}T${receipt.booking.time}`
+                      `${receipt.date}T${receipt.booking.time}`
                     ).toLocaleTimeString("en-GB", {
                       hour: "2-digit",
                       minute: "2-digit",
@@ -261,7 +261,7 @@ const AppointmentReceipt = () => {
                  height: '100%'
                }}/>
             ) : (
-               <Text style={styles.righText}>{`\u20b1 ${receipt?.booking?.price}`}</Text>
+               <Text style={styles.righText}>{`\u20b1 ${receipt?.price}`}</Text>
             )}
             
          </View>
@@ -299,7 +299,7 @@ const AppointmentReceipt = () => {
                  height: '100%'
                }}/>
             ) : (
-               <Text style={styles.righText}>{`\u20b1 ${receipt?.booking?.price}`}</Text>
+               <Text style={styles.righText}>{`\u20b1 ${receipt?.price}`}</Text>
             )}
          </View>
          </View>

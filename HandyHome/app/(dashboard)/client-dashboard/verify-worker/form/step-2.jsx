@@ -18,6 +18,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useCamera } from '../../../../../context/CameraContext';
 import { useWorkerVerify } from '../../../../../context/WorkerVerificationContext';
 import DropdownBox from '../../../../../components/authentication/DropdownBox';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import Icons1 from '@expo/vector-icons/MaterialIcons';
 import Icons2 from '@expo/vector-icons/MaterialCommunityIcons';
@@ -26,6 +27,7 @@ import Header from '../../../../../components/dashboard/Header';
 
 import { globalStyles as global } from '../../../../../styles/globalStyles';
 import { COLORS, FONTS, FONT_SIZES } from '../../../../../styles/constants';
+import MainButton from '../../../../../components/MainButton';
 
 const AddButton = ({label, children, onPress}) => {
    const [ modal, setModal ] = useState(false);
@@ -403,6 +405,7 @@ export default CredentialsScreen = () => {
 
 /* --------------------------------- MODALS --------------------------------- */
 const ValidIdModal = ({setModal}) => {
+   const insets = useSafeAreaInsets();
    const { 
       openCamera,
       // forceCloseCamera,
@@ -454,8 +457,22 @@ const ValidIdModal = ({setModal}) => {
       setModal(false);
    }
 
+   const [buttonDisabled, setButtonDisable] = useState(true);
+   useEffect(() => {
+      if (
+         validId.type && 
+         validId.number?.trim() !== "" &&
+         validId.file
+      ) {
+         setButtonDisable(false);
+      }
+      else {
+         setButtonDisable(true);
+      }
+   }, [validId])
+
    return (
-      <View style={{flex: 1}}>
+      <View style={{flex: 1, paddingBottom: insets.bottom}}>
          {/* --------------------------------- Content -------------------------------- */}
          <ScrollView contentContainerStyle={styles.modalContent}>
             <Text style={styles.modalTitle}>Add Valid ID</Text>
@@ -530,17 +547,19 @@ const ValidIdModal = ({setModal}) => {
 
          {/* --------------------------------- Button --------------------------------- */}
          <View style={[global.buttonsContainer]}>
-            <TouchableHighlight style={global.primaryBtn}
-            underlayColor='#0072bc'
-            onPress={handleSave}>
-               <Text style={global.primaryBtnText}>Save</Text>
-            </TouchableHighlight>
+            <MainButton 
+            text="Save"
+            type="primary"
+            onPress={handleSave}
+            disabled={buttonDisabled}
+            />
          </View>
       </View>
    )
 }
 
 const CertificationsModal = ({setModal}) => {
+   const insets = useSafeAreaInsets();
    const {
       setWorkerVerify,
       setFileInfo
@@ -625,8 +644,22 @@ const CertificationsModal = ({setModal}) => {
       setModal(false);
    }
 
+   const [buttonDisable, setButtonDisable] = useState(true)
+   useEffect(() => {
+      if (
+         certification.name?.trim() !== "" &&
+         certification.organization.trim() !== "" &&
+         certification.date &&
+         certification.file
+      ) {
+         setButtonDisable(false);
+      } else {
+         setButtonDisable(true);
+      }
+   }, [certification])
+
    return (
-      <View style={{flex: 1}}>
+      <View style={{flex: 1, paddingBottom: insets.bottom}}>
          {/* --------------------------------- Content -------------------------------- */}
          <ScrollView contentContainerStyle={styles.modalContent}>
             <Text style={styles.modalTitle}>Add License or Certification</Text>
@@ -707,11 +740,12 @@ const CertificationsModal = ({setModal}) => {
 
          {/* --------------------------------- Button --------------------------------- */}
          <View style={[global.buttonsContainer]}>
-            <TouchableHighlight style={global.primaryBtn}
-            underlayColor='#0072bc'
-            onPress={handleSave}>
-               <Text style={global.primaryBtnText}>Save</Text>
-            </TouchableHighlight>
+            <MainButton 
+            text="Save"
+            type="primary"
+            onPress={handleSave}
+            disabled={buttonDisable}
+            />
          </View>
 
          {(showDate) &&
@@ -726,6 +760,7 @@ const CertificationsModal = ({setModal}) => {
 }
 
 const ExperienceModal = ({setModal}) => {
+   const insets = useSafeAreaInsets();
    const {
       setWorkerVerify,
    } = useWorkerVerify();
@@ -761,8 +796,22 @@ const ExperienceModal = ({setModal}) => {
       console.log("finish save")
    }
 
+   const [buttonDisable, setButtonDisable] = useState(true);
+   useEffect(() => {
+      if (
+         experience.title?.trim() !== "" &&
+         experience.company?.trim() !== "" &&
+         experience.fromDate &&
+         experience.toDate
+      ) {
+         setButtonDisable(false);
+      } else {
+         setButtonDisable(true);
+      }
+   }, [experience])
+
    return (
-      <View style={{flex: 1}}>
+      <View style={{flex: 1, paddingBottom: insets.bottom}}>
          {/* --------------------------------- Content -------------------------------- */}
          <ScrollView contentContainerStyle={styles.modalContent}>
             <Text style={styles.modalTitle}>Add License or Certification</Text>
@@ -859,11 +908,12 @@ const ExperienceModal = ({setModal}) => {
 
          {/* --------------------------------- Button --------------------------------- */}
          <View style={[global.buttonsContainer]}>
-            <TouchableHighlight style={global.primaryBtn}
-            underlayColor='#0072bc'
-            onPress={handleSave}>
-               <Text style={global.primaryBtnText}>Save</Text>
-            </TouchableHighlight>
+            <MainButton 
+            text="Save"
+            type="primary"
+            onPress={handleSave}
+            disabled={buttonDisable}
+            />
          </View>
 
          {(showDate) &&

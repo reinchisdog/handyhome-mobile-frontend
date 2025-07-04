@@ -558,7 +558,7 @@ export default ReviewSummary = () => {
         <View
         style={{
           padding: 24,
-          paddingBottom: 24 + insets.bottom,
+          paddingBottom: insets.bottom,
           borderRadius: 24,
           backgroundColor: '#fff',
           gap: 12,

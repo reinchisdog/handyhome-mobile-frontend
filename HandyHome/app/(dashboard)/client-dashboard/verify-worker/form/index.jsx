@@ -1,8 +1,11 @@
 import { StyleSheet, Text, View, TouchableOpacity, TouchableHighlight, Animated, StatusBar, useWindowDimensions, ScrollView } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import Header from '../../../../../components/dashboard/Header';
 import Arrows from '@expo/vector-icons/Entypo'
+import MainButton from '../../../../../components/MainButton';
+import ErrorModal from '../../../../../components/ErrorModal';
 
 import PhotoVerificationScreen from './step-1';
 import CredentialsScreen from './step-2';
@@ -19,6 +22,7 @@ const TITLE_CONT = 144;
 const HEADER_HEIGHT = StatusBar.currentHeight + 64 + 24 + TITLE_CONT;
 
 const FormLayoutScreen = () => {
+   const insets = useSafeAreaInsets();
    const {width, height} = useWindowDimensions();
    const router = useRouter();
    const { workerVerify, submitWorkerVerify } = useWorkerVerify();
@@ -85,122 +89,189 @@ const FormLayoutScreen = () => {
             });
          }, 300)
       } else {
-         submitWorkerVerify();
+         handleSubmit();
       }
 
       console.log(workerVerify)
    };
 
-   
+   const handleSubmit = async () => {
+      try {
+         setButtonLoading(true);
+
+         const result = await submitWorkerVerify();
+
+         if (result.success) {
+            router.push('client-dashboard/verify-worker/success');
+         } else {
+            throw new Error(result.message);
+         }
+
+      } catch (err) {
+         setErrorMessage(err.message);
+         setErrorModal(true);
+      } finally {
+         setButtonLoading(false);
+      }
+   }
+
+   const [buttonDisable, setButtonDisable] = useState(true);
+   const [buttonLoading, setButtonLoading] = useState(false);
+   useEffect(() => {
+      const isStepValid = () => {
+        switch (step) {
+          case 1:
+            console.log('[Page 1]', workerVerify.verificationPhoto);
+            return !!workerVerify.verificationPhoto;
+    
+          case 2:
+            const valid =
+              workerVerify.validIds.length === 2 &&
+              workerVerify.nbiClearance &&
+              workerVerify.brgyClearance &&
+              workerVerify.experience;
+            console.log('[Page 2]', workerVerify.validIds, workerVerify.nbiClearance, workerVerify.brgyClearance, workerVerify.certifications, workerVerify.experience);
+            return valid;
+    
+          case 3:
+            console.log('[Page 3]', workerVerify.workSamples);
+            return workerVerify.workSamples !== 0;
+    
+          case 4:
+            console.log('[Page 4]', workerVerify.offeredService, workerVerify.offeredSubService);
+            return !!workerVerify.offeredService && !!workerVerify.offeredSubService;
+         
+         case 5:
+            return true;
+
+          default:
+            return false;
+        }
+      };
+    
+      setButtonDisable(!isStepValid());
+    }, [step, workerVerify]);
+
+   const [errorModal, setErrorModal] = useState(false);
+   const [errorMessage, setErrorMessage] = useState(null);
 
    return (
-      <View style={[global.screenContainer, {backgroundColor: '#fff', position: 'relative'}]}>
-         {/* --------------------------------- Header --------------------------------- */}
-         <Header 
-         background='#fff'
-         left={
-            <TouchableOpacity onPress={() => {router.back()}}>
-               <Arrows name='chevron-left' size={24} color={COLORS.primary}/>
-            </TouchableOpacity>
-         }/>
+      <>
+         <ErrorModal 
+         visible={errorModal}
+         setVisible={setErrorModal}
+         message={errorMessage}
+         title={"Application Submission Error"}
+         />
 
-         {/* ------------------------------ Progress Bar ------------------------------ */}
-         <View 
-         style={{
-            flexDirection: 'row',
-            gap: 12,
-            alignItems: 'center',
-            backgroundColor: '#fff',
-            paddingHorizontal: 24,
-            height: 24
-         }}>
-            <Text style={{fontFamily: FONTS.roboto600, fontSize: FONT_SIZES.md, color: COLORS.primary}}>
-               {`Step ${step} of 5`}
-            </Text>
-            <View style={{height: 5, flexGrow: 1, backgroundColor: COLORS.strokes, borderRadius: 2.5}}>
-               <Animated.View 
+         <View style={[global.screenContainer, {backgroundColor: '#fff', position: 'relative', paddingBottom: insets.bottom}]}>
+            {/* --------------------------------- Header --------------------------------- */}
+            <Header 
+            background='#fff'
+            left={
+               <TouchableOpacity onPress={() => {router.back()}}>
+                  <Arrows name='chevron-left' size={24} color={COLORS.primary}/>
+               </TouchableOpacity>
+            }/>
+
+            {/* ------------------------------ Progress Bar ------------------------------ */}
+            <View 
+            style={{
+               flexDirection: 'row',
+               gap: 12,
+               alignItems: 'center',
+               backgroundColor: '#fff',
+               paddingHorizontal: 24,
+               height: 24
+            }}>
+               <Text style={{fontFamily: FONTS.roboto600, fontSize: FONT_SIZES.md, color: COLORS.primary}}>
+                  {`Step ${step} of 5`}
+               </Text>
+               <View style={{height: 5, flexGrow: 1, backgroundColor: COLORS.strokes, borderRadius: 2.5}}>
+                  <Animated.View 
+                  style={{
+                     height: '100%',
+                     width: stepPercent,
+                     borderRadius: 2.5,
+                     backgroundColor: COLORS.primary
+                  }}
+                  />
+               </View>
+            </View>
+            
+            {/* ------------------------------ Header Title ------------------------------ */}
+            <Animated.View
+            style={{
+               position: 'absolute',
+               top: HEADER_HEIGHT - TITLE_CONT,
+               width: '100%',
+               height: headerHeight,
+               overflow: 'hidden',
+               borderBottomLeftRadius: 24,
+               borderBottomRightRadius: 24,
+               backgroundColor: '#fff',
+               zIndex: 2,
+            }}>
+               <Animated.Text
                style={{
-                  height: '100%',
-                  width: stepPercent,
-                  borderRadius: 2.5,
-                  backgroundColor: COLORS.primary
+                  fontFamily: FONTS.roboto700,
+                  fontSize: FONT_SIZES.xxxl,
+                  color: COLORS.darkblue,
+                  padding: 24,
+                  position: 'absolute',
+                  opacity: headerOpacity
+               }}>
+                  {stepTitles[step-1]}
+               </Animated.Text>
+               <Animated.Image 
+               source={require('../../../../../assets/images/backgrounds/graphic-bg7.png')}
+               style={{
+                  height: TITLE_CONT,
+                  width: '100%',
+                  aspectRatio: '1500/548',
+                  opacity: headerOpacity
                }}
                />
-            </View>
-         </View>
-         
-         {/* ------------------------------ Header Title ------------------------------ */}
-         <Animated.View
-         style={{
-            position: 'absolute',
-            top: HEADER_HEIGHT - TITLE_CONT,
-            width: '100%',
-            height: headerHeight,
-            overflow: 'hidden',
-            borderBottomLeftRadius: 24,
-            borderBottomRightRadius: 24,
-            backgroundColor: '#fff',
-            zIndex: 2,
-         }}>
-            <Animated.Text
-            style={{
-               fontFamily: FONTS.roboto700,
-               fontSize: FONT_SIZES.xxxl,
-               color: COLORS.darkblue,
-               padding: 24,
-               position: 'absolute',
-               opacity: headerOpacity
-            }}>
-               {stepTitles[step-1]}
-            </Animated.Text>
-            <Animated.Image 
-            source={require('../../../../../assets/images/backgrounds/graphic-bg7.png')}
-            style={{
-               height: TITLE_CONT,
-               width: '100%',
-               aspectRatio: '1500/548',
-               opacity: headerOpacity
-            }}
-            />
-         </Animated.View >
+            </Animated.View >
 
-         {/* --------------------------------- Content -------------------------------- */}
-         <Animated.View
-         style={{
-            transform: [{translateX: stepX}],
-            flex: 1,
-         }}>
-            <ScrollView
-            ref={scrollViewRef}
+            {/* --------------------------------- Content -------------------------------- */}
+            <Animated.View
             style={{
+               transform: [{translateX: stepX}],
                flex: 1,
-            }}
-            contentContainerStyle={{
-               padding: 24,
-               paddingTop: TITLE_CONT + 24,
-            }}
-            onScroll={Animated.event([{nativeEvent: {contentOffset: {y: scrollY}}}], {
-               useNativeDriver: false,
-            })}>
-               {(stepContent === 1) && <PhotoVerificationScreen />}
-               {(stepContent === 2) && <CredentialsScreen />}
-               {(stepContent === 3) && <WorkSamplesScreen />}
-               {(stepContent === 4) && <OfferedServicesScreen />}
-               {(stepContent === 5) && <SummaryScreen />}
-            </ScrollView>
+            }}>
+               <ScrollView
+               ref={scrollViewRef}
+               style={{
+                  flex: 1,
+               }}
+               contentContainerStyle={{
+                  padding: 24,
+                  paddingTop: TITLE_CONT + 24,
+               }}
+               onScroll={Animated.event([{nativeEvent: {contentOffset: {y: scrollY}}}], {
+                  useNativeDriver: false,
+               })}>
+                  {(stepContent === 1) && <PhotoVerificationScreen />}
+                  {(stepContent === 2) && <CredentialsScreen />}
+                  {(stepContent === 3) && <WorkSamplesScreen />}
+                  {(stepContent === 4) && <OfferedServicesScreen />}
+                  {(stepContent === 5) && <SummaryScreen />}
+               </ScrollView>
 
-            <View style={[global.buttonsContainer]}>
-               <TouchableHighlight style={global.primaryBtn}
-               underlayColor='#0072bc'
-               onPress={handleNextStep}>
-                  <Text style={global.primaryBtnText}>
-                     {(stepContent === 5) ? "Submit Application" : "Next"}
-                  </Text>
-               </TouchableHighlight>
-            </View>
+               <View style={[global.buttonsContainer]}>
+                  <MainButton 
+                  text={(stepContent === 5) ? "Submit Application" : "Next"}
+                  type="primary"
+                  onPress={handleNextStep}
+                  disabled={buttonDisable}
+                  loading={buttonLoading}
+                  />
+               </View>
 
-         </Animated.View>
-      </View>
+            </Animated.View>
+         </View>
+      </>
    )
 }
 

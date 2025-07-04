@@ -1,12 +1,18 @@
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, FlatList, Pressable, Image, ImageBackground, Modal, useWindowDimensions, TouchableWithoutFeedback, TouchableHighlight, Platform } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, FlatList, Pressable, Image, ImageBackground, Modal, useWindowDimensions, TouchableWithoutFeedback, TouchableHighlight, Platform, Animated, Easing } from 'react-native'
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
-import React, { useEffect, useState } from 'react'
-import { useRouter, useLocalSearchParams } from 'expo-router'
-import { useEmergency } from '../../../../../context/EmergencyContext'
+import React, { useEffect, useState, useRef } from 'react';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useEmergency } from '../../../../../context/EmergencyContext';
+import axios from 'axios';
+import { API_URL } from '../../../../../config';
+import { useAuth } from '../../../../../context/AuthContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import Header from '../../../../../components/dashboard/Header'
 import BasicMultiline from '../../../../../components/authentication/BasicMultiline'
 import MainButton from '../../../../../components/MainButton';
+import ErrorModal from '../../../../../components/ErrorModal';
+import {subServiceImages} from '../../../../../components/SubServiceMap'
 
 import { globalStyles as global } from '../../../../../styles/globalStyles'
 import { COLORS, FONTS, FONT_SIZES } from '../../../../../styles/constants'
@@ -34,41 +40,74 @@ const progressMap = [
    },
 ]
 
-const bookingHistory = [
-   {
-      status: "completed",
-      date: "April 26",
-      time: "8 AM"
-   },
-   {
-      status: "ongoing",
-      date: "April 26",
-      time: "8 AM"
-   },
-   {
-      status: "upcoming",
-      date: "April 26",
-      time: "8 AM"
-   },
-   {
-      status: "booked",
-      date: "April 26",
-      time: "8 AM"
-   },
-]
-
 export default BookingDetails = () => {
+   const {token} = useAuth();
+   const insets = useSafeAreaInsets();
    const [showEmergency, setShowEmergency] = useState(false)
-
+   const skeletonOpacity = useRef(new Animated.Value(0.5)).current;
    const router = useRouter();
    const {id, status} = useLocalSearchParams();
 
-   const [statusActive, setStatusActive] = useState([])
+   const [detailsLoading, setDetailsLoading] = useState(true);
    useEffect(() => {
-      progressMap.map((element, index) => {
-         // Change Logic Later
-         setStatusActive(prev => [...prev, (index < 3)? true : false]) 
-      });
+      const animLoop = Animated.loop(
+         Animated.sequence([
+            Animated.timing(skeletonOpacity, {
+               toValue: 0.5,
+               duration: 250,
+               easing: Easing.inOut(Easing.ease),
+               useNativeDriver: true
+            }),
+            Animated.timing(skeletonOpacity, {
+               toValue: 0.2,
+               duration: 500,
+               easing: Easing.inOut(Easing.ease),
+               useNativeDriver: true
+            }),
+            Animated.timing(skeletonOpacity, {
+               toValue: 0.5,
+               duration: 250,
+               easing: Easing.inOut(Easing.ease),
+               useNativeDriver: true
+            }),
+         ])
+      )
+
+      if (detailsLoading) animLoop.start();
+      
+      return () => animLoop.stop();
+   }, [detailsLoading])
+   const [details, setDetails] = useState(null);
+
+   const fetchDetails = async () => {
+      try {
+         setDetailsLoading(true);
+
+         const result = await axios.get(`${API_URL}/user/book/${id}/fetch_booking`, {
+            headers: {
+               'Authorization' : `Bearer ${token}`
+            }
+         })
+
+         const status = result?.data?.status || "error"
+         const message = result?.data?.message
+         
+         if(status === "success") {
+            setDetails(result.data.data);
+            setTimeout(() => {
+               setDetailsLoading(false);
+            }, 1000)
+         } else if (status === "failed" || status === "error") {
+            throw new Error(message)
+         }
+      } catch (err) {
+         
+      }
+   }
+
+   useEffect(() => {
+      fetchDetails();
+
    }, [])
 
    const handleEmergencyShow = () => {
@@ -94,7 +133,7 @@ export default BookingDetails = () => {
          <EmergencyModal showModal={showEmergency} setShowModal={setShowEmergency} bookingId={id}/>
 
          <ScrollView 
-         style={global.screenContainer}
+         style={[global.screenContainer, {paddingBottom: insets.bottom}]}
          stickyHeaderIndices={[0]}>
             <Header 
                left={
@@ -116,6 +155,7 @@ export default BookingDetails = () => {
                titlePosition={(status === "Ongoing") ? "relative" : "absolute"}
             />
             <View style={styles.content}>
+
                {/* ----------------------------- Booking Status ----------------------------- */}
                <View style={[styles.boxContainer]}>
                   {/* ---- Header */}
@@ -125,18 +165,43 @@ export default BookingDetails = () => {
                      padding: 12,
                      gap: 12
                   }}>
-                     <Text style={styles.headingStatus}
-                     numberOfLines={1}>
-                        {"Your Service Provider is on the way"}
-                     </Text>
-
-                     <Text style={styles.descriptionStatus}
-                     numberOfLines={2}>
-                        {"Booking set on April 28, 2025 at 10 AM"}
-                     </Text>
+                     {detailsLoading ? (
+                        <Animated.View 
+                        style={{
+                          backgroundColor: COLORS.strokes,
+                          borderRadius: 8,
+                          width: '100%',
+                          opacity: skeletonOpacity,
+                          height: 25
+                        }}/>
+                     ) : (
+                        <Text style={styles.headingStatus}
+                        numberOfLines={1}>
+                           {details && details.status === "Ongoing" ? 
+                           "This appointment is Ongoing" : 
+                           "This appointment is Upcoming"}
+                        </Text>
+                     )}
+                     
+                     {detailsLoading ? (
+                        <Animated.View 
+                        style={{
+                          backgroundColor: COLORS.strokes,
+                          borderRadius: 8,
+                          width: '60%',
+                          opacity: skeletonOpacity,
+                          height: 15
+                        }}/>
+                     ) : (
+                        <Text style={styles.descriptionStatus}
+                        numberOfLines={2}>
+                           {`Booking set on ${details.date} at ${details.time.splice(0, 5)}`}
+                        </Text>
+                     )}
+                     
                   </View>
                   {/* ---- Simple Timeline */}
-                  <View style={[styles.progressHorizontal, {padding: 24}]}>
+                  {/* <View style={[styles.progressHorizontal, {padding: 24}]}>
                      {progressMap.map((item, index) => (
                         <React.Fragment key={index}>
                            {index !== 0 && (
@@ -167,7 +232,7 @@ export default BookingDetails = () => {
                         </React.Fragment>
                         
                      ))}
-                  </View>
+                  </View> */}
                   
                   {/* ---- Divider */}
                   <View style={{paddingHorizontal: 12}}>
@@ -176,7 +241,8 @@ export default BookingDetails = () => {
 
                   {/* ---- Detailed Timeline */}
                   <Text style={[styles.boxHeading, {}]}>Booking Status</Text>
-                  <View style={styles.boxSection}>
+
+                  {/* <View style={styles.boxSection}>
                      <View style={styles.progressVertical}>
                         {bookingHistory.map((item, index) => (
                            <React.Fragment key={index}>
@@ -232,9 +298,8 @@ export default BookingDetails = () => {
                            </React.Fragment>
                         ))}
                      </View>
-                  </View>
-                  
-                  
+                  </View> */}
+
                </View>
 
                {/* --------------------------- Client Information --------------------------- */}
@@ -243,25 +308,50 @@ export default BookingDetails = () => {
                      <Icons name="map-marker" size={24} color={COLORS.primary} />
                      <View style={{ flexShrink: 1, gap: 2}}>
                         <View style={{flexDirection: 'row', gap: 6}}>
-                           <Text style={styles.righText}>
-                           {"John Doe"}
-                           </Text>
-                           <Text style={styles.leftText}>
-                           {`(${"09123456789"})`}
-                           </Text>
+                        {detailsLoading ? (
+                           <Animated.View 
+                           style={{
+                           backgroundColor: COLORS.strokes,
+                           borderRadius: 8,
+                           width: '80%',
+                           opacity: skeletonOpacity,
+                           height: 17
+                           }}/>
+                        ) : (
+                           <>
+                              <Text style={styles.righText}>
+                              {details.user.name}
+                              </Text>
+                              <Text style={styles.leftText}>
+                              {`(${details.user.phone_number})`}
+                              </Text>
+                           </>
+                        )}
+                           
                         </View>
-                        <Text 
-                        numberOfLines={2}
-                        style={{
-                           flexShrink: 1,
-                           flexWrap: 'wrap',
-                           fontFamily: FONTS.roboto400,
-                           fontSize: FONT_SIZES.xs,
-                           color: COLORS.labels
-                        }}
-                        >
-                           Lorem ipsum dolor sit amet consectetur, adipisicing elit. Nam nihil, vel quisquam eveniet eaque quae adipisci molestias quia ab repudiandae numquam, possimus accusantium quo ipsum in. Explicabo vitae tempora minus?
-                        </Text>
+                        {detailsLoading ? (
+                           <Animated.View 
+                           style={{
+                           backgroundColor: COLORS.strokes,
+                           borderRadius: 8,
+                           width: '100%',
+                           opacity: skeletonOpacity,
+                           height: 25
+                           }}/>
+                        ) : (
+                           <Text 
+                           numberOfLines={2}
+                           style={{
+                              flexShrink: 1,
+                              flexWrap: 'wrap',
+                              fontFamily: FONTS.roboto400,
+                              fontSize: FONT_SIZES.xs,
+                              color: COLORS.labels
+                           }}>
+                              {details.user.full_address}
+                           </Text>
+                        )}
+                        
                      </View>
                   </View>
                </View>
@@ -272,7 +362,7 @@ export default BookingDetails = () => {
                   <Text style={[styles.boxHeading, {}]}>Service</Text>
                   <View style={styles.boxSection}>
                      <View style={{flexDirection: 'row', gap: 8, width: '100%', height: 64}}>
-                        <Image source={require('../../../../../assets/placeholder-base.png')}
+                        <Image source={subServiceImages[details?.subServiceId]}
                         style={{
                            height: '100%',
                            width: 64,
@@ -281,9 +371,32 @@ export default BookingDetails = () => {
                            objectFit: 'cover'
                         }}/>
 
-                        <View style={{gap: 4}}>
-                           <Text style={[styles.righText]}>{"Leak Repair"}</Text>
-                           <Text style={[styles.leftText, {fontFamily: FONTS.roboto400}]}>{"Plumbing"}</Text>
+                        <View style={{gap: 4, flexGrow: 1}}>
+                           {detailsLoading ? (
+                              <Animated.View 
+                              style={{
+                              backgroundColor: COLORS.strokes,
+                              borderRadius: 8,
+                              width: '100%',
+                              opacity: skeletonOpacity,
+                              height: 17
+                              }}/>
+                           ) : (
+                              <Text style={[styles.righText]}>{details.serviceName}</Text>
+                           )}
+                           {detailsLoading ? (
+                              <Animated.View 
+                              style={{
+                              backgroundColor: COLORS.strokes,
+                              borderRadius: 8,
+                              width: '100%',
+                              opacity: skeletonOpacity,
+                              height: 17
+                              }}/>
+                           ) : (
+                              <Text style={[styles.leftText, {fontFamily: FONTS.roboto400}]}>{details.serviceCategory}</Text>
+                           )}
+                        
                         </View>
                      </View>
                   </View>
@@ -295,18 +408,30 @@ export default BookingDetails = () => {
 
                   {/* ---- Service Fee Details*/}
                   <View style={styles.boxSection}>
-                     <View style={{flexDirection: 'row', gap: 8, justifyContent: 'space-between', alignItems: 'center'}}>
+                     <View style={{flexDirection: 'row', gap: 8, justifyContent: 'space-between', alignItems: 'stretch'}}>
                         <Text style={styles.leftText}>Base Labor Fee</Text>
-                        <Text style={styles.righText}>{`\u20b1 ${400}`}</Text>
+                        {detailsLoading ? (
+                           <Animated.View 
+                           style={{
+                           backgroundColor: COLORS.strokes,
+                           borderRadius: 8,
+                           width: '10%',
+                           opacity: skeletonOpacity,
+                           height: '100%'
+                           }}/>
+                        ) : (
+                           <Text style={styles.righText}>{`\u20b1 ${400}`}</Text>
+                        )}
+                        
                      </View>
-                     <View style={{flexDirection: 'row', gap: 8, justifyContent: 'space-between', alignItems: 'center'}}>
+                     {/* <View style={{flexDirection: 'row', gap: 8, justifyContent: 'space-between', alignItems: 'center'}}>
                         <Text style={styles.leftText}>Transportation Fee</Text>
                         <Text style={styles.righText}>{`\u20b1 ${100}`}</Text>
                      </View>
                      <View style={{flexDirection: 'row', gap: 8, justifyContent: 'space-between', alignItems: 'center'}}>
                         <Text style={styles.leftText}>Voucher</Text>
                         <Text style={styles.righText}>{`-\u20b1 ${25}`}</Text>
-                     </View>
+                     </View> */}
                   </View>
 
                   {/* ---- Divider */}
@@ -331,8 +456,22 @@ export default BookingDetails = () => {
                         justifyContent: 'flex-end',
                         alignItems: 'center'
                      }}>
-                        <Text style={styles.leftText}>Total:</Text>
-                        <Text style={styles.righText}>{`\u20b1 ${400}`}</Text>
+                        {detailsLoading ? (
+                           <Animated.View 
+                           style={{
+                           backgroundColor: COLORS.strokes,
+                           borderRadius: 8,
+                           width: '10%',
+                           opacity: skeletonOpacity,
+                           height: 17 
+                           }}/>
+                        ) : (
+                           <>
+                              <Text style={styles.leftText}>Total:</Text>
+                              <Text style={styles.righText}>{`\u20b1 ${400}`}</Text>
+                           </>
+                        )}
+                        
                      </View>
                   </Pressable>
                </View>
@@ -351,19 +490,18 @@ export default BookingDetails = () => {
                   >
                      <View style={[styles.left, {}]}>
                         <ImageBackground
-                           source={require('../../../../../assets/placeholder-base.png')}
-                           style={{
-                              aspectRatio: '1/1',
-                              height: 82,
-                              width: 82,
-                              position: 'relative',
-                              justifyContent: 'flex-end',
-                              alignItems: 'flex-end'
-                           }}
-                           imageStyle={{
-                              borderRadius: 41
-                           }}
-                        >
+                        src={details?.worker?.profilePhoto}
+                        style={{
+                           aspectRatio: '1/1',
+                           height: 82,
+                           width: 82,
+                           position: 'relative',
+                           justifyContent: 'flex-end',
+                           alignItems: 'flex-end'
+                        }}
+                        imageStyle={{
+                           borderRadius: 41
+                        }}>
                            <View style={{
                               backgroundColor: '#fff',
                               borderRadius: 12
@@ -372,63 +510,109 @@ export default BookingDetails = () => {
                            </View>
                            
                         </ImageBackground>
-                        <View style={{gap: 6, flexShrink: 1}}>
-                           <Text numberOfLines={1}
-                           style={{
-                              flexShrink: 1,
-                              flexWrap: 'wrap',
-                              fontFamily: FONTS.roboto600,
-                              fontSize: FONT_SIZES.md,
-                              color: COLORS.primary
-                           }}
-                           >
-                              {"Worker's Name"}
-                           </Text>
-                           <Text numberOfLines={1}
-                           style={{
-                              flexShrink: 1,
-                              flexWrap: 'wrap',
-                              fontFamily: FONTS.roboto400,
-                              fontSize: FONT_SIZES.sm,
-                              color: COLORS.labels
-                           }}>
-                              {"Affiliations"}
-                           </Text>
-                           <Text numberOfLines={1}
-                           style={{
-                              flexShrink: 1,
-                              flexWrap: 'wrap',
-                              fontFamily: FONTS.roboto400,
-                              fontSize: FONT_SIZES.sm,
-                              color: COLORS.lettersicons
-                           }}>
-                              Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos quis voluptatibus, ad dolorem, beatae error maxime, eaque vitae libero quas expedita atque nostrum maiores perspiciatis voluptate aut voluptas laboriosam aliquam?
-                           </Text>
+                        <View style={{flex: 1}}>
+                           <View style={{gap: 6, flexShrink: 1}}>
+                           {detailsLoading ? (
+                              <Animated.View 
+                              style={{
+                              backgroundColor: COLORS.strokes,
+                              borderRadius: 8,
+                              width: '100%',
+                              opacity: skeletonOpacity,
+                              height: 17
+                              }}/>
+                           ) : (
+                              <Text numberOfLines={1}
+                              style={{
+                                 flexShrink: 1,
+                                 flexWrap: 'wrap',
+                                 fontFamily: FONTS.roboto600,
+                                 fontSize: FONT_SIZES.md,
+                                 color: COLORS.primary
+                              }}>
+                                 {details.worker.name}
+                              </Text>
+                           )}
+                           {detailsLoading ? (
+                              <Animated.View 
+                              style={{
+                              backgroundColor: COLORS.strokes,
+                              borderRadius: 8,
+                              width: '100%',
+                              opacity: skeletonOpacity,
+                              height: 15
+                              }}/>
+                           ) : (
+                              <Text numberOfLines={1}
+                              style={{
+                                 flexShrink: 1,
+                                 flexWrap: 'wrap',
+                                 fontFamily: FONTS.roboto400,
+                                 fontSize: FONT_SIZES.sm,
+                                 color: COLORS.labels
+                              }}>
+                                 {"Freelancer"}
+                              </Text>
+                           )}
+                           {detailsLoading ? (
+                              <Animated.View 
+                              style={{
+                              backgroundColor: COLORS.strokes,
+                              borderRadius: 8,
+                              width: '100%',
+                              opacity: skeletonOpacity,
+                              height: 29
+                              }}/>
+                           ) : (
+                              <Text numberOfLines={2}
+                              style={{
+                                 flexShrink: 1,
+                                 flexWrap: 'wrap',
+                                 fontFamily: FONTS.roboto400,
+                                 fontSize: FONT_SIZES.sm,
+                                 color: COLORS.lettersicons
+                              }}>
+                                 {details.worker.address}
+                              </Text>
+                           )}  
+                           </View>
+                        
                         </View>
                      </View>
                      <Arrows name='chevron-right' size={24} color={COLORS.accent}/>
                   </Pressable>
                   {/* ---- Note */}
                   <Pressable 
-                     style={({pressed}) => [
-                        styles.boxPressable, {
-                        backgroundColor: pressed ? 'rgb(210, 230, 255)' : 'white',
-                        marginTop: 0,
-                     }]}
-                     >
-                        <Text style={styles.leftText}>Note</Text>
-                        <View style={styles.right}>
-                        <Text numberOfLines={1} style={{
-                           flexShrink: 1,
-                           flexWrap: 'wrap',
-                           fontFamily: FONTS.roboto400,
-                           fontSize: FONT_SIZES.sm,
-                           color: COLORS.lettersicons,
-                           textAlign: 'right',
-                           width: '80%'
-                        }}>
-                           Lorem ipsum dolor sit amet consectetur, adipisicing elit. Libero fugiat id dolores! Adipisci debitis dignissimos numquam aperiam, quod et esse autem provident eius! Nulla, assumenda culpa reiciendis molestiae corrupti dolorum?
-                        </Text>
+                  style={({pressed}) => [
+                     styles.boxPressable, {
+                     backgroundColor: pressed ? 'rgb(210, 230, 255)' : 'white',
+                     marginTop: 0,
+                  }]}>
+                     <Text style={styles.leftText}>Note</Text>
+                     <View style={styles.right}>
+                        {detailsLoading ? (
+                           <Animated.View 
+                           style={{
+                           backgroundColor: COLORS.strokes,
+                           borderRadius: 8,
+                           width: '80%',
+                           opacity: skeletonOpacity,
+                           height: 24
+                           }}/>
+                        ) : (
+                           <Text numberOfLines={1} style={{
+                              flexShrink: 1,
+                              flexWrap: 'wrap',
+                              fontFamily: FONTS.roboto400,
+                              fontSize: FONT_SIZES.sm,
+                              color: COLORS.lettersicons,
+                              textAlign: 'right',
+                              width: '80%'
+                           }}>
+                              {details.description}
+                           </Text>
+                        )}
+                        
                         <Arrows name='chevron-right' size={24} color={COLORS.accent}/>
                      </View>
                         
@@ -478,7 +662,19 @@ export default BookingDetails = () => {
                         <Icons name='cash-multiple' size={24} color={COLORS.primary}/>
                         <Text style={[styles.righText, {fontFamily: FONTS.roboto400}]}>Pay By</Text>
                      </View>
-                     <Text style={[styles.righText, {fontFamily: FONTS.roboto400}]}>{"Cash"}</Text>
+                     {detailsLoading ? (
+                        <Animated.View
+                        style={{
+                           backgroundColor: COLORS.strokes,
+                           opacity: skeletonOpacity,
+                           borderRadius: 8,
+                        }}
+                        />
+                     ) : (
+                        <Text style={[styles.righText, {fontFamily: FONTS.roboto400}]}>{"Cash"}</Text>
+                     )
+                     }
+                     
                   </View>
 
                   <Pressable 
@@ -487,8 +683,10 @@ export default BookingDetails = () => {
                      backgroundColor: pressed ? 'rgb(210, 230, 255)' : 'white',
                      marginTop: 0
                   }]}
-                  onPress={() => router.push('client-dashboard/e-receipt/[id]')}
-                  >
+                  onPress={() => router.push({
+                     pathname: 'client-dashboard/e-receipt/[id]',
+                     params: {id: details?.id}
+                  })}>
                      <View style={styles.left}>
                         <Icons name='file-document' size={24} color={COLORS.primary}/>
                         <Text style={[styles.righText, {fontFamily: FONTS.roboto400}]}>E-Receipt</Text>

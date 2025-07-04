@@ -208,7 +208,7 @@ const SignupPages = () => {
         {step === 4 && ( 
           <><AccountDetails signupData={signupData} setSignupData={setSignupData} passErrors={passErrors}/>
           
-          <View style={[global.buttonsContainer, {paddingBottom: insets.bottom + 24}]}>
+          <View style={[global.buttonsContainer, {paddingBottom: insets.bottom}]}>
             <View style={{flexDirection: 'row', gap: 8, alignItems: 'center'}}>
               <TouchableOpacity
               style={{
@@ -252,7 +252,7 @@ const SignupPages = () => {
         </ScrollView>
 
         {/* --------------------------------- Buttons -------------------------------- */}
-        {step !== 4 && <View style={[global.buttonsContainer, {paddingBottom: insets.bottom + 24}]}>
+        {step !== 4 && <View style={[global.buttonsContainer, {paddingBottom: insets.bottom}]}>
           <MainButton 
           text={"Continue"}
           type={"secondary"}

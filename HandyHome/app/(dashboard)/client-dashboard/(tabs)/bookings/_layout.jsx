@@ -41,7 +41,7 @@ const BookingsLayout = () => {
         tabBar={(props) => <BookingTabBar {...props} />}
         
       >
-        <Tabs.Screen name="Ongoing" component={OngoingScreen}/>
+        <Tabs.Screen name="Ongoing" component={OngoingScreen} />
         <Tabs.Screen name="Upcoming" component={UpcomingScreen}/>
         <Tabs.Screen name="Completed" component={CompletedScreen}/>
         <Tabs.Screen name="Cancelled" component={CancelledScreen}/>

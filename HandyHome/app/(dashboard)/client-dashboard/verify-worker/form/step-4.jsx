@@ -2,96 +2,37 @@ import { StyleSheet, Text, View, Pressable, FlatList, useWindowDimensions, Touch
 import React, { useEffect, useState } from 'react'
 import { useWorkerVerify } from '../../../../../context/WorkerVerificationContext';
 import { ServiceIconMap } from '../../../../../components/ServiceIconMap';
-
-import Icons from '@expo/vector-icons/MaterialCommunityIcons';
+import {useAppData} from '../../../../../context/AppDataContext'
 
 import { globalStyles as global } from '../../../../../styles/globalStyles';
 import { COLORS, FONTS, FONT_SIZES } from '../../../../../styles/constants';
-
-const SERVICES = [
-   {id: 1,
-      name: "Plumbing",
-      subservice: [
-         {id: 1, name: "Leak Repair"},
-         {id: 2, name: "Pipe installation"},
-         {id: 3, name: "Faucet/shower replacement"},
-         {id: 4, name: "Toilet unclogging"},
-         {id: 5, name: "Drain cleaning"},
-         {id: 6, name: "Water heater repair"},
-      ],
-   },
-   {id: 2,
-      name: "Electrical",
-      subservice: [
-         {id: 7, name: "Outlet/switch repair"},
-         {id: 8, name: "Circuit breaker issues"},
-         {id: 9, name: "Lighting installation"},
-         {id: 10, name: "Electrical wiring"},
-         {id: 11, name: "Ceiling fan installation"},
-         {id: 12, name: "Power restoration"},
-      ],
-   },
-   {id: 3,
-      name: "Cleaning",
-      subservice: [
-         {id: 13, name: "Outlet/switch repair"},
-         {id: 14, name: "Circuit breaker issues"},
-         {id: 15, name: "Lighting installation"},
-      ],
-   },
-   {id: 4,
-      name: "Appliance Repair",
-      subservice: [
-         {id: 16, name: "Washing Machine"},
-         {id: 17, name: "Refrigerator"},
-         {id: 18, name: "Electric Fan"},
-         {id: 19, name: "Microwave"},
-         {id: 20, name: "Oven"},
-         {id: 21, name: "Stove"},
-         {id: 22, name: "Rice Cooker"},
-      ],
-   },
-   {id: 5,
-      name: "Aircon Technician",
-      subservice: [
-         {id: 23, name: "Cleaning (Window Type / Split Type)"},
-         {id: 24, name: "Installation"},
-         {id: 25, name: "Freon Charging"},
-         {id: 26, name: "Repair & troubleshooting"},
-         {id: 27, name: "Dismantling"},
-      ],
-   },
-   {id: 6,
-      name: "Pest Control",
-      subservice: [
-         {id: 28, name: "Cockroach control"},
-         {id: 29, name: "Ant control"},
-         {id: 30, name: "Mosquito fogging"},
-         {id: 31, name: "Termite treatment"},
-         {id: 32, name: "Rat control"},
-         {id: 33, name: "General pest inspection"},
-      ],
-   },
-   {id: 7,
-      name: "Upholstery",
-      subservice: [
-         {id: 34, name: "Cleaning"},
-         {id: 35, name: "Repair"},
-      ],
-   },
-]
+import axios from 'axios';
+import { API_URL } from '../../../../../config';
 
 export default OfferedServicesScreen = () => {
    const {height} = useWindowDimensions();
+
+   const {services} = useAppData();
 
    const {
       workerVerify,
       setWorkerVerify,
    } = useWorkerVerify();
 
-   const [subList, setSubList] = useState(false);
+   const [showList, setShowList] = useState(false);
+   const [subServiceList, setSubServiceList] = useState([]);
 
-   const handleServiceSelect = (id, name) => {
+   const fetchSubServices = async (id) => {
+      try {
+         const result = await axios.get(`${API_URL}/general/sub-services/${id}`);
+         console.log(result.data.data);
+         return result.data.data;
+      } catch (err) {
+         console.log(err)
+      }
+   }
+
+   const handleServiceSelect = async (id, name) => {
       setWorkerVerify(prev => ({
          ...prev,
          offeredService: {
@@ -100,7 +41,11 @@ export default OfferedServicesScreen = () => {
          }
       }));
 
-      setSubList(true);
+      const list = await fetchSubServices(id);
+
+      setSubServiceList([ ...list ]);
+
+      setShowList(true);
    }
    
    const handleSubserviceSelect = (id, name) => {
@@ -112,10 +57,10 @@ export default OfferedServicesScreen = () => {
          }
       }));
 
-      setSubList(false);
+      setShowList(false);
    }
 
-   const selectedService = SERVICES.find(service => service.id === workerVerify?.offeredService?.id ?? null)
+   const selectedService = services.find(service => service.id === workerVerify?.offeredService?.id ?? null)
 
    return (
       <View
@@ -126,16 +71,16 @@ export default OfferedServicesScreen = () => {
       }}>
          <Text style={styles.instruction}>
             {`Select the ${
-               !subList ? "Main" : selectedService.name
+               !showList ? "Main" : selectedService.name
             } Service you offer`}
          </Text>
-         {!subList ? (
+         {!showList ? (
             <ServicesList 
             handleSelect={handleServiceSelect} 
             selected={workerVerify?.offeredService?.id ?? null}/>
             ) : (
             <SubServicesList 
-            list={selectedService.subservice} 
+            list={subServiceList} 
             handleSelect={handleSubserviceSelect} 
             selected={workerVerify?.offeredSubService?.id ?? null}/>
          )}
@@ -144,6 +89,8 @@ export default OfferedServicesScreen = () => {
 }
 
 const ServicesList = ({ handleSelect, selected }) => {
+   const {services} = useAppData();
+
    return (
       <View
       style={{
@@ -153,7 +100,7 @@ const ServicesList = ({ handleSelect, selected }) => {
          gap: 8,
       }}
       >
-         {SERVICES.map(item => (
+         {services.map(item => (
             <React.Fragment key={item.id}>
                <ServiceItem item={item} onPress={() => handleSelect(item.id, item.name)} selectedItem={selected} />
             </React.Fragment>
@@ -177,7 +124,7 @@ const ServiceItem = ({item, selectedItem, onPress}) => {
             gap: 10,
          }]}>
             <View style={{
-               backgroundColor: '#fff',
+               backgroundColor: COLORS.secondary,
                justifyContent: 'center',
                alignItems: 'center',
                height: 60,
@@ -186,7 +133,7 @@ const ServiceItem = ({item, selectedItem, onPress}) => {
                borderWidth: (selectedItem != null && item.id === selectedItem) ? 2 : 0,
                borderColor: COLORS.lightblue,
             }}>
-               <ServiceIconMap serviceName={item.name} />
+               <ServiceIconMap serviceId={item.id} />
             </View>
             <Text style={{
                color: COLORS.lettersicons,

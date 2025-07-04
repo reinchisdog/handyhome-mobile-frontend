@@ -1,16 +1,19 @@
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableHighlight, View, Animated } from 'react-native';
 import React, {useState, useEffect, useRef} from 'react';
 import {useRouter} from 'expo-router'
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import Header from '../../../../components/dashboard/Header'
 import Arrows from '@expo/vector-icons/Entypo'
 import Icons1 from '@expo/vector-icons/MaterialCommunityIcons'
 import Icons2 from '@expo/vector-icons/MaterialIcons'
+import MainButton from '../../../../components/MainButton';
 
 import {globalStyles as global} from '../../../../styles/globalStyles';
 import { COLORS, FONTS, FONT_SIZES } from '../../../../styles/constants';
 
 export default OverviewWorkerVerification = () => {
+   const insets = useSafeAreaInsets();
    const router = useRouter();
    const scrollY = useRef(new Animated.Value(0)).current;
 
@@ -29,7 +32,7 @@ export default OverviewWorkerVerification = () => {
    ]
 
    return (
-      <View style={[global.screenContainer]}>
+      <View style={[global.screenContainer, {paddingBottom: insets.bottom}]}>
          <Header 
          background={COLORS.screenbg}
          left={
