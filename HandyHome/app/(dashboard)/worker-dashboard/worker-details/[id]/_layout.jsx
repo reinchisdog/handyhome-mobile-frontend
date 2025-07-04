@@ -6,13 +6,15 @@ import {
    TouchableOpacity, 
    Animated, 
    StatusBar,
-   ScrollView
+   ScrollView,
+   Pressable
 } from 'react-native';
 import React, { useState, useRef, useEffect } from 'react';
 import { TabView, TabBar } from 'react-native-tab-view';
 import { useNavigation, useRouter } from 'expo-router';
 import { useAppData } from '../../../../../context/AppDataContext';
 import { useAuth } from '../../../../../context/AuthContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import ReviewWorkAbout from './about';
 import ReviewWorkServices from './services';
@@ -31,10 +33,19 @@ const WORKER_INFO_HEIGHT = 154;
 const TOTAL_HEIGHT = HEADER_HEIGHT + WORKER_PROFILE_HEIGHT + WORKER_INFO_HEIGHT
 
 export default function ProfileWorkerLayout() {
+   const insets = useSafeAreaInsets();
    const { worker, fetchWorkerData, profile } = useAppData();
    const {width, height} = useWindowDimensions();
 
    const scrollY = useRef(new Animated.Value(0)).current;
+
+   const flatlistRef = useRef(null);
+   const scrollviewRef = useRef(null);
+
+   const handleResetScroll = () => {
+      flatlistRef.current?.scrollToOffset({ offset: 0, animated: true });
+      scrollviewRef.current?.scrollTo({ y: 0, animated: true });
+   }
 
    const headerY = scrollY.interpolate({
       inputRange: [0, TOTAL_HEIGHT - HEADER_HEIGHT],
@@ -43,8 +54,14 @@ export default function ProfileWorkerLayout() {
    });
 
    const tabY = scrollY.interpolate({
-      inputRange: [HEADER_HEIGHT, TOTAL_HEIGHT],
-      outputRange: [TOTAL_HEIGHT, HEADER_HEIGHT],
+      inputRange: [0, TOTAL_HEIGHT],
+      outputRange: [TOTAL_HEIGHT, 0],
+      extrapolate: 'clamp'
+   })
+
+   const modalPos = scrollY.interpolate({
+      inputRange: [0, WORKER_INFO_HEIGHT],
+      outputRange: [height, height - 48 - insets.bottom],
       extrapolate: 'clamp'
    })
 
@@ -219,24 +236,46 @@ export default function ProfileWorkerLayout() {
             </View>
          </Animated.View>
 
-            {/* --------------------------- Content Tabs Render -------------------------- */}
-            <WorkerTabView 
-            onScroll={Animated.event(
-               [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-               { useNativeDriver: true }
-            )}
-            tabY={tabY}
-            />
+         {/* --------------------------- Content Tabs Render -------------------------- */}
+         <WorkerTabView 
+         onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: true }
+         )}
+         tabY={tabY}
+         flatlistRef={flatlistRef}
+         scrollviewRef={scrollviewRef}
+         handleResetScroll={handleResetScroll}
+         />
 
-            {/* ------------------------------ Header Render ----------------------------- */}
-            
-         
+         {/* ------------------------------ Modal Thingy ----------------------------- */}
+         <Animated.View
+         style={{
+            position: 'absolute',
+            right: 24,
+            transform: [{translateY: modalPos}]
+         }}>
+            <Pressable
+            onPress={handleResetScroll}
+            style={({pressed}) => [{
+               padding: 12,
+               borderRadius: 24,
+               backgroundColor: pressed ? COLORS.primaryPress : COLORS.primary,
+               flexShrink: 1,
+            }]}>
+               <Text style={{
+                  fontFamily: FONTS.roboto500,
+                  fontSize: FONT_SIZES.md,
+                  color: '#fff'
+               }}>Go Back to Top</Text>
+            </Pressable>
+         </Animated.View>
       </View>
    )
 }
 
 
-const WorkerTabView = ({onScroll, tabY}) => {
+const WorkerTabView = ({onScroll, tabY, flatlistRef, scrollviewRef, handleResetScroll}) => {
    const {width, height} = useWindowDimensions();
    const [index, setIndex] = useState(0);
 
@@ -245,14 +284,6 @@ const WorkerTabView = ({onScroll, tabY}) => {
       { key: 'services', title: 'Services' },
       { key: 'reviews', title: 'Reviews' },
    ]
-
-   const flatlistRef = useRef(null);
-   const scrollviewRef = useRef(null);
-
-   const handleResetScroll = () => {
-      flatlistRef.current?.scrollToOffset({ offset: 0, animated: true });
-      scrollviewRef.current?.scrollTo({ y: 0, animated: true });
-   }
 
    return (
       <TabView 

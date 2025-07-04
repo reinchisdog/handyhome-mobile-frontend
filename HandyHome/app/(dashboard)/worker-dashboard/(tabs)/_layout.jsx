@@ -67,7 +67,7 @@ export default function DashboardLayout() {
         }}
       />
 
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="analytics"
         options={{
           title: 'Analytics',
@@ -77,7 +77,7 @@ export default function DashboardLayout() {
             return <Icons2 name={iconName} color={color} size={size} />;
           },
         }}
-      />
+      /> */}
 
       <Tabs.Screen
         name="profile"

@@ -58,7 +58,9 @@ const AppointmentReceipt = () => {
          try {
             setReceiptLoading(true);
 
-            const result = await axios.get(`${API_URL}/user/book/${id}/fetch_booking`, {
+            console.log(`[ ------- ID -------]`, id);
+
+            const result = await axios.get(`${API_URL}/worker/bookings/${id}/fetch_booking`, {
                headers: {
                   'Authorization' : `Bearer ${token}`
                }
@@ -128,7 +130,7 @@ const AppointmentReceipt = () => {
                  height: '100%'
                }}/>
             ) : (
-               <Text style={styles.righText}>{`#${receipt?.user?.name}`}</Text>
+               <Text style={styles.righText}>{receipt?.user?.name}</Text>
             )}
          </View>
          <View style={styles.summaryBoxView}>

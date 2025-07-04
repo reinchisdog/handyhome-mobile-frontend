@@ -162,18 +162,18 @@ export default ProfileScreen = () => {
                hasArrow={true}
                onPress={() => {}}
             />
-            <ProfileTab 
+            {/* <ProfileTab 
                icon={<Icons1 name="location-on" size={24} color={COLORS.primary} />}
                title="My Addresses"
                hasArrow={true}
                onPress={() => {router.push('client-dashboard/settings/addresses')}}
-            />
-            <ProfileTab 
+            /> */}
+            {/* <ProfileTab 
                icon={<Icons2 name="credit-card" size={24} color={COLORS.primary} />}
                title="Payment Methods"
                hasArrow={true}
                onPress={() => {router.push('client-dashboard/settings/payment')}}
-            />
+            /> */}
             <ProfileTab 
                icon={<Icons1 name="contact-emergency" size={24} color={COLORS.primary} />}
                title="Emergency Contacts"

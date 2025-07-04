@@ -83,12 +83,13 @@ export const WorkerVerificationProvider = ({ children }) => {
       return `${month}-${day}-${year}`;
     };
 
-   const buildFormData = async () => {
+    const buildFormData = async () => {
       const w = workerVerify;
       const formData = new FormData();
     
       if (!w.validIds[0] || !w.validIds[1]) throw new Error("Both valid IDs are required");
     
+      // Basic IDs
       formData.append('service_id', w.offeredService.id);
       formData.append('sub_service_id', w.offeredSubService.id);
     
@@ -98,38 +99,44 @@ export const WorkerVerificationProvider = ({ children }) => {
       formData.append('primary_id_2', await convertToBlob(w.validIds[1].file));
       formData.append('primary_id_2_number', w.validIds[1].number);
     
+      // NBI & Barangay
       formData.append('nbi', await convertToBlob(w.nbiClearance));
       formData.append('barangay', await convertToBlob(w.brgyClearance));
     
+      // Certificates
       const certBlobs = await Promise.all(w.certifications.map(cert => convertToBlob(cert.file)));
       const issueDates = await Promise.all(w.certifications.map(cert => convertDateToString(cert.date)));
     
       certBlobs.forEach((blob, i) => {
-        formData.append(`certificates[${i}]`, blob);
+        formData.append('certificates', blob); 
         formData.append(`certificate_name[${i}]`, w.certifications[i].name);
         formData.append(`issue_organization[${i}]`, w.certifications[i].organization);
         formData.append(`issue_date[${i}]`, issueDates[i]);
       });
     
+      // Work Samples
       const workBlobs = await Promise.all(w.workSamples.map(sample => convertToBlob(sample)));
-      workBlobs.forEach((blob, i) => {
-        formData.append(`work_samples[${i}]`, blob);
+      workBlobs.forEach(blob => {
+        formData.append('work_samples', blob); 
       });
     
       return formData;
-   };
+    };
 
    const submitWorkerVerify = async () => {
       try {
         console.log('[1] Converting Files for Submission');
         const body = await buildFormData();
         console.log('[Application Body]', body);
-    
+         
+        for (let [key, value] of body.entries()) {
+         console.log(key, value);
+       }
+
         console.log('[2] Submitting Files');
         const result = await axios.post(`${API_URL}/user/upload_application_documents`, body, {
           headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
+            'Authorization': `Bearer ${token}`
           }
         });
     

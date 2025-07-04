@@ -1,16 +1,17 @@
 /* --------------------------------- Imports -------------------------------- */
-import { ScrollView, Text, View, TouchableOpacity, TouchableHighlight, FlatList, useWindowDimensions, Animated, Image, Easing, StyleSheet } from 'react-native';
+import { ScrollView, Text, View, TouchableOpacity, TouchableHighlight, FlatList, useWindowDimensions, Animated, Image, Easing, StyleSheet, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from 'expo-router';
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../../../context/AuthContext';
 import { useAppData } from '../../../../context/AppDataContext';
 import { subServiceImages } from '../../../../components/SubServiceMap';
+import { ServiceIconMap } from '../../../../components/ServiceIconMap';
 import { API_URL } from '../../../../config';
 import axios from 'axios';
 /* ------------------------------- Components ------------------------------- */
 import Header from '../../../../components/dashboard/Header';
-import TextLogo from '../../../../components/logos/TextLogo';
+import LogoText from '../../../../components/LogoText';
 import SmallButton from '../../../../components/SmallButton';
 import ErrorModal from '../../../../components/ErrorModal'
 
@@ -21,55 +22,67 @@ import Arrows from '@expo/vector-icons/Entypo'
 import { globalStyles as global } from '../../../../styles/globalStyles';
 import { COLORS, FONTS, FONT_SIZES } from '../../../../styles/constants';
 
-const IncomingItems = [
-   {
-      id: 1,
-      image: require('../../../../assets/placeholder-base.png'),
-      servCategory: "Service Category ",
-      servName: "Service Name (Oldest)",
-      location: "Worker's Name",
-      price: 300
-   },
-   {
-      id: 2,
-      image: require('../../../../assets/placeholder-base.png'),
-      servCategory: "Service Category ",
-      servName: "Service Name (Oldest)",
-      location: "Worker's Name",
-      price: 300
-   },
-   {
-      id: 3,
-      image: require('../../../../assets/placeholder-base.png'),
-      servCategory: "Service Category ",
-      servName: "Service Name (Oldest)",
-      location: "Worker's Name",
-      price: 300
-   },
-   {
-      id: 4,
-      image: require('../../../../assets/placeholder-base.png'),
-      servCategory: "Service Category ",
-      servName: "Service Name (Oldest)",
-      location: "Worker's Name",
-      price: 300
-   },
-   {
-      id: 5,
-      image: require('../../../../assets/placeholder-base.png'),
-      servCategory: "Service Category ",
-      servName: "Service Name (Oldest)",
-      location: "Worker's Name",
-      price: 300
-   },
-]
-
 export default HomeScreen = () => {
    /* ----------------------------- Initialization ----------------------------- */
+   const router = useRouter();
    const { user, token } = useAuth();
    const skeletonOpacity = useRef(new Animated.Value(0.5)).current;
 
    /* -------------------------------- Functions ------------------------------- */
+   // ---- Force Refresh
+   const [refreshing, setRefreshing] = useState(false);
+   const handleRefresh = async () => {
+      setRefreshing(true);
+
+      try {
+        await Promise.all([
+          fetchIncomingRequests(),
+          fetchLatestBooking()
+        ]);
+      } catch (err) {
+        console.log(err.message);
+      } finally {
+        setRefreshing(false);
+      }
+   }
+
+   // ---- Latest Bookings
+   const [latestBooking, setLatestBooking] = useState(null);
+
+   const [latestBookLoading, setLatestBookLoading] = useState(true);
+   const fetchLatestBooking = async () => {
+      try {
+         setLatestBookLoading(true);
+
+         const result = await axios.get(`${API_URL}/worker/bookings/fetch_latest_booking`, {
+            headers: {
+               'Authorization' : `Bearer ${token}`
+            }
+         })
+
+         const response = result?.data?.data;
+
+         if (response && !response.message) {
+            console.log(response);
+            setLatestBooking(response);
+         } else if (response?.message) {
+         console.log(response.message);
+         setLatestBooking(null)
+         } else {
+         console.warn(response);
+         }
+
+      } catch (err) {
+         console.log(err.message)
+         showModal("Latest Booking Fetching Error", err.message)
+      } finally {
+         setTimeout(() => {
+            setLatestBookLoading(false);
+         }, 1000)
+      }
+   }
+
+   // ---- Incoming Requests
    const [incomingRequests, setIncomingRequests] = useState([])
 
    const [incomingReqLoading, setIncomingReqLoading] = useState(true);
@@ -97,10 +110,10 @@ export default HomeScreen = () => {
          ])
       )
 
-      if (incomingReqLoading) animLoop.start();
+      if (incomingReqLoading || latestBookLoading) animLoop.start();
       
       return () => animLoop.stop();
-   }, [incomingReqLoading])
+   }, [incomingReqLoading, latestBookLoading])
 
    const fetchIncomingRequests = async () => {
       try {
@@ -130,17 +143,16 @@ export default HomeScreen = () => {
          let intervalId;
       
          const startPolling = async () => {
-            const result = await fetchIncomingRequests(); 
-            if (result) {
-               intervalId = setInterval(fetchIncomingRequests, 15000); 
-            }  
-            
+            fetchIncomingRequests(); 
+
+            intervalId = setInterval(fetchIncomingRequests, 15000); 
          };
       
          startPolling();
+         fetchLatestBooking()
       
          return () => {
-            clearInterval(intervalId); 
+            if (intervalId) clearInterval(intervalId); 
          };
       }, [user, token])
    );
@@ -213,6 +225,27 @@ export default HomeScreen = () => {
       setShowModalError(true);
    }
 
+   const convertDate = (date) => {
+      const currDate = new Date();
+      const bookDate = new Date(date);
+
+      currDate.setHours(0, 0, 0, 0);
+      bookDate.setHours(0, 0, 0, 0);
+
+      const diffTime = bookDate - currDate;
+      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays === 0) {
+         return "Today";
+      } else if (diffDays === 1) {
+         return "Tomorrow";
+      } else if (diffDays > 1) {
+         return `${diffDays} day(s) left`;
+      } else {
+         return "Expired"
+      }
+   }
+
    return (
       <>
          <ErrorModal 
@@ -227,9 +260,17 @@ export default HomeScreen = () => {
          showsVerticalScrollIndicator={true}
          style={[global.screenContainer]}
          contentContainerStyle={{ backgroundColor: COLORS.screenbg }}
-         stickyHeaderIndices={[0]}>
+         stickyHeaderIndices={[0]}
+         refreshControl={
+            <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={COLORS.accent}
+            colors={[COLORS.accent]}
+            />
+         }>
             <Header 
-            title={<TextLogo width={140}/>}
+            title={<LogoText size={24}/>}
             titlePosition='absolute'
             right={
             <TouchableOpacity
@@ -269,7 +310,7 @@ export default HomeScreen = () => {
                      </Text>
                   </View>
 
-                  {/* ---- Upcoming Booking(s) */}
+                  {/* ---- Ongoing Booking */}
                   <View 
                   style={{
                      borderRadius: 20,
@@ -292,44 +333,69 @@ export default HomeScreen = () => {
                            flex: 1,
                            gap: 12
                         }}>
-                           {/* ---- Service */}
-                           <View style={{flexDirection: 'row', gap: 16, alignItems: 'center'}}>
-                              <Icons1 name='pipe-wrench' size={24} color={COLORS.primary}/>
-                              <Text numberOfLines={1}
-                              style={{
-                                 fontFamily: FONTS.roboto500,
-                                 fontSize: FONT_SIZES.md,
-                                 color: COLORS.lettersicons,
-                                 flexShrink: 1
-                              }}>
-                                 Leak Repair
-                              </Text>
-                           </View>
-                           {/* ---- Location */}
-                           <View style={{flexDirection: 'row', gap: 16, alignItems: 'center'}}>
-                              <Icons2 name='location-on' size={24} color={COLORS.red}/>
-                              <Text numberOfLines={1}
-                              style={{
-                                 fontFamily: FONTS.roboto400,
-                                 fontSize: FONT_SIZES.md,
-                                 color: COLORS.labels,
-                                 flexShrink: 1
-                              }}>
-                                 Sta. Mesa, Manila
-                              </Text>
-                           </View>
+                           {latestBookLoading ? (
+                              <>
+                                 <Animated.View 
+                                 style={{
+                                    height: 24,
+                                    backgroundColor: COLORS.strokes,
+                                    borderRadius: 8,
+                                    opacity: skeletonOpacity
+                                 }}/>
+                                 <Animated.View 
+                                 style={{
+                                    height: 24,
+                                    backgroundColor: COLORS.strokes,
+                                    borderRadius: 8,
+                                    opacity: skeletonOpacity
+                                 }}/>
+                              </>
+                           ) : (
+                              <>
+                                 {/* ---- Service */}
+                                 <View style={{flexDirection: 'row', gap: 16, alignItems: 'center'}}>
+                                    <ServiceIconMap serviceId={latestBooking?.service_id} />
+                                    <Text numberOfLines={1}
+                                    style={{
+                                       fontFamily: FONTS.roboto500,
+                                       fontSize: FONT_SIZES.md,
+                                       color: COLORS.lettersicons,
+                                       flexShrink: 1
+                                    }}>
+                                       {latestBooking?.sub_services?.name}
+                                    </Text>
+                                 </View>
+                                 {/* ---- Location */}
+                                 <View style={{flexDirection: 'row', gap: 16, alignItems: 'center'}}>
+                                    <Icons2 name='location-on' size={24} color={COLORS.red}/>
+                                    <Text numberOfLines={1}
+                                    style={{
+                                       fontFamily: FONTS.roboto400,
+                                       fontSize: FONT_SIZES.md,
+                                       color: COLORS.labels,
+                                       flexShrink: 1
+                                    }}>
+                                       {latestBooking && `${latestBooking.block}, ${latestBooking.barangay}, ${latestBooking.municipal}, ${latestBooking.province}`}
+                                    </Text>
+                                 </View>
+                              </>
+                           )}
+                           
                         </View>
 
+                        {latestBooking && !latestBookLoading &&
                         <TouchableOpacity
-                        onPress={() => {}}
+                        onPress={() => {router.push({
+                           pathname: 'worker-dashboard/booking-actions/details/[id]',
+                           params: {id: latestBooking?.id, status: latestBooking?.status}
+                        })}}
                         style={{
                            justifyContent: 'center',
                            alignItems: 'flex-end',
                            width: 48,
-                        }}
-                        >
+                        }}>
                            <Arrows name='chevron-right' size={24} color={COLORS.accent}/>
-                        </TouchableOpacity>
+                        </TouchableOpacity>}
                      </View>
 
                      {/* ---- Date */}
@@ -341,25 +407,71 @@ export default HomeScreen = () => {
                         justifyContent: 'space-between',
                         gap: 8
                      }}>
-                        <Text numberOfLines={1}
-                        style={{
-                           fontFamily: FONTS.roboto500,
-                           fontSize: FONT_SIZES.md,
-                           color: COLORS.lettersicons,
-                           flexShrink: 1
-                        }}>
-                           Tomorrow
-                        </Text>
-                        <Text numberOfLines={1}
-                        style={{
-                           fontFamily: FONTS.roboto500,
-                           fontSize: FONT_SIZES.md,
-                           color: COLORS.lettersicons,
-                        }}>
-                           10:30 AM
-                        </Text>
+                        {latestBookLoading ? (
+                           <Animated.View 
+                           style={{
+                              height: 18,
+                              width: '100%',
+                              backgroundColor: COLORS.strokes,
+                              borderRadius: 8,
+                              opacity: skeletonOpacity
+                           }}/>
+                        ) : ( 
+                           <>
+                              <Text numberOfLines={1}
+                              style={{
+                                 fontFamily: FONTS.roboto500,
+                                 fontSize: FONT_SIZES.md,
+                                 color: COLORS.lettersicons,
+                                 flexShrink: 1
+                              }}>
+                                 {convertDate(latestBooking?.date)}
+                              </Text>
+                              <Text numberOfLines={1}
+                              style={{
+                                 fontFamily: FONTS.roboto500,
+                                 fontSize: FONT_SIZES.md,
+                                 color: COLORS.lettersicons,
+                              }}>
+                                 {latestBooking?.time.slice(0,5).replace(':', ' : ')}
+                              </Text>
+                           </>
+                        )}
+                        
                      </View>
                   </View>
+
+                  {!latestBooking && !latestBookLoading && (
+                     <View 
+                     style={{
+                        borderRadius: 20,
+                        width: '100%',
+                        backgroundColor: '#fff',
+                        height: 160,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        gap: 8,
+                        paddingHorizontal: 12,
+                     }}>
+                        <Text
+                        style={{
+                           fontFamily: FONTS.roboto700,
+                           fontSize: FONT_SIZES.xxl,
+                           color: COLORS.primary
+                        }}>
+                           No Ongoing Service...
+                        </Text>
+                        <Text
+                        style={{
+                           fontFamily: FONTS.roboto400,
+                           fontSize: FONT_SIZES.sm,
+                           color: COLORS.labels,
+                           textAlign: 'center'
+                        }}>
+                           You don’t have any ongoing work right now. Stay prepared — your next booking could be just around the corner!
+                        </Text>
+                     </View>
+                  )}
 
                   {/* ---- Incoming Request(s) */}
                   <View
@@ -412,11 +524,39 @@ export default HomeScreen = () => {
                         contentContainerStyle={{
                            gap: 1
                         }}/>
-                     )
+                     )}
 
-                     }
-                     
-
+                     {((!incomingRequests || incomingRequests.length === 0) && !incomingReqLoading) && (
+                        <View 
+                        style={{
+                           borderRadius: 20,
+                           width: '100%',
+                           backgroundColor: '#fff',
+                           height: 160,
+                           justifyContent: 'center',
+                           alignItems: 'center',
+                           gap: 8,
+                           paddingHorizontal: 12,
+                        }}>
+                           <Text
+                           style={{
+                              fontFamily: FONTS.roboto700,
+                              fontSize: FONT_SIZES.xxl,
+                              color: COLORS.primary
+                           }}>
+                              No Incoming Requests...
+                           </Text>
+                           <Text
+                           style={{
+                              fontFamily: FONTS.roboto400,
+                              fontSize: FONT_SIZES.sm,
+                              color: COLORS.labels,
+                              textAlign: 'center'
+                           }}>
+                              You have no incoming booking requests right now. Take a breather — we’ll notify you as soon as a new one arrives!
+                           </Text>
+                        </View>
+                     )}
 
                   </View>
                </View>

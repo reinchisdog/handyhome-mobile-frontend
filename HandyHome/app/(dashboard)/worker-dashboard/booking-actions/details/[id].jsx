@@ -1,8 +1,7 @@
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Pressable, Image, ImageBackground, Modal, useWindowDimensions, Animated, Easing, RefreshControl } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Pressable, Image, Modal, Animated, Easing, RefreshControl } from 'react-native'
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import React, { useEffect, useState, useRef } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useEmergency } from '../../../../../context/EmergencyContext';
 import axios from 'axios';
 import { API_URL } from '../../../../../config';
 import { useAuth } from '../../../../../context/AuthContext';
@@ -42,7 +41,6 @@ const progressMap = [
 export default BookingDetails = () => {
    const {token} = useAuth();
    const insets = useSafeAreaInsets();
-   const [showEmergency, setShowEmergency] = useState(false)
    const skeletonOpacity = useRef(new Animated.Value(0.5)).current;
    const router = useRouter();
    const {id, status} = useLocalSearchParams();
@@ -82,7 +80,7 @@ export default BookingDetails = () => {
       try {
          setDetailsLoading(true);
 
-         const result = await axios.get(`${API_URL}/user/book/${id}/fetch_booking`, {
+         const result = await axios.get(`${API_URL}/worker/bookings/${id}/fetch_booking`, {
             headers: {
                'Authorization' : `Bearer ${token}`
             }
@@ -108,10 +106,6 @@ export default BookingDetails = () => {
       fetchDetails();
    }, [])
 
-   const handleEmergencyShow = () => {
-      setShowEmergency(true);
-   }
-
    const statusRender = (status) => {
       switch(status) {
          case 'completed': 
@@ -128,12 +122,12 @@ export default BookingDetails = () => {
 
    const [noteModal, setNoteModal] = useState(false)
 
-   const [confirmLoading, setConfirmLoading] = useState(false);
-   const handleConfirm = async () => {
+   const [completeLoading, setCompleteLoading] = useState(false);
+   const handleComplete = async () => {
       try {
-         setConfirmLoading(true)
+         setCompleteLoading(true)
 
-         const result = await axios.put(`${API_URL}/user/book/${id}/mark_as_completed`, null, {
+         const result = await axios.put(`${API_URL}/worker/bookings/${id}/mark_as_completed`, null, {
             headers: {
                'Authorization' : `Bearer ${token}`
             }
@@ -155,7 +149,7 @@ export default BookingDetails = () => {
          setErrorModal(true);
 
       } finally {
-         setConfirmLoading(false);
+         setCompleteLoading(false);
       }  
    }
 
@@ -180,15 +174,16 @@ export default BookingDetails = () => {
 
    return (
       <>
-         <EmergencyModal showModal={showEmergency} setShowModal={setShowEmergency} bookingId={id}/>
-         <NoteModal visible={noteModal} setVisible={setNoteModal} note={details?.description}/>
          <ErrorModal 
          visible={errorModal}
          setVisible={setErrorModal}
          title={"Booking Completion Error"}
          message={errorMessage}
          />
-         <View style={{flex: 1}}>
+
+         <NoteModal visible={noteModal} setVisible={setNoteModal} note={details?.description}/>
+
+         <View style={{flex: 1, }}>
             <ScrollView 
             style={[global.screenContainer]}
             stickyHeaderIndices={[0]}
@@ -206,23 +201,17 @@ export default BookingDetails = () => {
                         <Arrows name="chevron-left" size={24} color={COLORS.primary} />
                      </TouchableOpacity>
                   }
-                  right={
-                     (status === "Ongoing") ?
-                     <TouchableOpacity onPress={handleEmergencyShow}>
-                        <Icons name="alarm-light" size={24} color={COLORS.red} />
-                     </TouchableOpacity> : null
-                  }
                   title={
                      <Text style={[global.headingText, {color: COLORS.primary}]}> 
                      Booking Details
                      </Text>
                   }
-                  titlePosition={(status === "Ongoing") ? "relative" : "absolute"}
+                  titlePosition={"absolute"}
                />
-               <View style={[styles.content, {paddingBottom: insets.bottom}]}>
+               <View style={[styles.content, {paddingBottom: insets.bottom + 24}]}>
 
                   {/* ----------------------------- Booking Status ----------------------------- */}
-                  <View style={[styles.boxContainer, ]}>
+                  <View style={[styles.boxContainer]}>
                      {/* ---- Header */}
                      <View style={{
                         backgroundColor: COLORS.primary,
@@ -365,10 +354,10 @@ export default BookingDetails = () => {
                         </View>
                      </View> */}
                      <View style={[styles.boxContainer, styles.boxSection]}>
-                        <View style={{flexDirection: 'row', gap: 8,}}>
+                        <View style={{flexDirection: 'row', gap: 8}}>
                            <Icons name="map-marker" size={24} color={COLORS.primary} />
                            <View style={{ flexShrink: 1, gap: 2}}>
-                              <View style={{flexDirection: 'row', gap: 6,  flexWrap: 'wrap'}}>
+                              <View style={{flexDirection: 'row', gap: 6, flexWrap: 'wrap'}}>
                               {detailsLoading ? (
                                  <Animated.View 
                                  style={{
@@ -465,7 +454,42 @@ export default BookingDetails = () => {
                            </View>
                         </View>
                      </View>
-
+                     <Pressable 
+                     onPress={(details?.description) ? () => setNoteModal(true) : undefined}
+                     style={({pressed}) => [
+                        styles.boxPressable, {
+                        backgroundColor: pressed ? 'rgb(210, 230, 255)' : 'white',
+                        marginTop: 0,
+                     }]}>
+                        <Text style={styles.leftText}>Note</Text>
+                        <View style={styles.right}>
+                           {detailsLoading ? (
+                              <Animated.View 
+                              style={{
+                              backgroundColor: COLORS.strokes,
+                              borderRadius: 8,
+                              width: '80%',
+                              opacity: skeletonOpacity,
+                              height: 24
+                              }}/>
+                           ) : (
+                              <Text numberOfLines={1} style={{
+                                 flexShrink: 1,
+                                 flexWrap: 'wrap',
+                                 fontFamily: FONTS.roboto400,
+                                 fontSize: FONT_SIZES.sm,
+                                 color: details?.description ? COLORS.lettersicons : COLORS.strokes,
+                                 textAlign: 'right',
+                                 width: '80%'
+                              }}>
+                                 {details?.description || '[Empty]'}
+                              </Text>
+                           )}
+                           
+                           <Arrows name='chevron-right' size={24} color={COLORS.accent}/>
+                        </View>
+                           
+                     </Pressable>
                      {/* ---- Divider */}
                      <View style={{paddingHorizontal: 12}}>
                         <View style={[global.divider]}/>
@@ -540,151 +564,7 @@ export default BookingDetails = () => {
                         </View>
                      </Pressable>
                   </View>
-                  
-                  {/* ------------------------- Worker Details and Note ------------------------ */}
-                  <View style={styles.boxContainer}>
-                     {/* ---- Worker Details */}
-                     <Text style={[styles.boxHeading]}>Service Provider</Text>
-                     <Pressable 
-                     style={({pressed}) => [
-                        styles.boxPressable, {
-                        backgroundColor: pressed ? 'rgb(210, 230, 255)' : 'white',
-                        marginBottom: 0
-                     }]}
-                     onPress={() => router.push('client-dashboard/worker-details/[id]')}
-                     >
-                        <View style={[styles.left, {}]}>
-                           <ImageBackground
-                           src={details?.worker?.profilePhoto}
-                           style={{
-                              aspectRatio: '1/1',
-                              height: 82,
-                              width: 82,
-                              position: 'relative',
-                              justifyContent: 'flex-end',
-                              alignItems: 'flex-end'
-                           }}
-                           imageStyle={{
-                              borderRadius: 41
-                           }}>
-                              <View style={{
-                                 backgroundColor: '#fff',
-                                 borderRadius: 12
-                              }}>
-                                 <Icons name="check-decagram" size={24} color={COLORS.primary} />
-                              </View>
-                              
-                           </ImageBackground>
-                           <View style={{flex: 1}}>
-                              <View style={{gap: 6, flexShrink: 1}}>
-                              {detailsLoading ? (
-                                 <Animated.View 
-                                 style={{
-                                 backgroundColor: COLORS.strokes,
-                                 borderRadius: 8,
-                                 width: '100%',
-                                 opacity: skeletonOpacity,
-                                 height: 17
-                                 }}/>
-                              ) : (
-                                 <Text numberOfLines={1}
-                                 style={{
-                                    flexShrink: 1,
-                                    flexWrap: 'wrap',
-                                    fontFamily: FONTS.roboto600,
-                                    fontSize: FONT_SIZES.md,
-                                    color: COLORS.primary
-                                 }}>
-                                    {details.worker.name}
-                                 </Text>
-                              )}
-                              {detailsLoading ? (
-                                 <Animated.View 
-                                 style={{
-                                 backgroundColor: COLORS.strokes,
-                                 borderRadius: 8,
-                                 width: '100%',
-                                 opacity: skeletonOpacity,
-                                 height: 15
-                                 }}/>
-                              ) : (
-                                 <Text numberOfLines={1}
-                                 style={{
-                                    flexShrink: 1,
-                                    flexWrap: 'wrap',
-                                    fontFamily: FONTS.roboto400,
-                                    fontSize: FONT_SIZES.sm,
-                                    color: COLORS.labels
-                                 }}>
-                                    {"Freelancer"}
-                                 </Text>
-                              )}
-                              {detailsLoading ? (
-                                 <Animated.View 
-                                 style={{
-                                 backgroundColor: COLORS.strokes,
-                                 borderRadius: 8,
-                                 width: '100%',
-                                 opacity: skeletonOpacity,
-                                 height: 29
-                                 }}/>
-                              ) : (
-                                 <Text numberOfLines={2}
-                                 style={{
-                                    flexShrink: 1,
-                                    flexWrap: 'wrap',
-                                    fontFamily: FONTS.roboto400,
-                                    fontSize: FONT_SIZES.sm,
-                                    color: COLORS.lettersicons
-                                 }}>
-                                    {details.worker.address}
-                                 </Text>
-                              )}  
-                              </View>
-                           
-                           </View>
-                        </View>
-                        <Arrows name='chevron-right' size={24} color={COLORS.accent}/>
-                     </Pressable>
-                     {/* ---- Note */}
-                     <Pressable 
-                     onPress={(details?.description) ? () => setNoteModal(true) : undefined}
-                     style={({pressed}) => [
-                        styles.boxPressable, {
-                        backgroundColor: pressed ? 'rgb(210, 230, 255)' : 'white',
-                        marginTop: 0,
-                     }]}>
-                        <Text style={styles.leftText}>Note</Text>
-                        <View style={styles.right}>
-                           {detailsLoading ? (
-                              <Animated.View 
-                              style={{
-                              backgroundColor: COLORS.strokes,
-                              borderRadius: 8,
-                              width: '80%',
-                              opacity: skeletonOpacity,
-                              height: 24
-                              }}/>
-                           ) : (
-                              <Text numberOfLines={1} style={{
-                                 flexShrink: 1,
-                                 flexWrap: 'wrap',
-                                 fontFamily: FONTS.roboto400,
-                                 fontSize: FONT_SIZES.sm,
-                                 color: details?.description ? COLORS.lettersicons : COLORS.strokes,
-                                 textAlign: 'right',
-                                 width: '80%'
-                              }}>
-                                 {details?.description || '[Empty]'}
-                              </Text>
-                           )}
-                           
-                           <Arrows name='chevron-right' size={24} color={COLORS.accent}/>
-                        </View>
-                           
-                     </Pressable>
-                     
-                  </View>
+               
 
                   {/* ----------------------------- Service Support ---------------------------- */}
                   <View style={styles.boxContainer}>
@@ -752,7 +632,7 @@ export default BookingDetails = () => {
                         marginTop: 0
                      }]}
                      onPress={() => router.push({
-                        pathname: 'client-dashboard/e-receipt/[id]',
+                        pathname: 'worker-dashboard/e-receipt/[id]',
                         params: {id: details?.id}
                      })}>
                         <View style={styles.left}>
@@ -764,107 +644,22 @@ export default BookingDetails = () => {
                   </View>
 
                </View>
+               
 
             </ScrollView>
 
-            {status === "Ongoing" && details?.worker_status === "Completed" &&
+            {status === "Ongoing" &&
                <View style={[global.buttonsContainer, {paddingBottom: insets.bottom, backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24}]} >
                <MainButton 
-               text="Confirm Completion"
+               text="Mark as Complete"
                type="primary"
-               onPress={handleConfirm}
-               loading={confirmLoading}
+               onPress={handleComplete}
+               loading={completeLoading}
                />
             </View>}
          </View>
+         
       </>
-   )
-}
-
-const EmergencyModal = ({showModal, setShowModal, bookingId}) => {
-   const router = useRouter();
-   const {clearEmergency, emergencyInfo, setEmergencyInfo} = useEmergency();
-
-   const {width, height} = useWindowDimensions()
-
-   const handleCloseModal = () => {
-      clearEmergency();
-      setShowModal(false);
-   }
-
-   const goToEmergencyScreen = () => {
-      setShowModal(false);
-      router.push({
-         pathname: 'client-dashboard/booking-actions/details/emergency/[id]',
-         params: {id: bookingId}
-      });
-   }
-
-   return (
-      <Modal 
-      animationType='slide'
-      visible={showModal}
-      backdropColor={'rgba(0, 0, 0, 0.2)'}
-      statusBarTranslucent={true}
-      > 
-         <KeyboardAvoidingView 
-         behavior='padding'
-         keyboardVerticalOffset={0}
-         style={{
-            width: width,
-            height: height,
-            position: 'relative'
-         }}>
-            <Pressable 
-            style={{flex: 1}}
-            onPress={handleCloseModal}
-            />
-            <View style={global.bottomModal}>
-               <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8}}>
-                  <Icons name="alarm-light" size={32} color={COLORS.red} /> 
-                  <Text style={{
-                     fontFamily: FONTS.roboto600,
-                     fontSize: FONT_SIZES.md,
-                     color: COLORS.red,
-                     textAlign: 'left',
-                  }}>
-                     Service Not Going Well?
-                  </Text>
-               </View>
-               
-               <View style={global.divider}/>
-
-               <Text style={{
-                  textAlign: 'center',
-                  fontFamily: FONTS.roboto400,
-                  fontSize: FONT_SIZES.md,
-                  color: COLORS.lettersicons
-               }}>
-                  Tap report to notify admin and emergency contacts.
-               </Text>
-
-               <BasicMultiline 
-                  placeholder = "I feel uncomfortable during service. Please send help immediately"
-                  onChangeText = {(e) => {
-                     setEmergencyInfo(prev => ({
-                        ...prev,
-                        message: e
-                     }))
-                  }}
-                  value = {emergencyInfo}
-                  numberOfLines = {5}
-                  height = {56}
-               />
-
-               <MainButton 
-               text="Report"
-               type="primary"
-               onPress={goToEmergencyScreen}
-               />
-            </View>
-         </KeyboardAvoidingView>  
-
-      </Modal>
    )
 }
 

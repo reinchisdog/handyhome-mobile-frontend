@@ -28,6 +28,7 @@ const PromoItem = ({ item }) => {
           maxWidth: 326,
           height: '100%',
           objectFit: 'cover',
+          backgroundColor: COLORS.strokes
         }}
       />
     </View>
