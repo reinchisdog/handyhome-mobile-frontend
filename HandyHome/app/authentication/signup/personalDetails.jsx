@@ -1,32 +1,21 @@
-/* --------------------------------- Imports -------------------------------- */
+// SubScreen: Personal Details
+
+// Imports
+// ---- Hooks and React Components
 import { Text, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { useRouter } from 'expo-router';
-/* ------------------------------- Components ------------------------------- */
+import { useSignup } from '../../../context/SignupContext';
+// ---- Custom Components
 import BasicInput from '../../../components/authentication/BasicInput';
 import RadioGroup from '../../../components/authentication/RadioGroup';
-
-/* ---------------------------- Styles and Icons ---------------------------- */
+// ---- Styles and Icons
 import Icons from '@expo/vector-icons/MaterialIcons';
 import { globalStyles as global } from '../../../styles/globalStyles';
 import { authStyles as auth } from '../../../styles/authStyles';
 
-const PersonalDetails = ({signupData, setSignupData}) => {
-  /* ----------------------------- Initialization ----------------------------- */
-  // const [ formattedBirthDate, setFormattedBirthDate ] = useState(signupData.birthDate);
-  // useEffect(() => {
-  //   let temp = formattedBirthDate;
-
-  //   if(temp.length === 2 || temp.length === 5){
-  //     temp = `${temp}/`;
-  //     setFormattedBirthDate(temp);
-  //   }
-    
-  //   setSignupData((prev) => ({
-  //     ...prev,
-  //     birthDate: temp
-  //   }))
-  // }, [formattedBirthDate])
+const PersonalDetails = () => {
+  // States and Hooks
+  const { signupData, updateSignupData } = useSignup();
 
   return (
     <View style={auth.inputsContainer}>
@@ -36,56 +25,31 @@ const PersonalDetails = ({signupData, setSignupData}) => {
         {/* ---- First Name */}
         <BasicInput 
           placeholder={"First Name"}
-          onChangeText={(e) => setSignupData((prev) => ({
-            ...prev,
-            first_name: e
-          }))}
-          value={signupData.firstName}
+          onChangeText={(e) => updateSignupData("first_name", e)}
+          value={signupData.first_name}
         />
 
         {/* ---- Last Name */}
         <BasicInput 
           placeholder={"Last Name"}
-          onChangeText={(e) => setSignupData((prev) => ({
-            ...prev,
-            last_name: e
-          }))}
-          value={signupData.lastName}
+          onChangeText={(e) => updateSignupData("last_name", e)}
+          value={signupData.last_name}
         />
       </View>
-
-      {/* ------------------------------- Birth Date ------------------------------- */}
-      {/* <View style={auth.inputSet}>
-        <Text style={auth.inputSetTitle}>BIRTH DATE</Text>
-
-        <BasicInput 
-          placeholder='MM / DD / YYYY'
-          right={<Icons name="calendar-month" size={24} color="#3D3D3D" />}
-          inputMode='numeric'
-          keyboardType='numeric'
-          onChangeText={(e) => setFormattedBirthDate(e.trim())}
-          value={formattedBirthDate}
-        />
-      </View> */}
 
       {/* --------------------------------- Gender --------------------------------- */}
       <View style={auth.inputSet}>
         <Text style={auth.inputSetTitle}>GENDER</Text>
 
         <RadioGroup 
-          items={[
-            {name: "Male", val: "Male"},
-            {name: "Female", val: "Female"},
-            {name: "Rather not say", val: "Other"}
-          ]}
-          direction="row"
-          value={signupData.gender}
-          setValue={(item) => {
-            setSignupData((prev) => ({
-              ...prev,
-              gender: item
-            }))
-          }}
+        items={[
+          {name: "Male", val: "Male"},
+          {name: "Female", val: "Female"},
+          {name: "Rather not say", val: "Other"}
+        ]}
+        direction="row"
+        value={signupData.gender}
+        setValue={(item) => updateSignupData("gender", item)}
         />
       </View>
 

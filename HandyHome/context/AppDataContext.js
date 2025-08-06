@@ -1,3 +1,6 @@
+//Context: AppDataContext - Handles application-wide data such as services and user profile.
+
+//Imports
 import 
    React, { 
    createContext, 
@@ -6,78 +9,87 @@ import
    useState 
 } from 'react';
 import { useAuth } from './AuthContext';
+import { useCustomFonts } from '../assets/fonts';
 import axios from 'axios';
 import {API_URL} from '../config'
 
 const AppDataContext = createContext();
 
 export const AppDataProvider = ({children}) => {
+   // States and Hook Calls
+   const [fontsLoaded] = useCustomFonts();
    const { user, token } = useAuth();
+   const [isAppDataReady, setIsAppDataReady] = useState(false);
    const [ services, setServices ] = useState([]);
    const [ profile, setProfile ] = useState(null);
    const [ worker, setWorker ] = useState(null)
-   const [ loading, setLoading ] = useState(true);
 
-   const fetchAppData = async () => {
-      if (!user || !token) return;
-
+   // Functions
+   const fetchServices = async () => { 
       try {
-         setLoading(true);
-
          const res = await axios.get(`${API_URL}/general/services`);
-
          setServices(res.data.data);
+
+         console.log("[AppData Context]: Fetched Services Successfully");
       } catch (err) {
-         console.log(err)
-      } finally {
-         setLoading(false);
+         console.error("[AppData Context]: Fetched Services Failed", err);
       }
    }
 
-   const fetchUserData = async () => {
-      if (!user || !token) return;
-
+   const fetchProfile = async () => {
       try {
-         setLoading(true);
-
          const res = await axios.get(`${API_URL}/user/fetch_user`, {
-            headers: {
-               'Authorization': `Bearer ${token}`
-            }
-         })
+            headers: { Authorization: `Bearer ${token}` },
+         });
          setProfile(res.data.data);
+
+         console.log("[AppData Context]: Fetched Profile Successfully");
       } catch (err) {
-         console.log(err)
-      } finally {
-         setLoading(false);
+         console.error("[AppData Context]: Fetched Profile Failed", err);
       }
    }
 
-   const fetchWorkerData = async () => {
-      if (!user || !token) return;
+   const fetchWorker = async () => {
+      if (user?.role !== "Worker") return; 
 
       try {
-         setLoading(true);
-
          const res = await axios.get(`${API_URL}/worker`, {
-            headers: {
-               'Authorization': `Bearer ${token}`
-            }
-         })
+            headers: { Authorization: `Bearer ${token}` },
+         });
          setWorker(res.data.data);
-         console.log(res.data.data);
+
+         console.log("[AppData Context]: Fetched Worker Successfully");
       } catch (err) {
-         console.log(err)
-      } finally {
-         setLoading(false);
+         console.error("[AppData Context]: Fetched Worker Failed", err);
       }
    }
 
    useEffect(() => {
-      fetchAppData();
-      fetchUserData();
-      if (user?.role === "Worker") fetchWorkerData();
-   }, [user, token])
+      if (!fontsLoaded || isAppDataReady) return;
+
+      console.log("---");
+      console.log("[AppData Context]: Initializing App Data");
+
+      const init = async () => {
+         try {
+            if (user && token) {
+               fetchProfile(); 
+               fetchWorker();  
+            }
+   
+            await fetchServices();
+   
+            setIsAppDataReady(true);
+            console.log("[AppData Context]: App Data Ready");
+         } catch (err) {
+            console.error("[AppData Context]: Initialization Failed", err);
+         }
+      };
+
+      init();
+   }, [fontsLoaded, user, token, isAppDataReady]);
+
+   if (!fontsLoaded) return null;
 
    return (
       <AppDataContext.Provider
@@ -85,8 +97,7 @@ export const AppDataProvider = ({children}) => {
          services,
          profile,
          worker,
-         fetchWorkerData,
-         loading
+         isAppDataReady,
       }}>
          {children}
       </AppDataContext.Provider>

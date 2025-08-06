@@ -62,12 +62,13 @@ const SubserviceItem = ({item, serviceName, serviceId}) => {
                   }}
                   >{item.name}</Text>
                   <Text
-                  numberOfLines={4}
+                  numberOfLines={3}
                   style={{
                      fontFamily: FONTS.roboto400,
                      fontSize: FONT_SIZES.sm,
                      color: COLORS.lettersicons,
-                     textAlign: 'justify'
+                     textAlign: 'justify',
+                     flexShrink: 3
                   }}>{item.description}</Text>
                </View>
                {/* ----------------------------- Price and Link ----------------------------- */}

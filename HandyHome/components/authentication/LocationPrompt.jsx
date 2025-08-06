@@ -1,48 +1,115 @@
-/* --------------------------------- Imports -------------------------------- */
-import { SafeAreaView, StyleSheet, Text, View, TouchableOpacity, Animated, Easing } from 'react-native'
-import React, { useEffect, useRef } from 'react'
-import { useRouter, useNavigation } from 'expo-router';
-/* ---------------------------- Styles and Icons ---------------------------- */
+// SubScreen: Location Prompt
+
+// Imports
+// ---- Hooks and React Components
+import { Text, View, TouchableOpacity, Animated, Easing, Alert } from 'react-native'
+import React, { useState, useEffect, useRef } from 'react'
+import { useSignup } from '../../context/SignupContext';
+// ---- Styles and Icons
 import { globalStyles as global } from '../../styles/globalStyles';
 import { authStyles as auth } from '../../styles/authStyles';
 import { COLORS } from '../../styles/constants';
 import Icons from '@expo/vector-icons/MaterialIcons';
+// ---- Other Libraries
+import * as Location from 'expo-location';
 
-const LocationPrompt = ({setSignupData, setStep}) => {
-    const route = useRouter();
+const LocationPrompt = () => {
+   // States and Hooks
+   const { setStep, updateHomeData } = useSignup();
+   const [locationServicesEnabled, setLocationServicesEnabled] = useState(false);
 
-    const locScale = useRef(new Animated.Value(0)).current;
-    const animLocScale = locScale.interpolate({
-      inputRange: [0, 1],
-      outputRange: [0, 2]
-    })
+   const handleLocationAccess = () => {
+         checkIfLocationEnabled();
+         getCurrentLocation();
+   }
+   
+   const checkIfLocationEnabled = async () => {
+      let enabled = await Location.hasServicesEnabledAsync();
+      
+      if (!enabled) {
+         Alert.alert('Location not enabled', 'Please enable location services in your device settings.', [
+         {
+            text: 'Cancel',
+            onPress: () => console.log("Cancel Pressed"),
+            style: 'cancel',
+         }, {
+            text: 'OK',
+            onPress: () => console.log('OK Pressed'),
+         }
+         ]);
+      } else {
+         setLocationServicesEnabled(true);
+      }
+   }
 
-    const locOpacity = useRef(new Animated.Value(0)).current;
-    const animLocOpacity = locOpacity.interpolate({
-      inputRange: [0, 1],
-      outputRange: [0.25, 0]
-    })
+   const getCurrentLocation = async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+         Alert.alert('Permission Denied', 'Please allow location access to continue.', [
+         {
+            text: 'Cancel',
+            onPress: () => console.log("Cancel Pressed"),
+            style: 'cancel',
+         }, {
+            text: 'OK',
+            onPress: () => console.log('OK Pressed'),
+         }
+         ]);
+      }
 
-    useEffect(() => {
-      Animated.loop( Animated.parallel([
-        Animated.timing(locScale, {
-          toValue: 1,
-          duration: 1600,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-        Animated.timing(locOpacity, {
-          toValue: 1,
-          delay: 600,
-          duration: 1000,
-          easing: Easing.out(Easing.quad),
-          useNativeDriver: true,
-        }),
-      ])).start();
-    }, [])
+      const {coords} = await Location.getCurrentPositionAsync();
+      if (coords) {
+         const {latitude, longitude} = coords;
+
+         let responce = await Location.reverseGeocodeAsync({
+            latitude,
+            longitude
+         });
+
+         console.log(`${responce[0].street}, ${responce[0].subregion}, ${responce[0].city}`);
+         updateHomeData('block', responce[0].street);
+         updateHomeData('province', responce[0].subregion);
+         updateHomeData('municipal', responce[0].city);
+         setStep(3); 
+      }
+   }
+
+
+
+  // Animations
+  const locScale = useRef(new Animated.Value(0)).current;
+  const animLocScale = locScale.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 2]
+  })
+
+  const locOpacity = useRef(new Animated.Value(0)).current;
+  const animLocOpacity = locOpacity.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.25, 0]
+  })
+
+  useEffect(() => {
+    Animated.loop( Animated.parallel([
+      Animated.timing(locScale, {
+        toValue: 1,
+        duration: 1600,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(locOpacity, {
+        toValue: 1,
+        delay: 600,
+        duration: 1000,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
+    ])).start();
+  }, [])
 
   return (
-    <View style={[global.screenContainer, global.centerContainer, {
+    <View 
+    style={[global.screenContainer, global.centerContainer, {
       gap: 20, 
       position:'absolute', 
       zIndex: 999, 
@@ -104,7 +171,7 @@ const LocationPrompt = ({setSignupData, setStep}) => {
         {/* AUTOMATIC LOCATION */}
         <TouchableOpacity 
         style={[global.primaryBtn]}
-        onPress={() => {}}>
+        onPress={handleLocationAccess}>
           <Text style={[global.primaryBtnText]}>Allow Location Access</Text>
         </TouchableOpacity>
 

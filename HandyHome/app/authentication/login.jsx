@@ -1,51 +1,42 @@
-/* --------------------------------- Imports -------------------------------- */
+// Screen: Login Screen - User Login Interface
+
+// Imports
+// ---- Hooks and React Components
 import { Text, View, TouchableHighlight, TouchableOpacity, ImageBackground, StatusBar} from 'react-native'
 import React, { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'expo-router';
+// ---- Contexts
 import { useAuth } from '../../context/AuthContext'
 import { SafeAreaView } from 'react-native-safe-area-context';
-/* ------------------------------- Components ------------------------------- */
+// ---- Custom Components
 import BasicInput from '../../components/authentication/BasicInput';
 import DismissKeyboardWrapper from '../../components/DismissKeyboard';
 import MainButton from '../../components/MainButton';
 import Header from '../../components/dashboard/Header';
 import ErrorModal from '../../components/ErrorModal';
-/* ---------------------------- Styles and Icons ---------------------------- */
+// ---- Styles and Icons
 import Icons from '@expo/vector-icons/MaterialCommunityIcons';
 import Arrows from '@expo/vector-icons/Entypo';
-
 import { globalStyles as global } from '../../styles/globalStyles';
 import { authStyles as auth } from '../../styles/authStyles';
 import { COLORS, FONTS, FONT_SIZES } from '../../styles/constants';
 
-export default function LoginPage() {
-   /* ----------------------------- Initialization ----------------------------- */
+export default function LoginScreen() {
+   // Hooks
    const { login } = useAuth();
    const router = useRouter();
-
-   /* -------------------------------- Functions ------------------------------- */
-   // ---- Shows and Hides Password
-   const [ passwordShow, setPasswordShow ] = useState(false);
-   const onPasswordShow = () => {
-      setPasswordShow(!passwordShow);
-   }
-
-   // ---- Submits Login Info
+   // States
    const [loginData, setLoginData] = useState({
       identifier: "",
       password: ""
    })
+   const [ isLoginLoading, setIsLoginLoading ] = useState(false);
+   const [ loginErrors, setLoginErrors ] = useState({})
+   const [ passwordShow, setPasswordShow ] = useState(false);
+   const [ errorModal, setErrorModal ] = useState(false);
+   const [ errorModalMessage, setErrorModalMessage ] = useState(null); 
 
-   const [isLoginLoading, setIsLoginLoading] = useState(false);
-
-   const clearLogin = () => {
-      setLoginData(prev => ({
-         ...prev,
-         identifier: "",
-         password: ""
-      }))
-   }
-
+   // Functions
    const handleLogin = async () => {
       try {
          setIsLoginLoading(true);
@@ -56,7 +47,6 @@ export default function LoginPage() {
          const result = await login(loginData);
 
          if (!result.success) {
-            clearLogin();
             throw Error (result.message);
          } 
          else router.replace('authentication/authLoading');
@@ -64,16 +54,10 @@ export default function LoginPage() {
       } catch (err) {
          console.log(err);
          showErrorModal(err.message);
-         clearLogin();
       } finally {
          setIsLoginLoading(false);
       }
    }
-
-   // ---- Checks and Shows Errors
-   const [loginErrors, setLoginErrors] = useState({})
-   const [errorModal, setErrorModal] = useState(false);
-   const [errorModalMessage, setErrorModalMessage] = useState(null); 
 
    const validateForm = async () => {
       let errors = {}
@@ -85,6 +69,10 @@ export default function LoginPage() {
       setLoginErrors(errors);
       return Object.keys(errors).length === 0;
    }
+
+   const onPasswordShow = () => {
+      setPasswordShow(!passwordShow);
+   }  
 
    const showErrorModal = (message) => {
       setErrorModalMessage(message);

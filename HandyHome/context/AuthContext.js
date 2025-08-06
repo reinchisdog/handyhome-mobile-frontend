@@ -1,3 +1,6 @@
+// Context: AuthContext - Handles authentication state and actions.
+
+// Imports
 import 
    React, { 
    createContext, 
@@ -12,38 +15,42 @@ import {API_URL} from '../config';
 const AuthContext = createContext();
 
 export const AuthProvider = ({children}) => {
+   // States
    const [ user, setUser ] = useState(null);
    const [ token, setToken ] = useState(null);
    const [ hasOnboarded, setHasOnboarded ] = useState(null);
-   const [ loading, setLoading ] = useState(false);
+   const [ isLoading, setIsLoading ] = useState(false);
+   const [ isAuthReady, setIsAuthReady ] = useState(false);
 
+   // Functions
+   // ---- Checks if the user has completed onboarding
    const getOnboarding = async () => {
       const onboarded = JSON.parse(await AsyncStorage.getItem('onboarded'));
-      console.log(`Onboarded: ${onboarded}`)
-      setHasOnboarded(onboarded);
+      console.log(`[Auth Context]: Has Onboarded? ${onboarded !== null ? onboarded : false}`);
+      setHasOnboarded(onboarded !== null ? onboarded : false); 
    }
-
+   // ---- Completes the onboarding process
    const completeOnboarding = async () => {
       await AsyncStorage.setItem(`onboarded`, 'true');
    }
-
+   // ---- Loads the token from AsyncStorage and fetches user data
    const loadToken = async () => {
       try {
       const token = JSON.parse(await AsyncStorage.getItem('token'));
-      console.log('[loadToken] Raw token:', token);
+
+      console.log(`[Auth Context]: Token? ${token}`);
 
       if (token) {
          setToken(token);
          await tryFetchUser(token)
       } else {
-         console.log('[loadToken] No token found');
-         setLoading(false);
+         setIsLoading(false);
       }
       } catch (err) {
-         console.log('[loadToken] Error:', err);
+         console.log('[Auth Context]: Token Error:', err);
       }
    }
-
+   // ---- Fetches user data using the token
    const tryFetchUser = async (token) => {
       try {
          const res = await axios.get(
@@ -56,7 +63,7 @@ export const AuthProvider = ({children}) => {
          console.log(res?.data?.user)
 
          setUser(res?.data?.user);
-         setLoading(false);
+         setIsLoading(false);
       } catch (err) {
          console.log('Fetch user failed:', err.response?.data || err.message);
          logout();
@@ -65,10 +72,8 @@ export const AuthProvider = ({children}) => {
 
    const login = async (loginData) => {
       try {
-
-         setLoading(true);
-
-         console.log(`[1] Loggin In`)
+         console.log("--- [Auth Context]: Login Attempt ---");
+         console.log("1. Loggin In");
 
          const result = await axios.post(`${API_URL}/auth/login`, loginData, {
             headers: {
@@ -76,9 +81,7 @@ export const AuthProvider = ({children}) => {
             },
          });
 
-         console.log(`[2] Finish Loggin In`)
-
-         console.log("[Result]", result);
+         console.log("2. Succesful Loggin In")
 
          const { user, token } = result.data.data;
 
@@ -89,13 +92,10 @@ export const AuthProvider = ({children}) => {
 
          return { success: true };
       } catch (err){
-         
-         console.log(err.message);
-         const message = err.message || "An error has ocurred when trying to login. Please try again.";
+         console.log("2. Failed Loggin In")
+         const message = err.response?.data.message || "An error has ocurred when trying to login. Please try again.";
 
          return { success: false, message };
-      } finally {
-         setLoading(false);
       }
    }
    
@@ -107,22 +107,26 @@ export const AuthProvider = ({children}) => {
 
          return { success: true };
       } catch (err) {
-         const message = err.response?.message || "An error has ocurred when trying to login. Please try again.";
+         const message = err.response?.data.message || "An error has ocurred when trying to login. Please try again.";
          return { success: false, message };
       }
       
    }
 
-   
-
    useEffect(() => {
+      if (isAuthReady) return;
+
+      console.log("--- [Auth Context]: Initializing Auth Context ---");
+      
       const init = async () => {
          await getOnboarding();
          await loadToken();
+
+         setIsAuthReady(true);
       };
 
       init();
-   }, []);
+   }, [isAuthReady]);
 
    return (
       <AuthContext.Provider
@@ -131,9 +135,10 @@ export const AuthProvider = ({children}) => {
          logout,
          token,
          user,
-         loading,
+         isLoading,
          hasOnboarded,
          completeOnboarding,
+         isAuthReady
       }}>
          {children}
       </AuthContext.Provider>

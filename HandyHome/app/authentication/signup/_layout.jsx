@@ -1,5 +1,5 @@
 import { Stack, useNavigation } from 'expo-router';
-import { RegisterProvider } from '../../../context/RegisterContext';
+import { SignupProvider } from '../../../context/SignupContext';
 import { useEffect } from 'react';
 
 export default function SignupScreen() {
@@ -10,14 +10,14 @@ export default function SignupScreen() {
   }, [navigation])
 
   return (
-    <RegisterProvider>
+    <SignupProvider>
       <Stack
         screenOptions={{
           headerShown: false,
           animation:'slide_from_right'
         }} 
       />
-    </RegisterProvider>
+    </SignupProvider>
     
   );
 }

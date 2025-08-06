@@ -311,7 +311,7 @@ export default HomeScreen = () => {
                   </View>
 
                   {/* ---- Ongoing Booking */}
-                  {latestBookLoading && <View 
+                  <View 
                   style={{
                      borderRadius: 20,
                      backgroundColor: '#fff',
@@ -439,7 +439,7 @@ export default HomeScreen = () => {
                         )}
                         
                      </View>
-                  </View>}
+                  </View>
 
                   {!latestBooking && !latestBookLoading && (
                      <View 
