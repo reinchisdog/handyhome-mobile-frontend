@@ -2,8 +2,8 @@
 
 // Imports
 // ---- Hooks and React Components
-import { Text, View , TouchableOpacity, ImageBackground, ScrollView} from 'react-native'
-import React, { use } from 'react'
+import { Text, View , TouchableOpacity, ImageBackground, ScrollView, BackHandler } from 'react-native'
+import React, { use, useEffect } from 'react'
 import { useRouter } from 'expo-router';
 import { useSignup } from '../../../context/SignupContext';
 // ---- Custom Components
@@ -31,10 +31,47 @@ export default  SignupScreen = () => {
       step,
       setStep,
       signupLoading,
-      signupDisabled
+      signupDisabled,
+      areFormatsCorrect,
     } = useSignup();
     const insets = useSafeAreaInsets();
     const router = useRouter();
+
+    const handleNextPage = () => {
+      console.log("[Signup Index]: Checking formats for step", step);
+      if(!areFormatsCorrect())
+        return;
+
+      console.log("[Signup Index]: Navigating to next step...");
+      setStep(step+1)
+    }
+
+    const handleBackPage = () => {
+      if (step === 1) {
+        console.log("[Signup Index]: Going back to Main page...");
+        router.replace('authentication');
+      } else if (step === 3) {
+        console.log("[Signup Index]: Going back to step", 2);
+        setStep(1);
+      } else {
+        console.log("[Signup Index]: Going back to step", step - 1);
+        setStep(step - 1);
+      }
+    }
+
+    useEffect(() => {
+      const backAction = () => {
+        handleBackPage();
+        return true; 
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        backAction
+      );
+
+      return () => backHandler.remove(); 
+    }, [])
 
   return (
     <View 
@@ -47,7 +84,7 @@ export default  SignupScreen = () => {
           background='transparent'
           left={
             <TouchableOpacity
-            onPress={() => {router.replace('authentication')}}>
+            onPress={handleBackPage}>
                 <Arrows name='chevron-left' size={24} color={'#fff'}/>
             </TouchableOpacity>
           }/>
@@ -84,7 +121,7 @@ export default  SignupScreen = () => {
                 justifyContent: 'center',
                 alignItems: 'center'
               }}
-              onPress={() => updateSignupData('terms_agreed', !prev.terms_agreed)}>
+              onPress={() => updateSignupData('terms_agreed', !signupData.terms_agreed)}>
                 {signupData.terms_agreed && <Icons name='check' size={20} color={'#fff'} />}
               </TouchableOpacity>
 
@@ -115,7 +152,7 @@ export default  SignupScreen = () => {
         <MainButton 
         text={"Continue"}
         type={"secondary"}
-        onPress={() => setStep(step+1)}
+        onPress={handleNextPage}
         loading={signupLoading}
         disabled={signupDisabled}
         />

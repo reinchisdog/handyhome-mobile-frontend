@@ -74,25 +74,31 @@ export const AuthProvider = ({children}) => {
       try {
          console.log("--- [Auth Context]: Login Attempt ---");
          console.log("1. Loggin In");
-
-         const result = await axios.post(`${API_URL}/auth/login`, loginData, {
+         const tokenResult = await axios.post(`${API_URL}/auth/login`, loginData, {
             headers: {
                'Content-Type': 'application/json',
             },
          });
 
          console.log("2. Succesful Loggin In")
-
-         const { user, token } = result.data.data;
-
+         const token = tokenResult.data.data.token;
          await AsyncStorage.setItem('token', JSON.stringify(token));
-
          setToken(token);
+         
+         console.log("3. Fetching User Data");
+         const userResult = await axios.get(`${API_URL}/user`, {
+            headers: {
+               Authorization: `Bearer ${token}`,
+            }
+         });
+
+         console.log("4. Succesfully Fetched User Data")
+         const user = userResult.data.data;
          setUser(user);
 
          return { success: true };
       } catch (err){
-         console.log("2. Failed Loggin In")
+         console.log("/// Failed Loggin In ///")
          const message = err.response?.data.message || "An error has ocurred when trying to login. Please try again.";
 
          return { success: false, message };

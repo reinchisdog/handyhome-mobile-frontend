@@ -1,19 +1,21 @@
-/* --------------------------------- Imports -------------------------------- */
-import { StyleSheet, Text, View , KeyboardAvoidingView, SafeAreaView, Platform, TouchableOpacity, TouchableHighlight} from 'react-native'
-import React, { useState, useRef, useEffect } from 'react'
-import { useRouter, useNavigation } from 'expo-router';
+// Subscreen: Location Details
 
-import axios from 'axios';
-/* ------------------------------- Components ------------------------------- */
+// Import
+// Hooks and React Components
+import { Text, View } from 'react-native'
+import React, { useState, useEffect } from 'react'
+import { useSignup } from '../../../context/SignupContext';
+// Components
 import BasicInput from '../../../components/authentication/BasicInput';
 import DropdownBox from '../../../components/authentication/DropdownBox';
-/* ---------------------------- Styles and Icons ---------------------------- */
-import Icons from '@expo/vector-icons/AntDesign';
-import { globalStyles as global } from '../../../styles/globalStyles';
+// Styles and Icons
 import { authStyles as auth } from '../../../styles/authStyles';
+// Other Libraries
+import axios from 'axios';
 
-const LocationDetails = ({signupData, setSignupData}) => {
-  /* ----------------------------- Initialization ----------------------------- */
+const LocationDetails = () => {
+  // Hooks and States
+  const { signupData, updateHomeData } = useSignup();
   const [ provinceList, setProvinceList ] = useState([]);
   const [ selectedProvince, setSelectedProvince ] = useState({});
 
@@ -47,44 +49,49 @@ const LocationDetails = ({signupData, setSignupData}) => {
       console.log(error);
     }
   }
-  const getMunicipalList = async (code) => {
-    const districtCodes = ['133900000', '137400000', '137500000', '137600000'];
-    const isDistrict = districtCodes.includes(code);
 
+  const getMunicipalList = async (provinceTitle) => {
+    const districtCodes = ['133900000', '137400000', '137500000', '137600000'];
+    const isDistrict = provinceList.find(p => p.title === provinceTitle && districtCodes.includes(p.value));
+    const provinceItem = provinceList.find(p => p.title === provinceTitle);
+  
+    if (!provinceItem) return;
+  
     try {
       let list = [];
-      if (isDistrict) list = await axios.get(`https://psgc.gitlab.io/api/districts/${code}/cities-municipalities/`);
-      else list = await axios.get(`https://psgc.gitlab.io/api/provinces/${code}/cities-municipalities/`);
-
-      const filteredList = list.data.map((item) => {
-        return {
-          value: item.code,
-          title: item.name
-        }
-      }).sort((a, b) => a.title.localeCompare(b.title));
-
+      if (isDistrict)
+        list = await axios.get(`https://psgc.gitlab.io/api/districts/${provinceItem.value}/cities-municipalities/`);
+      else
+        list = await axios.get(`https://psgc.gitlab.io/api/provinces/${provinceItem.value}/cities-municipalities/`);
+  
+      const filteredList = list.data.map((item) => ({
+        value: item.code,
+        title: item.name
+      })).sort((a, b) => a.title.localeCompare(b.title));
+  
       setMunicipalList(filteredList);
-
-    } catch(error) {
+    } catch (error) {
       console.log(error);
     }
-  }
-  const getBarangayList = async (code) => {
+  };
+  
+  const getBarangayList = async (municipalTitle) => {
+    const municipalItem = municipalList.find(m => m.title === municipalTitle);
+    if (!municipalItem) return;
+  
     try {
-      const list = await axios.get(`https://psgc.gitlab.io/api/cities-municipalities/${code}/barangays/`);
-      const filteredList = list.data.map((item) => {
-        return {
-          value: item.code,
-          title: item.name
-        }
-      })
-
+      const list = await axios.get(`https://psgc.gitlab.io/api/cities-municipalities/${municipalItem.value}/barangays/`);
+      const filteredList = list.data.map((item) => ({
+        value: item.code,
+        title: item.name
+      }));
+  
       setBarangayList(filteredList);
-
     } catch (error) {
       setBarangayList([]);
     }
-  }
+  };
+  
 
   useEffect(() => {
     getMunicipalList(selectedProvince.value);
@@ -94,30 +101,45 @@ const LocationDetails = ({signupData, setSignupData}) => {
     getBarangayList(selectedMunicipal.value);
   }, [selectedMunicipal])
 
-  // on List
+  // When province list loads, match saved title and fetch municipal list
   useEffect(() => {
-    if (signupData.province && provinceList.length > 0) {
-      const match = provinceList.find(p => p.title === signupData.province);
-      console.log('Province: ', match)
-      if (match) setSelectedProvince(match)
+    if (signupData.home_address.province && provinceList.length > 0) {
+      const match = provinceList.find(p => p.title === signupData.home_address.province);
+      if (match) {
+        setSelectedProvince(match);
+        getMunicipalList(match.title); 
+      } else {
+        console.warn("[Location Details] Invalid province:", signupData.home_address.province);
+        updateHomeData('province', ''); 
+      }
     }
-  }, [provinceList, signupData.province])
+  }, [provinceList, signupData.home_address.province]);
 
+  // When municipal list loads, match saved title and fetch barangay list
   useEffect(() => {
-    if (signupData.municipal && municipalList.length > 0) {
-      const match = municipalList.find(p => p.title === signupData.municipal);
-      console.log('Municipality: ', match)
-      if (match) setSelectedMunicipal(match)
+    if (signupData.home_address.municipal && municipalList.length > 0) {
+      const match = municipalList.find(p => p.title === signupData.home_address.municipal);
+      if (match) {
+        setSelectedMunicipal(match);
+        getBarangayList(match.title); 
+      } else {
+        console.warn("[Location Details] Invalid municipal:", signupData.home_address.municipal);
+        updateHomeData('municipal', ''); 
+      }
     }
-  }, [municipalList, signupData.municipal])
+  }, [municipalList, signupData.home_address.municipal]);
 
+  // When barangay list loads, match saved title
   useEffect(() => {
-    if (signupData.barangay && barangayList.length > 0) {
-      const match = barangayList.find(p => p.title === signupData.barangay);
-      console.log('Barangay: ', match)
-      if (match) setSelectedBarangay(match)
+    if (signupData.home_address.barangay && barangayList.length > 0) {
+      const match = barangayList.find(p => p.title === signupData.home_address.barangay);
+      if (match) setSelectedBarangay(match);
+      else {
+        console.warn("[Location Details] Invalid barangay:", signupData.home_address.barangay);
+        updateHomeData('barangay', ''); 
+      }
     }
-  }, [barangayList, signupData.barangay])
+  }, [barangayList, signupData.home_address.barangay]);
 
 
 
@@ -129,13 +151,7 @@ const LocationDetails = ({signupData, setSignupData}) => {
         {/* ---- Block Number */}
         <BasicInput 
           placeholder={"Block / No. / Street"}
-          onChangeText={(e) => setSignupData((prev) => ({
-            ...prev,
-            home_address: {
-              ...prev.home_address,
-              block: e
-            }
-          }))}
+          onChangeText={(e) => updateHomeData('block', e)}
           value={signupData.home_address.block}
         />
 
@@ -147,16 +163,8 @@ const LocationDetails = ({signupData, setSignupData}) => {
             setSelectedProvince(e);
             setSelectedMunicipal({});
             setSelectedBarangay({});
-            setSignupData(prev => ({
-              ...prev,
-              home_address: {
-                ...prev.home_address,
-                province: e.title,
-                municipal: "",
-                barangay: ""
-              }
-              
-            }));
+            updateHomeData('province', e.title);
+            getMunicipalList(e.title); 
           }}
           
           selectedItem={selectedProvince}
@@ -168,14 +176,8 @@ const LocationDetails = ({signupData, setSignupData}) => {
           onSelect={(e) => {
             setSelectedMunicipal(e);
             setSelectedBarangay({});
-            setSignupData(prev => ({
-              ...prev,
-              home_address: {
-                ...prev.home_address,
-                municipal: e.title,
-                barangay: ""
-              }
-            }));
+            updateHomeData('municipal', e.title);
+            getBarangayList(e.title);
           }}
           
           selectedItem={selectedMunicipal}
@@ -186,13 +188,7 @@ const LocationDetails = ({signupData, setSignupData}) => {
           defaultItem="Select Barangay"
           onSelect={(e) => {
             setSelectedBarangay(e);
-            setSignupData(prev => ({
-              ...prev,
-              home_address: {
-                ...prev.home_address,
-                barangay: e.title
-              }
-            }));
+            updateHomeData('barangay', e.title);
           }}
           
           selectedItem={selectedBarangay}

@@ -1,17 +1,20 @@
-/* --------------------------------- Imports -------------------------------- */
-import { StyleSheet, Text, View , KeyboardAvoidingView, SafeAreaView, Platform, TouchableOpacity, TouchableHighlight} from 'react-native'
-import React, { useState, useRef, useEffect } from 'react'
-import { useRouter, useNavigation } from 'expo-router';
-/* ------------------------------- Components ------------------------------- */
-import BasicInput from '../../../components/authentication/BasicInput';
-/* ---------------------------- Styles and Icons ---------------------------- */
-import Icons from '@expo/vector-icons/MaterialCommunityIcons';
+// SubScreen: Account Details
 
-import { globalStyles as global } from '../../../styles/globalStyles';
+// Imports
+// ---- Hooks and React Components
+import { Text, View , TouchableHighlight} from 'react-native'
+import React, { useState } from 'react'
+import { useSignup } from '../../../context/SignupContext';
+// ---- Custom Components
+import BasicInput from '../../../components/authentication/BasicInput';
+// ---- Styles and Icons
+import Icons from '@expo/vector-icons/MaterialCommunityIcons';
 import { COLORS } from '../../../styles/constants';
 import { authStyles as auth } from '../../../styles/authStyles';
 
-const AccountDetails = ({signupData, setSignupData, passErrors}) => {
+const AccountDetails = () => {
+  // States and Hooks
+  const { signupData, updateSignupData, passErrors } = useSignup();
   /* ----------------------------- Initialization ----------------------------- */
   const passwordReqList = [
     "At least 8 characters",
@@ -27,9 +30,6 @@ const AccountDetails = ({signupData, setSignupData, passErrors}) => {
   const onPasswordShow = () => {
     setPasswordShow(!passwordShow);
   }
-  // ---- Verifies Password Validity
-  const [ tempPass, setTempPass ] = useState("");
-
   return (
     <View style={auth.inputsContainer}>
       {/* -------------------------- Account Information -------------------------- */}
@@ -42,10 +42,7 @@ const AccountDetails = ({signupData, setSignupData, passErrors}) => {
           placeholder={"Email (handy@home.com)"}
           inputMode='email'
           keyboardType='email-address'
-          onChangeText={(e) => setSignupData((prev) => ({
-            ...prev,
-            email: e
-          }))}
+          onChangeText={(e) => updateSignupData('email', e)}
           value={signupData.email}
         />
 
@@ -55,11 +52,8 @@ const AccountDetails = ({signupData, setSignupData, passErrors}) => {
           placeholder={"Phone Number (09XXXXXXXXX)"}
           inputMode='numeric'
           keyboardType='numeric'
-          onChangeText={(e) => setSignupData((prev) => ({
-            ...prev,
-            phone_number: e
-          }))}
-          value={signupData.phoneNumber}
+          onChangeText={(e) => updateSignupData('phone_number', e)}
+          value={signupData.phone_number}
         />
 
         {/* ---- Password */}
@@ -79,12 +73,7 @@ const AccountDetails = ({signupData, setSignupData, passErrors}) => {
             }
             placeholder={"Password"}
             secureTextEntry={!passwordShow}
-            onChangeText={(e) => {
-              setSignupData((prev) => ({
-                ...prev,
-                password: e
-              }))
-            }}
+            onChangeText={(e) => updateSignupData('password', e)}
             value={signupData.password}
           />
 

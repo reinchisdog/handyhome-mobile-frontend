@@ -38,7 +38,7 @@ export const AppDataProvider = ({children}) => {
 
    const fetchProfile = async () => {
       try {
-         const res = await axios.get(`${API_URL}/user/fetch_user`, {
+         const res = await axios.get(`${API_URL}/user`, {
             headers: { Authorization: `Bearer ${token}` },
          });
          setProfile(res.data.data);

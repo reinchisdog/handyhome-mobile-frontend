@@ -9,8 +9,11 @@ export default ErrorModal = ({visible, setVisible, title, message, onExit, butto
       <Modal
       visible={visible}
       statusBarTranslucent={true}
-      backdropColor={COLORS.modalbg}>
-         <View
+      animationType='fade'
+      backdropColor={COLORS.modalbg}
+      onRequestClose={() => setVisible(false)}>
+         <Pressable
+         onPress={() => setVisible(false)}
          style={{
             flex: 1,
             justifyContent: 'center',
@@ -36,10 +39,14 @@ export default ErrorModal = ({visible, setVisible, title, message, onExit, butto
                <MainButton 
                text={buttonText || "Ok"}
                type="secondary"
-               onPress={onExit ? onExit : () => setVisible(false)}
-               />
+               onPress={() => {
+                  if (onExit) {
+                    onExit(); 
+                  }
+                  setVisible(false); 
+               }}/>
             </View>
-         </View>
+         </Pressable>
 
       </Modal>
    );

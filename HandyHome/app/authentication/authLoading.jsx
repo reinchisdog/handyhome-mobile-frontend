@@ -20,9 +20,9 @@ export default AuthLoadingScreen = () => {
    // Functions
    const handleRedirect = () => {
       if (user.role === 'User' || user.role === 'Guest') 
-         router.replace('client-dashboard');
+         router.replace('dashboard/client');
       else if (user.role === 'Worker') 
-         router.replace('worker-dashboard');
+         router.replace('dashboard/worker');
    }
     
    return (

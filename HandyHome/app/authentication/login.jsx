@@ -31,18 +31,15 @@ export default function LoginScreen() {
       password: ""
    })
    const [ isLoginLoading, setIsLoginLoading ] = useState(false);
-   const [ loginErrors, setLoginErrors ] = useState({})
    const [ passwordShow, setPasswordShow ] = useState(false);
    const [ errorModal, setErrorModal ] = useState(false);
    const [ errorModalMessage, setErrorModalMessage ] = useState(null); 
+   const [ exitCondition, setExitCondition ] = useState(null); 
 
    // Functions
    const handleLogin = async () => {
       try {
          setIsLoginLoading(true);
-
-         const isValid = await validateForm();
-         if (!isValid) return;
 
          const result = await login(loginData);
 
@@ -53,21 +50,21 @@ export default function LoginScreen() {
          
       } catch (err) {
          console.log(err);
+
+         if (
+            err.message.toLowerCase().includes("verify") || 
+            err.message.toLowerCase().includes("verification") || 
+            err.message.toLowerCase().includes("verified")
+         ) {
+            setExitCondition("verify");
+         } else {
+            setExitCondition(null);
+         }
+
          showErrorModal(err.message);
       } finally {
          setIsLoginLoading(false);
       }
-   }
-
-   const validateForm = async () => {
-      let errors = {}
-
-      // Identification or Password field is empty
-      if (!loginData.identifier) errors.identifier = "Email/Phone Number is required.";
-      if (!loginData.password) errors.password = "Password is required.";
-
-      setLoginErrors(errors);
-      return Object.keys(errors).length === 0;
    }
 
    const onPasswordShow = () => {
@@ -79,13 +76,19 @@ export default function LoginScreen() {
       setErrorModal(true);
    }
 
+   const goToVerify = () => {
+      router.replace('/authentication/signup/verify');
+   }
+
    return (
       <DismissKeyboardWrapper>
          <ErrorModal 
          visible={errorModal} 
          setVisible={setErrorModal} 
-         title={"There is an error logging into HandyHome"} 
-         message={errorModalMessage}/>
+         title={"Error Logging into Handyhome"} 
+         message={errorModalMessage}
+         onExit={exitCondition === "verify" ? goToVerify : null}
+         buttonText={exitCondition==="verify" ? "Verify Now" : null}/>
 
          <View 
          style={[global.screenContainer, {position: 'relative'}]}>
@@ -129,8 +132,6 @@ export default function LoginScreen() {
                      value={loginData.identifier}
                   />
 
-                  {loginErrors.identifier && <Text style={[global.errorText, {marginTop: -8}]}>{loginErrors.identifier}</Text>}
-
                   {/* ---- Password */}
                   <BasicInput 
                      left={
@@ -154,8 +155,6 @@ export default function LoginScreen() {
                      }))}
                      value={loginData.password}
                   />
-
-                  {loginErrors.password && <Text style={[global.errorText, {marginTop: -8}]}>{loginErrors.password}</Text>}
 
                </View>
                <TouchableOpacity

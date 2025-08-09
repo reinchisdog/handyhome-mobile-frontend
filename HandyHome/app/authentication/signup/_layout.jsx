@@ -1,4 +1,4 @@
-import { Stack, useNavigation } from 'expo-router';
+import { Stack, useNavigation, Router } from 'expo-router';
 import { SignupProvider } from '../../../context/SignupContext';
 import { useEffect } from 'react';
 

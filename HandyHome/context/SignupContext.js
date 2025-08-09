@@ -2,194 +2,315 @@
 
 // Hooks and React Components
 import { createContext, useState, useEffect, useContext } from "react";
+import { useRouter } from "expo-router";
 // Config
 import {API_URL} from '../config';
 // Custom Components
 import ErrorModal from "../components/ErrorModal";
+// Other Libraries
+import axios from "axios";
 
 const SignupContext = createContext({})
 
 export const SignupProvider = ({children}) => {
-    // States and Hooks
-    const [step, setStep] = useState(1);
-    const [signupData, setSignupData] = useState({
-        first_name: "",
-        last_name: "",
-        email: null,
-        gender: "",
-        phone_number: null,
-        password: "",
-        home_address: {
-          block: "",
-          province: "",
-          municipal: "",
-          barangay: "",
-        },
-        terms_agreed: false
-    })
-    const [signupLoading, setSignupLoading] = useState(false);
-    const [signupDisabled, setSignupDisabled] = useState(true);
+   // States and Hooks
+   const router = useRouter();
+   const [step, setStep] = useState(1);
+   const [signupData, setSignupData] = useState({
+      first_name: "",
+      last_name: "",
+      email: "",
+      gender: "",
+      phone_number: "",
+      password: "",
+      birth_date: null,
+      home_address: {
+         block: "",
+         province: "",
+         municipal: "",
+         barangay: "",
+      },
+      terms_agreed: false
+   })
+   const [signupLoading, setSignupLoading] = useState(false);
+   const [signupDisabled, setSignupDisabled] = useState(true);
 
-    const [ passErrors, setPassErrors ] = useState([]);
-    const [errorModal, setErrorModal] = useState(false);
-    const [errorModalMessage, setErrorModalMessage] = useState(null);
+   const [passErrors, setPassErrors] = useState([]);
+   const [errorModal, setErrorModal] = useState(false);
+   const [errorModalMessage, setErrorModalMessage] = useState(null);
+   const [exitCondition, setExitCondition] = useState(null);
 
     // Functions
-    const validatePersonal = () => {
-        const firstName = signupData.first_name?.trim() || "";
-        const lastName = signupData.last_name?.trim() || "";
-        const gender = signupData.gender?.trim() || "";
-        
-        const isNotEmpty = (
+   const areFieldsFilled = () => {
+      let areFilled = false;
+
+      if (step === 1) {
+         const firstName = signupData.first_name?.trim() || "";
+         const lastName = signupData.last_name?.trim() || "";
+         const gender = signupData.gender?.trim() || "";
+         
+         areFilled = (
             firstName !== "" &&
             lastName !== "" &&
             gender !== ""
-        );
-        
-        const isNotShort = (
-            firstName.length > 2 &&
-            lastName.length > 2
-        );
-        
-        return isNotEmpty && isNotShort;
-    };
+         );
+      } else if (step === 3) { 
+         const address = signupData.home_address || {};
+      
+         areFilled = (
+            (address.block?.trim() || "") !== "" &&
+            (address.province?.trim() || "") !== "" &&
+            (address.municipal?.trim() || "") !== "" &&
+            (address.barangay?.trim() || "") !== ""
+         );
+      } else if (step === 4) { 
+         const email = signupData.email?.trim() || "";
+         const phone = signupData.phone_number?.trim() || "";
+         const password = signupData.password?.trim() || "";
+         const termsAgreed = signupData.terms_agreed;
+         
+         areFilled = 
+            email !== "" && 
+            phone !== "" && 
+            password !== "" && 
+            termsAgreed;
+      }
+
+      return areFilled;
+   }
+
+   const areFormatsCorrect = () => {
+      let errorMessage = null;
+
+      if (step === 1) {
+         errorMessage = validatePersonal();
+      } else if (step === 3) {
+         errorMessage = null;
+      } else if (step === 4) {
+         const accountError = validateAccount();
+         const passwordError = validatePassword();
+
+         if (accountError) {
+            errorMessage = accountError;
+         } else if (passwordError) {
+               errorMessage = passwordError;
+         }
+      }
+
+      if (errorMessage) {
+         showErrorModal(errorMessage);
+         return false;
+      }
+
+      return true;
+   };
   
-    const validateLocation = () => {
-    const address = signupData.home_address || {};
-    
-    const isNotEmpty = (
-        (address.block?.trim() || "") !== "" &&
-        (address.province?.trim() || "") !== "" &&
-        (address.municipal?.trim() || "") !== "" &&
-        (address.barangay?.trim() || "") !== ""
-    );
-    
-    return isNotEmpty;
-    };
+   const validatePersonal = () => {
+      const firstName = signupData.first_name?.trim() || "";
+      const lastName = signupData.last_name?.trim() || "";
 
-    const validateAccount = () => {
-    const email = signupData.email?.trim() || "";
-    const phone = signupData.phone_number?.trim() || "";
-    const password = signupData.password?.trim() || "";
-    const termsAgreed = signupData.terms_agreed;
-    
-    const isNotEmpty = (email !== "" || phone !== "") && password !== "" && termsAgreed;
-    
-    const isValidEmail = email === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    const isValidPhone = phone === "" || /^09\d{9}$/.test(phone);
-    
-    return isNotEmpty && isValidEmail && isValidPhone;
-    };
+      if (firstName.length <= 1 || lastName.length <= 1) {
+         return "First name and last name must be longer than 2 characters.";
+      }
 
-    const validatePassword = () => {
-    const password = signupData.password?.trim() || "";
-    
-    const tempArr = [];
-    
-    if (password.length >= 8) tempArr.push(0);
-    if (/(?=.*[A-Z])/.test(password)) tempArr.push(1);
-    if (/(?=.*[a-z])/.test(password)) tempArr.push(2);
-    if (/(?=.*\d)/.test(password)) tempArr.push(3);
-    if (/(?=.*[!@#$%^&*()_\-+=\[\]{};':"\\|,.<>\/?`~])/.test(password)) tempArr.push(4);
-    if (/^\S*$/.test(password) && password.length > 1) tempArr.push(5);
-    
-    // Only update if changed
-    setPassErrors(prev => {
-        const same = prev.length === tempArr.length && prev.every((val, i) => val === tempArr[i]);
-        return same ? prev : tempArr;
-    });
-    };
+      if (!/^[A-Za-z]+$/.test(firstName) || !/^[A-Za-z]+$/.test(lastName)) {
+         return "First name and last name must only contain letters.";
+      }
 
-    const updateSignupData = (name, data) => {
-        setSignupData((prev) => ({
+      return null;
+   };
+
+   const validateAccount = () => {
+      const email = signupData.email?.trim() || "";
+      const phone = signupData.phone_number?.trim() || "";
+
+      if (email === "" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+         return "Please enter a valid email address.";
+      }
+
+      if (phone === "" || !/^09\d{9}$/.test(phone)) {
+         return "Please enter a valid phone number starting with 09 and followed by 9 digits.";
+      }
+
+      return null; // Validation passed
+   };
+  
+   const validatePassword = () => {
+      const password = signupData.password?.trim() || "";
+
+      if (password.length < 8) {
+         return "Password must be at least 8 characters long.";
+      }
+
+      if (!/(?=.*[A-Z])/.test(password)) {
+         return "Password must contain at least one uppercase letter.";
+      }
+
+      if (!/(?=.*[a-z])/.test(password)) {
+         return "Password must contain at least one lowercase letter.";
+      }
+
+      if (!/(?=.*\d)/.test(password)) {
+         return "Password must contain at least one number.";
+      }
+
+      if (!/(?=.*[!@#$%^&*()_\-+=\[\]{};':"\\|,.<>\/?`~])/.test(password)) {
+         return "Password must contain at least one special character.";
+      }
+
+      if (!/^\S*$/.test(password)) {
+         return "Password must not contain spaces.";
+      }
+
+      return null; // Validation passed
+   };
+
+   const showErrorModal = (message) => {
+      setErrorModalMessage(message);
+      setErrorModal(true);
+   };  
+
+   const updateSignupData = (name, data) => {
+      setSignupData((prev) => ({
+          ...prev,
+          [name]: data
+      }))
+   }
+
+   const updateHomeData = (name, data) => {
+      if (name === 'province') {
+         setSignupData(prev => ({
             ...prev,
-            [name]: data
-        }))
-    }
-
-    const updateHomeData = (name, data) => {
-        setSignupData((prev) => {
-            return {
-                ...prev,
-                home_address: {
-                    ...prev.home_address,
-                    [name]: data
-                }
+            home_address: {
+               ...prev.home_address,
+               province: data,
+               municipal: "",
+               barangay: ""
             }
-        })
-    }
+            
+         }));
+      } else if (name === 'municipal') {
+         setSignupData(prev => ({
+            ...prev,
+            home_address: {
+               ...prev.home_address,
+               municipal: data,
+               barangay: ""
+            }
+         }));
+      } else if (name === 'barangay') {
+         setSignupData(prev => ({
+            ...prev,
+            home_address: {
+               ...prev.home_address,
+               barangay: data
+            }
+         }));
+      } else if (name === 'block') {
+         setSignupData(prev => ({
+            ...prev,
+            home_address: {
+               ...prev.home_address,
+               block: data
+            }
+         }));
+      }
+   }
 
-    const handleSignUp = async () => {
-        try{
-          setSignupLoading(true);
-  
-          // console.log('[SignUp] Sending:', signupData);
-  
-          const result = await axios.post(`${API_URL}/auth/signup`, signupData, {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          });
-  
-          const status = result?.data?.status || "error";
-  
-          if (status === "success") {
-            router.push('authentication/signup/verify');
-  
-          } else if (status === "failed" || status === "error") {
-            const message = result.data.message || 'Sign-up failed.';
-            throw new Error(message);
-          }
-  
-        } catch (err) {
-          console.log(err.message);
-          const message = err.message || "An error has ocurred when trying to sign in. Please try again.";
-  
-          showErrorModal(message)
-        } finally {
-          setSignupLoading(false);
-        }
-    }
+   const goToVerify = () => {
+      router.replace('/authentication/signup/verify');
+   }
 
-    const showErrorModal = (message) => {
-        setErrorModalMessage(message);
-        setErrorModal(true);
-    }
+   const handleSignUp = async () => {
+      try{
+         setSignupLoading(true);
 
-    // Effects
-    useEffect(() => {
-        validatePassword();
-  
-        if (step === 1 && validatePersonal()) {
-          setSignupDisabled(false)
-        } else if (step === 3 && validateLocation()) {
-          setSignupDisabled(false)
-        } else if (step === 4 && validateAccount() && passErrors.length === 6) {
-          setSignupDisabled(false)
-        } else {
-          setSignupDisabled(true)
-        }
-      }, [signupData, step])
+         console.log("--- [Signup Context]: Sign Up Attempt ---");
+         console.log("1. Signing In");
 
-    return (
-        <SignupContext.Provider value={{
-            signupData, 
-            updateSignupData,
-            updateHomeData,
-            handleSignUp,
-            step,
-            setStep,
-            signupLoading,
-            signupDisabled
-        }}>
-            <ErrorModal 
-            visible={errorModal} 
-            setVisible={setErrorModal} 
-            title={"There is an error signing into HandyHome"} 
-            message={errorModalMessage}/>
-            {children}
-        </SignupContext.Provider>
-    )
+         console.log("--- [Signup Data] ---");
+         console.log(JSON.stringify(signupData, null, 2));
+
+         await axios.post(`${API_URL}/auth/signup`, signupData, {
+         headers: {
+            'Content-Type': 'application/json',
+         },
+         });
+         
+         console.log("2. Succesful Signing In")
+
+         goToVerify();
+
+      } catch (err) {
+         console.log("2. Failed Signing In")
+         console.log(err);
+         const message = err.response?.data.message || "An error has ocurred when trying to sign in. Please try again.";
+
+         if (
+            message.toLowerCase().includes("verify") || 
+            message.toLowerCase().includes("verification") || 
+            message.toLowerCase().includes("verified")
+         ) {
+            setExitCondition("verify");
+         } else {
+            setExitCondition(null);
+         }
+
+         showErrorModal(message)
+      } finally {
+         setSignupLoading(false);
+      }
+   }
+
+   // Effects
+   // ---- Check if all fields are filled ----
+   useEffect(() => {
+      if (areFieldsFilled()) {
+         setSignupDisabled(false);
+      } else {
+         setSignupDisabled(true);
+      }
+   }, [signupData, step])
+
+   // --- Check if password is valid ---
+   useEffect(() => {
+      const password = signupData.password || "";
+      let requirements = []
+
+      if (password.length > 8) requirements.push(0);
+      if (/(?=.*[A-Z])/.test(password)) requirements.push(1);
+      if (/(?=.*[a-z])/.test(password)) requirements.push(2);
+      if (/(?=.*\d)/.test(password)) requirements.push(3);
+      if (/(?=.*[!@#$%^&*()_\-+=\[\]{};':"\\|,.<>\/?`~])/.test(password)) requirements.push(4);
+      if (/^\S*$/.test(password) && password !== "") requirements.push(5);
+
+      setPassErrors(requirements);
+   }, [signupData.password])
+
+   return (
+      <SignupContext.Provider value={{
+      signupData, 
+      updateSignupData,
+      updateHomeData,
+      handleSignUp,
+      step,
+      setStep,
+      signupLoading,
+      signupDisabled,
+      areFormatsCorrect,
+      passErrors
+      }}>
+         <ErrorModal 
+         visible={errorModal} 
+         setVisible={setErrorModal} 
+         title={"Error Signing in with HandyHome"} 
+         message={errorModalMessage}
+         onExit={exitCondition === "verify" ? goToVerify : null}
+         buttonText={exitCondition==="verify" ? "Verify Now" : null}/>
+
+         {children}
+      </SignupContext.Provider>
+   )
 }
 
 export const useSignup = () => useContext(SignupContext);
