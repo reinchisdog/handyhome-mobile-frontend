@@ -45,7 +45,7 @@ const SignupVerifyScreen = () => {
          })
 
          console.log("2. Verification successful:", result.data);
-         router.replace('authentication/signup/verifyLoading');
+         router.replace('authentication/verify/success');
 
       } catch (err) {
          console.log(err);
@@ -87,11 +87,11 @@ const SignupVerifyScreen = () => {
 
 
    return (
-      <View style={[global.screenContainer, {position: 'relative'}]}>
+      <View style={[global.screenContainer, {position: 'relative', paddingBottom: insets.bottom + 24}]}>
          <ErrorModal 
          visible={errorModal} 
          setVisible={setErrorModal} 
-         title={"There is an error verifying your account"} 
+         title={"Error Verifying your Account"} 
          message={errorModalMessage}/>
 
          {/* --------------------------------- Header --------------------------------- */}
@@ -130,7 +130,7 @@ const SignupVerifyScreen = () => {
          </View>
 
          {/* --------------------------------- Buttons -------------------------------- */}
-         <View style={[global.buttonsContainer, {paddingBottom: insets.bottom}]}>
+         <View style={[global.buttonsContainer]}>
             <MainButton 
             text="Verify"
             type="secondary"

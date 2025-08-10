@@ -2,8 +2,8 @@
 
 // Imports
 // ---- Hooks and React Components
-import { Text, View , TouchableOpacity, ImageBackground, ScrollView, BackHandler } from 'react-native'
-import React, { use, useEffect } from 'react'
+import { Text, View , TouchableOpacity, ImageBackground, ScrollView, BackHandler, Modal } from 'react-native'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'expo-router';
 import { useSignup } from '../../../context/SignupContext';
 // ---- Custom Components
@@ -13,6 +13,8 @@ import LocationDetails from './locationDetails';
 import AccountDetails from './accountDetails';
 import Header from '../../../components/dashboard/Header';
 import MainButton from '../../../components/MainButton';
+import TermsConditionsScreen from '../../legal/termsConditions';
+import PrivacyPolicyScreen from '../../legal/privacyPolicy';
 // ---- Styles and Icons
 import Icons from '@expo/vector-icons/MaterialCommunityIcons';
 import Arrows from '@expo/vector-icons/Entypo';
@@ -33,9 +35,12 @@ export default  SignupScreen = () => {
       signupLoading,
       signupDisabled,
       areFormatsCorrect,
+      clearSignUp
     } = useSignup();
     const insets = useSafeAreaInsets();
     const router = useRouter();
+    const [termsModal, setTermsModal] = useState(false);
+    const [policyModal, setPolicyModal] = useState(false);
 
     const handleNextPage = () => {
       console.log("[Signup Index]: Checking formats for step", step);
@@ -50,6 +55,7 @@ export default  SignupScreen = () => {
       if (step === 1) {
         console.log("[Signup Index]: Going back to Main page...");
         router.replace('authentication');
+        clearSignUp();
       } else if (step === 3) {
         console.log("[Signup Index]: Going back to step", 2);
         setStep(1);
@@ -73,9 +79,18 @@ export default  SignupScreen = () => {
       return () => backHandler.remove(); 
     }, [])
 
+
   return (
     <View 
     style={[global.screenContainer, {position: 'relative'}]}>
+      <Modal visible={termsModal} statusBarTranslucent={true} animationType='fade'>
+        <TermsConditionsScreen handleBack={() => setTermsModal(false)}/>
+      </Modal>
+
+      <Modal visible={policyModal} statusBarTranslucent={true} animationType='fade'>
+        <PrivacyPolicyScreen handleBack={() => setPolicyModal(false)}/>
+      </Modal>
+
       {/* --------------------------------- Header --------------------------------- */}
       <ImageBackground
       source={require('../../../assets/images/backgrounds/graphic-bg3.png')}
@@ -107,7 +122,7 @@ export default  SignupScreen = () => {
       {step === 4 && ( 
         <>
           <AccountDetails/>
-          <View style={[global.buttonsContainer, {paddingBottom: insets.bottom}]}>
+          <View style={[global.buttonsContainer, {paddingBottom: insets.bottom + 24}]}>
             <View style={{flexDirection: 'row', gap: 8, alignItems: 'center'}}>
               <TouchableOpacity
               style={{
@@ -126,9 +141,20 @@ export default  SignupScreen = () => {
               </TouchableOpacity>
 
               <Text style={[auth.textGeneral, {flexShrink: 1}]}>
-                By continuing, you agree to HandyHome’s 
-                <Text style={auth.textLinks}> Terms & Conditions</Text> and 
-                <Text style={auth.textLinks}> Privacy Policy</Text>
+                By continuing, you agree to HandyHome's{' '}
+                <Text 
+                  style={[auth.textLinks, {color: COLORS.accent}]}
+                  onPress={() => setTermsModal(true)}
+                >
+                  Terms & Conditions
+                </Text>
+                {' '}and{' '}
+                <Text 
+                  style={[auth.textLinks, {color: COLORS.accent}]}
+                  onPress={() => setPolicyModal(true)}
+                >
+                  Privacy Policy
+                </Text>
               </Text>
             </View>
             
@@ -148,7 +174,7 @@ export default  SignupScreen = () => {
       </ScrollView>
 
       {/* --------------------------------- Buttons -------------------------------- */}
-      {step !== 4 && <View style={[global.buttonsContainer, {paddingBottom: insets.bottom}]}>
+      {step !== 4 && <View style={[global.buttonsContainer, {bottom : insets.bottom + 24}]}>
         <MainButton 
         text={"Continue"}
         type={"secondary"}

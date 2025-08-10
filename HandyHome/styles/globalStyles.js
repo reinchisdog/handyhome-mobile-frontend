@@ -23,7 +23,7 @@ export const globalStyles = StyleSheet.create({
         width: '100%',
         display: 'flex',
         gap: 16,
-        padding: 24
+        paddingHorizontal: 24,
     },
     btnsContText: {
         width: '100%', 

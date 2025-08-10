@@ -218,7 +218,7 @@ export const SignupProvider = ({children}) => {
    }
 
    const goToVerify = () => {
-      router.replace('/authentication/signup/verify');
+      router.replace('/authentication/verify');
    }
 
    const handleSignUp = async () => {
@@ -240,7 +240,7 @@ export const SignupProvider = ({children}) => {
          console.log("2. Succesful Signing In")
 
          goToVerify();
-
+         clearSignUp();
       } catch (err) {
          console.log("2. Failed Signing In")
          console.log(err);
@@ -260,6 +260,25 @@ export const SignupProvider = ({children}) => {
       } finally {
          setSignupLoading(false);
       }
+   }
+
+   const clearSignUp = async () => {
+      setSignupData({
+         first_name: "",
+         last_name: "",
+         email: "",
+         gender: "",
+         phone_number: "",
+         password: "",
+         birth_date: null,
+         home_address: {
+            block: "",
+            province: "",
+            municipal: "",
+            barangay: "",
+         },
+         terms_agreed: false
+      });
    }
 
    // Effects
@@ -298,7 +317,8 @@ export const SignupProvider = ({children}) => {
       signupLoading,
       signupDisabled,
       areFormatsCorrect,
-      passErrors
+      passErrors,
+      clearSignUp
       }}>
          <ErrorModal 
          visible={errorModal} 

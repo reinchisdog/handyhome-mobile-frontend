@@ -4,13 +4,13 @@
 // ---- Hooks and React Components
 import { View, Animated, Easing } from 'react-native'
 // ---- Contexts
-import {useAuth} from '../../context/AuthContext'
+import {useAuth} from '../../../context/AuthContext'
 // ---- Libraries
 import {useRouter} from 'expo-router';
 // ---- Custom Components
-import LoadingDots from '../../components/LoadingDots';
+import LoadingDots from '../../../components/LoadingDots';
 // ---- Styles and Icons
-import { globalStyles as global } from '../../styles/globalStyles';
+import { globalStyles as global } from '../../../styles/globalStyles';
 
 export default AuthLoadingScreen = () => {
    // Hooks and States

@@ -1,4 +1,4 @@
-import { TextInput, View, Animated, Easing } from 'react-native'
+import { TextInput, View, Animated, Easing, StyleSheet } from 'react-native'
 import React, { useState, useEffect, useRef } from 'react'
 
 
@@ -10,22 +10,15 @@ import { COLORS, FONT_SIZES, FONTS } from '../../styles/constants';
 export default function BasicInput({
   left,
   right,
+  isRightIcon = true,
   placeholder = "",
   secureTextEntry = false,
   inputMode= "text",
   keyboardType="default",
   onChangeText,
-  value,  
+  value,
 }) {
   const [placeholderText, setPlaceholderText] = useState(placeholder);
-
-  const [hasLeft, setHasLeft] = useState();
-  const [hasRight, setHasRight] = useState();
-
-  useEffect(() => {
-    if (left) setHasLeft(true);
-    if (right) setHasRight(true);
-  }, [])
 
   const borderColor = useRef(new Animated.Value(0)).current;
   const animBorderColor = borderColor.interpolate({
@@ -36,7 +29,7 @@ export default function BasicInput({
   const labelX = useRef(new Animated.Value(0)).current;
   const animLabelX = labelX.interpolate({
     inputRange: [0, 1],
-    outputRange: [(!hasLeft) ? (21) : (47), 20]
+    outputRange: [(!left) ? (21) : (47), 20]
   })
 
   const labelY = useRef(new Animated.Value(0)).current;
@@ -166,7 +159,7 @@ export default function BasicInput({
       {borderColor: animBorderColor}
     ]}>
       {/* ICON */}
-      {hasLeft ? 
+      {left ? 
         <View style={auth.inputIcon}>
           {left}
         </View> :
@@ -177,7 +170,7 @@ export default function BasicInput({
       {/* INPUT BOX */}
       <TextInput 
         style={[auth.inputText, {
-          paddingHorizontal: (!hasLeft) ? 12 : 0,
+          paddingHorizontal: (!left) ? 12 : 0,
         }]}
         secureTextEntry = {secureTextEntry}
         inputMode={inputMode}
@@ -208,12 +201,21 @@ export default function BasicInput({
       </Animated.Text>
       
       {/* ICON */}
-      {hasRight ? 
-        <View style={auth.inputIcon}>
+      {right && (
+        <View style={isRightIcon ? auth.inputIcon : styles.inputText}>
           {right}
-        </View> :
-        <></>
-      }
+        </View>
+      )}
     </Animated.View>
   )
 }
+
+const styles = StyleSheet.create({
+  inputText: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%',
+    paddingHorizontal: 8,
+  }
+});

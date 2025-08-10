@@ -6,25 +6,27 @@ import { Text, View, TouchableHighlight, TouchableOpacity, ImageBackground, Stat
 import React, { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'expo-router';
 // ---- Contexts
-import { useAuth } from '../../context/AuthContext'
+import { useAuth } from '../../../context/AuthContext'
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 // ---- Custom Components
-import BasicInput from '../../components/authentication/BasicInput';
-import DismissKeyboardWrapper from '../../components/DismissKeyboard';
-import MainButton from '../../components/MainButton';
-import Header from '../../components/dashboard/Header';
-import ErrorModal from '../../components/ErrorModal';
+import BasicInput from '../../../components/authentication/BasicInput';
+import DismissKeyboardWrapper from '../../../components/DismissKeyboard';
+import MainButton from '../../../components/MainButton';
+import Header from '../../../components/dashboard/Header';
+import ErrorModal from '../../../components/ErrorModal';
 // ---- Styles and Icons
 import Icons from '@expo/vector-icons/MaterialCommunityIcons';
 import Arrows from '@expo/vector-icons/Entypo';
-import { globalStyles as global } from '../../styles/globalStyles';
-import { authStyles as auth } from '../../styles/authStyles';
-import { COLORS, FONTS, FONT_SIZES } from '../../styles/constants';
+import { globalStyles as global } from '../../../styles/globalStyles';
+import { authStyles as auth } from '../../../styles/authStyles';
+import { COLORS, FONTS, FONT_SIZES } from '../../../styles/constants';
 
 export default function LoginScreen() {
    // Hooks
    const { login } = useAuth();
    const router = useRouter();
+   const insets = useSafeAreaInsets();
    // States
    const [loginData, setLoginData] = useState({
       identifier: "",
@@ -46,7 +48,7 @@ export default function LoginScreen() {
          if (!result.success) {
             throw Error (result.message);
          } 
-         else router.replace('authentication/authLoading');
+         else router.replace('authentication/login/success');
          
       } catch (err) {
          console.log(err);
@@ -77,7 +79,7 @@ export default function LoginScreen() {
    }
 
    const goToVerify = () => {
-      router.replace('/authentication/signup/verify');
+      router.replace('/authentication/verify');
    }
 
    return (
@@ -94,7 +96,7 @@ export default function LoginScreen() {
          style={[global.screenContainer, {position: 'relative'}]}>
             {/* --------------------------------- Header --------------------------------- */}
             <ImageBackground
-            source={require('../../assets/images/backgrounds/graphic-bg3.png')}
+            source={require('../../../assets/images/backgrounds/graphic-bg3.png')}
             style={[auth.stylizedHeader]}>
                <Header 
                background='transparent'
@@ -156,18 +158,24 @@ export default function LoginScreen() {
                      value={loginData.password}
                   />
 
+                  <TouchableOpacity
+                  activeOpacity={0.5}
+                  onPress={() => router.push('authentication/forgotPassword')}>
+                     <Text style={[auth.textLinks, {alignSelf: 'flex-end'}]}>
+                        Forgot Password?
+                     </Text>
+                  </TouchableOpacity>
+
                </View>
-               <TouchableOpacity
-               activeOpacity={0.5}
-               onPress={() => console.log("Forgot Password")}>
-                  <Text style={[auth.textLinks, {alignSelf: 'flex-end'}]}>
-                     Forgot Password?
-                  </Text>
-               </TouchableOpacity>
+               
             </View>
                   
             {/* --------------------------------- Buttons -------------------------------- */}
-            <View style={[global.buttonsContainer, {position: 'absolute', bottom: 0}]}>
+            <View style={[
+               global.buttonsContainer, {
+               position: 'absolute', 
+               bottom: 24,
+            }]}>
                <SafeAreaView>
                   <MainButton 
                   text="LOG IN"
