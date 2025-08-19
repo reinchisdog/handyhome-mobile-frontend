@@ -9,8 +9,7 @@ import
    useState,
 } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios'
-import {API_URL} from '../config';
+import api from '../lib/api';
 
 const AuthContext = createContext();
 
@@ -38,7 +37,7 @@ export const AuthProvider = ({children}) => {
       try {
       const token = JSON.parse(await AsyncStorage.getItem('token'));
 
-      console.log(`[Auth Context]: Token? ${token}`);
+      console.log(`[Auth Context] Token Set: ${token}`);
 
       if (token) {
          setToken(token);
@@ -47,22 +46,24 @@ export const AuthProvider = ({children}) => {
          setIsLoading(false);
       }
       } catch (err) {
-         console.log('[Auth Context]: Token Error:', err);
+         console.log('[Auth Context] Token Error:', err);
       }
    }
    // ---- Fetches user data using the token
    const tryFetchUser = async (token) => {
       try {
-         const res = await axios.get(
-            `${API_URL}/auth/validate-token`,
-            {
-               headers: { Authorization: `Bearer ${token}` },
-            }
-         );
+         await api.get(`/auth/validate-token`, {
+            headers: { Authorization: `Bearer ${token}` },
+         });
 
-         console.log(res?.data?.user)
+         const userResult = await api.get(`/user`, {
+            headers: { Authorization: `Bearer ${token}`},
+         });
 
-         setUser(res?.data?.user);
+         const userObj = userResult?.data?.data;
+         setUser(userObj);
+         console.log("4. Succesfully Fetched User Data:", JSON.stringify(userObj));
+
          setIsLoading(false);
       } catch (err) {
          console.log('Fetch user failed:', err.response?.data || err.message);
@@ -74,7 +75,7 @@ export const AuthProvider = ({children}) => {
       try {
          console.log("--- [Auth Context]: Login Attempt ---");
          console.log("1. Loggin In");
-         const tokenResult = await axios.post(`${API_URL}/auth/login`, loginData, {
+         const tokenResult = await api.post(`/auth/login`, loginData, {
             headers: {
                'Content-Type': 'application/json',
             },
@@ -84,17 +85,18 @@ export const AuthProvider = ({children}) => {
          const token = tokenResult.data.data.token;
          await AsyncStorage.setItem('token', JSON.stringify(token));
          setToken(token);
+         console.log("[Auth Context] Token Set:", token); 
          
          console.log("3. Fetching User Data");
-         const userResult = await axios.get(`${API_URL}/user`, {
+         const userResult = await api.get(`/user`, {
             headers: {
                Authorization: `Bearer ${token}`,
             }
          });
 
-         console.log("4. Succesfully Fetched User Data")
-         const user = userResult.data.data;
-         setUser(user);
+         const userObj = userResult.data.data;
+         setUser(userObj);
+         console.log("4. Succesfully Fetched User Data:", JSON.stringify(userObj));
 
          return { success: true };
       } catch (err){

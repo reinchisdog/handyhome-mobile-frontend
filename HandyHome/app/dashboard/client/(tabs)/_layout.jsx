@@ -1,83 +1,53 @@
-import { StatusBar, TouchableOpacity } from 'react-native';
-import { Tabs } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+// Layout: Client-Tabs Layout
 
+// Imports
+// ---- React and Expo components
+import { TouchableOpacity, Pressable } from "react-native";
+import { Tabs, useSegments } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+// ---- Styles and Icons
 import { COLORS, FONT_SIZES, FONTS } from '../../../../styles/constants';
 import Icons1 from '@expo/vector-icons/MaterialCommunityIcons';
 import Icons2 from '@expo/vector-icons/MaterialIcons';
+import { useEffect } from "react";
 
-export default function DashboardLayout() {
-  const insets = useSafeAreaInsets()
+const StarterTabLayout = () => {
+   const segments = useSegments();
 
-  return (
-    <Tabs
+   // const inHomeStack = segments[3] === "home";
+   // const isHomeIndex = inHomeStack && (segments[4] === undefined || segments[4] === "index");
+
+   return (
+      <Tabs
       screenOptions={{
-        headerShown: false,
-        tabBarLabelStyle: {
-          fontSize: FONT_SIZES.xs,
-          fontFamily: FONTS.roboto700,
-        },
-        tabBarStyle: {
-          height: 70 + insets.bottom,
-          borderRadius: 18,
-          paddingVertical: 10,
-        },
-        tabBarItemStyle: {
-          padding: 4,
-          gap: 4,
-        },
-        tabBarActiveTintColor: COLORS.primary,
-        tabBarInactiveTintColor: COLORS.lettersicons,
-        tabBarButton: (props) => <TouchableOpacity {...props} activeOpacity={0.5} />,
+         headerShown: false,
+         tabBarLabelStyle: {
+            fontFamily: FONTS.roboto500,
+            fontSize: FONT_SIZES.xs
+         },
+         tabBarInactiveTintColor: COLORS.lettersicons,
+         tabBarActiveTintColor: COLORS.primary,
+         // tabBarStyle: isHomeIndex ? undefined : { display: "none" },
       }}
-    >
-      <Tabs.Screen
-        name="home"
-        options={{
-          unmountOnBlur: true,
-          title: 'Home',
-          tabBarIcon: ({ focused, color, size }) => {
-            const iconName = focused ? 'home' : 'home-outline';
-            return <Icons1 name={iconName} color={color} size={size} />;
-          },
-        }}
-      />
+      >
+         <Tabs.Screen 
+            name="home"
+            options={{
+               title: "Home",
+               tabBarIcon: ({ color, size }) => (
+                  <Icons1 
+                     name="home" 
+                     size={size} 
+                     color={color} 
+                  />
+               ),
+               href: "/dashboard/client/(tabs)/home"
+            }}
+         />
 
-      <Tabs.Screen
-        name="bookings"
-        options={{
-          title: 'Bookings',
-          unmountOnBlur: true,
-          tabBarIcon: ({ focused, color, size }) => {
-            const iconName = focused ? 'calendar-account' : 'calendar-account-outline';
-            return <Icons1 name={iconName} color={color} size={size} />;
-          },
-        }}
-      />
 
-      <Tabs.Screen
-        name="inbox"
-        options={{
-          title: 'Inbox',
-          unmountOnBlur: true,
-          tabBarIcon: ({ focused, color, size }) => {
-            const iconName = focused ? 'message-text' : 'message-text-outline';
-            return <Icons1 name={iconName} color={color} size={size} />;
-          },
-        }}
-      />
-
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profile',
-          unmountOnBlur: true,
-          tabBarIcon: ({ focused, color, size }) => {
-            const iconName = focused ? 'person' : 'person-outline';
-            return <Icons2 name={iconName} color={color} size={size} />;
-          },
-        }}
-      />
-    </Tabs>
-  );
+      </Tabs>
+   )
 }
+
+export default StarterTabLayout;

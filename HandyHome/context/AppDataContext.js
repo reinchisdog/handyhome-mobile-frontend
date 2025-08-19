@@ -10,57 +10,28 @@ import
 } from 'react';
 import { useAuth } from './AuthContext';
 import { useCustomFonts } from '../assets/fonts';
-import axios from 'axios';
-import {API_URL} from '../config'
+import api from '../lib/api';
 
 const AppDataContext = createContext();
 
 export const AppDataProvider = ({children}) => {
    // States and Hook Calls
    const [fontsLoaded] = useCustomFonts();
-   const { user, token } = useAuth();
    const [isAppDataReady, setIsAppDataReady] = useState(false);
    const [ services, setServices ] = useState([]);
-   const [ profile, setProfile ] = useState(null);
-   const [ worker, setWorker ] = useState(null)
 
    // Functions
    const fetchServices = async () => { 
       try {
-         const res = await axios.get(`${API_URL}/general/services`);
+         console.log("BASE URL:", process.env.EXPO_PUBLIC_API_URL);
+         console.log("API URL:", api);
+
+         const res = await api.get(`/general/services`);
          setServices(res.data.data);
 
          console.log("[AppData Context]: Fetched Services Successfully");
       } catch (err) {
          console.error("[AppData Context]: Fetched Services Failed", err);
-      }
-   }
-
-   const fetchProfile = async () => {
-      try {
-         const res = await axios.get(`${API_URL}/user`, {
-            headers: { Authorization: `Bearer ${token}` },
-         });
-         setProfile(res.data.data);
-
-         console.log("[AppData Context]: Fetched Profile Successfully");
-      } catch (err) {
-         console.error("[AppData Context]: Fetched Profile Failed", err);
-      }
-   }
-
-   const fetchWorker = async () => {
-      if (user?.role !== "Worker") return; 
-
-      try {
-         const res = await axios.get(`${API_URL}/worker`, {
-            headers: { Authorization: `Bearer ${token}` },
-         });
-         setWorker(res.data.data);
-
-         console.log("[AppData Context]: Fetched Worker Successfully");
-      } catch (err) {
-         console.error("[AppData Context]: Fetched Worker Failed", err);
       }
    }
 
@@ -72,11 +43,6 @@ export const AppDataProvider = ({children}) => {
 
       const init = async () => {
          try {
-            if (user && token) {
-               fetchProfile(); 
-               fetchWorker();  
-            }
-   
             await fetchServices();
    
             setIsAppDataReady(true);
@@ -87,7 +53,7 @@ export const AppDataProvider = ({children}) => {
       };
 
       init();
-   }, [fontsLoaded, user, token, isAppDataReady]);
+   }, [fontsLoaded, isAppDataReady]);
 
    if (!fontsLoaded) return null;
 
@@ -95,8 +61,6 @@ export const AppDataProvider = ({children}) => {
       <AppDataContext.Provider
       value={{
          services,
-         profile,
-         worker,
          isAppDataReady,
       }}>
          {children}

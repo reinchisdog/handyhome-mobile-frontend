@@ -47,7 +47,6 @@ const SearchingSuccess = () => {
       position: 'relative',
       backgroundColor: '#fff',
       gap: 24,
-      paddingBottom: insets.bottom + 24,
     }]}>
     
       <Animated.View 
@@ -67,7 +66,7 @@ const SearchingSuccess = () => {
         </Text>
       </View>
 
-      <View style={[global.buttonsContainer, {position: 'absolute', bottom: 0}]}>
+      <View style={[global.buttonsContainer, {position: 'absolute', bottom: insets.bottom + 24}]}>
          <MainButton 
          text="Back to Login"
          type="primary"

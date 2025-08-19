@@ -1,21 +1,28 @@
-import { StyleSheet, Text, View } from 'react-native';
-import React from 'react';
-import { AppointmentProvider } from '../../../../context/AppointmentContext';
-import { KeyboardProvider } from 'react-native-keyboard-controller';
-import { Stack } from 'expo-router';
+// Layout: Appointment Process Layout
+
+// Imports
+// React and Expo Components
+import { Stack } from "expo-router"
+// Contexts
+import { AppointmentProvider } from "../../../../context/AppointmentContext"
+import { KeyboardProvider } from "react-native-keyboard-controller"
+import { CameraProvider } from "../../../../context/CameraContext"
 
 const AppointmentLayout = () => {
-  return (
-    <KeyboardProvider>
+   return (
+      <CameraProvider>
+      <KeyboardProvider>
       <AppointmentProvider>
-        <Stack
-          screenOptions={{
-            headerShown: false
-          }}
-        />
+         <Stack 
+         screenOptions={{
+            headerShown: false,
+            animation: 'slide_from_right'
+         }}
+         />
       </AppointmentProvider>
-    </KeyboardProvider>
-  )
+      </KeyboardProvider>
+      </CameraProvider>
+   )
 }
 
 export default AppointmentLayout

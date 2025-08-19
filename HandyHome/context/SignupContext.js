@@ -93,7 +93,7 @@ export const SignupProvider = ({children}) => {
          if (accountError) {
             errorMessage = accountError;
          } else if (passwordError) {
-               errorMessage = passwordError;
+            errorMessage = passwordError;
          }
       }
 
@@ -121,11 +121,16 @@ export const SignupProvider = ({children}) => {
    };
 
    const validateAccount = () => {
+      console.log("[Signup Context]: Validating Email and Phone");
       const email = signupData.email?.trim() || "";
       const phone = signupData.phone_number?.trim() || "";
 
       if (email === "" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
          return "Please enter a valid email address.";
+      }
+
+      if (phone.length !== 11) {
+         return "Phone number must be 11 digits long.";
       }
 
       if (phone === "" || !/^09\d{9}$/.test(phone)) {
@@ -136,6 +141,7 @@ export const SignupProvider = ({children}) => {
    };
   
    const validatePassword = () => {
+      console.log("[Signup Context]: Validating Password");
       const password = signupData.password?.trim() || "";
 
       if (password.length < 8) {
@@ -225,11 +231,11 @@ export const SignupProvider = ({children}) => {
       try{
          setSignupLoading(true);
 
+         if(!areFormatsCorrect())
+            return;
+
          console.log("--- [Signup Context]: Sign Up Attempt ---");
          console.log("1. Signing In");
-
-         console.log("--- [Signup Data] ---");
-         console.log(JSON.stringify(signupData, null, 2));
 
          await axios.post(`${API_URL}/auth/signup`, signupData, {
          headers: {
