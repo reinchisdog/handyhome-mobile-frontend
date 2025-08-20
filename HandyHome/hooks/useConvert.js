@@ -57,7 +57,7 @@ export const useConvert = () => {
       try {
          const getFileExtension = (uri) => {
             const parts = uri.split('.');
-            return parts.lenth > 1 ? parts[parts.length - 1].toLowerCase() : 'jpg';
+            return parts.length > 1 ? parts[parts.length - 1].toLowerCase() : 'jpg';
          };
 
          const generateFileName = (extension) => {
@@ -96,7 +96,6 @@ export const useConvert = () => {
             uri: uri,
             name: name,
             type: getMimeType(extension),
-            size: null,
          };
 
          return fileObject;

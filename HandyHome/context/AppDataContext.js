@@ -31,7 +31,7 @@ export const AppDataProvider = ({children}) => {
 
          console.log("[AppData Context]: Fetched Services Successfully");
       } catch (err) {
-         console.error("[AppData Context]: Fetched Services Failed", err);
+         throw new Error("[AppData Context]: Fetched Services Failed", err);
       }
    }
 

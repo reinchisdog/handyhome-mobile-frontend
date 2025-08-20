@@ -107,7 +107,7 @@ const UnverifiedPrompt = ({ hidePrompt }) => {
                alignItems: 'center'
             }]}
 
-            onPress={() => {router.push('dashboard/client/verify/user')}}>
+            onPress={() => {router.push('dashboard/client/verify/user/')}}>
                <Text 
                style={{
                   fontFamily: FONTS.roboto700,

@@ -75,8 +75,14 @@ const InputDropdown = ({
          }
          ]}> 
             <Text 
-            style={[auth.inputText, {padding: 12, color: selected?.title ? COLORS.lettersicons : COLORS.strokes}]}>
-               {selected?.title || placeholder}
+            style={[
+               auth.inputText, {
+               padding: 12, 
+               color: (typeof selected === 'object' ? selected?.title : selected) ? 
+                  COLORS.lettersicons : 
+                  COLORS.strokes
+            }]}>
+               {typeof selected === 'object' ? selected?.title : selected || placeholder}
             </Text>
             <View style={auth.inputIcon}>
                <Icons name="chevron-down" size={24} color="black" />

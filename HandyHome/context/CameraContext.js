@@ -1,10 +1,14 @@
-/* --------------------------------- Imports -------------------------------- */
+// Context: Camera Context
+
+// Imports
+// ---- React and Expo Components
 import React, { 
    createContext, 
    useContext, 
    useEffect, 
    useState,
-   useRef
+   useRef,
+   useCallback
 } from 'react';
 import {
    Linking,
@@ -21,44 +25,53 @@ import {
    useCameraDevice
 } from 'react-native-vision-camera';
 import * as ImagePicker from 'expo-image-picker';
-
-import Header from '../components/dashboard/Header';
+// ---- Styles and Icons
+import Header from '../components/Header';
 import Icons from '@expo/vector-icons/MaterialCommunityIcons';
-import Arrows from '@expo/vector-icons/Entypo';
 
 const CameraContext = createContext();
 
 export const useCamera = () => useContext(CameraContext);
 
 export const CameraProvider = ({ children }) => {
+   // Hooks and States
    const { hasPermission, requestPermission } = useCameraPermission();
 
    const [ showCamera, setShowCamera ] = useState(false);
-   const [ cameraFace, setCameraFace ] = useState("back");
+   const [initialCameraFace, setInitialCameraFace] = useState("back");
+   const [ canSwitch, setCanSwitch] = useState(false);
    const [ image, setImage ] = useState(null);
 
-   const openCamera = async () => {
+   // Functions
+   const clearImage = useCallback(() => {
+      setImage(null);
+   }, []);
+
+   const openCamera = useCallback(async (cameraFace = "back", allowSwitch = false) => {
       if (!hasPermission) {
          const granted = await requestPermission();
-         if (!granted) Linking.openSettings();
-      } else {
-         setShowCamera(true);
+         if (!granted) {
+            Linking.openSettings();
+            return;
+         }
       }
-   }
+      setInitialCameraFace(cameraFace);
+      setCanSwitch(allowSwitch);
+      setShowCamera(true);
+   }, [hasPermission, requestPermission]);
 
-   const forceCloseCamera = () => {
+   const forceCloseCamera = useCallback(() => {
       setImage(null);
       setShowCamera(false);
-   }
+   }, []);
 
    return (
       <CameraContext.Provider 
-      value={{
+      value={{ 
          openCamera,
          forceCloseCamera,
-         image,
-         setImage,
-         setCameraFace
+         clearImage,
+         image, 
       }}>
          {children}
 
@@ -66,73 +79,115 @@ export const CameraProvider = ({ children }) => {
          visible={showCamera}
          setVisible={setShowCamera}
          setImage={setImage}
-         cameraFace={cameraFace}
+         initialCameraFace={initialCameraFace}
+         canSwitch={canSwitch}
          />
       </CameraContext.Provider>
    )
 }
 
-const CameraScreen = ({visible, setVisible, setImage, cameraFace}) => {
-   const { width, height } = useWindowDimensions();
+const CameraScreen = ({
+   visible, 
+   setVisible,
+   setImage, 
+   initialCameraFace = "back",
+   canSwitch = false
+}) => {
+   // Hooks and States
+   const [cameraFace, setCameraFace] = useState(initialCameraFace);
+   const device = useCameraDevice(cameraFace);
 
-   const [zoom, setZoom] = useState(device?.neutralZoom);
+   useEffect(() => {
+      setCameraFace(initialCameraFace);
+   }, [initialCameraFace])
+
+   const [zoom, setZoom] = useState(0);
    const [exosure, setExposure] = useState(0);
    const [flash, setFlash] = useState("off");
    const [torch, setTorch] = useState("off");
+   const [lightIcon, setLightIcon] = useState("flash-off");
+
    const cameraRef = useRef(null);
 
-   const device = useCameraDevice(cameraFace)
+   // Functions
+   useEffect(() => {
+      if (device?.neutralZoom) {
+         setZoom(device.neutralZoom);
+      }
+   }, [device]);
 
-   const [lightIcon, setLightIcon] = useState("flash-off")
-   const handleLight = () => {
+   const handleLight = useCallback(() => {
       if (lightIcon === "flash-off") {
-         // ---- Flash Auto
+         // Flash Auto
          setFlash("on");
-         setLightIcon("flash-auto")
+         setLightIcon("flash-auto");
 
       } else if (lightIcon === "flash-auto") {
-         // ---- Flash On
+         // Flash On
          setFlash("off");
          setTorch("on")
-         setLightIcon("flash")
+         setLightIcon("flash");
          
       } else if (lightIcon === "flash") {
-         // ---- Flash Off
+         // Flash Off
          setTorch("off")
-         setLightIcon("flash-off")
+         setLightIcon("flash-off");
       }
-   }
+   }, [lightIcon]);
 
-   const handleImagePick = async () => {
-      const uriPath = await ImagePicker.launchImageLibraryAsync({
-         mediaTypes: ['images'],
-         quality: 1
-      });
-
-      if(!uriPath.canceled) {
-         setImage(uriPath.assets[0].uri);
-         setVisible(false);
-         
-      }
-   }
-
-   const handleImageTake = async () => {
+   const handleImagePick = useCallback(async () => {
       try {
-         if (cameraRef.current == null) throw new Error("Camera ref is null");
+         const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            quality: 1,
+            allowsEditing: false,
+         });
+
+         if (!result.canceled && result.assets?.length > 0) {
+            setImage(result.assets[0].uri);
+            setVisible(false);
+         }
+      } catch (error) {
+         console.error('Error picking image:', error);
+      }
+   }, [setImage, setVisible]);
+
+   const handleImageTake = useCallback(async () => {
+      try {
+         if (!cameraRef.current) {
+            console.error("Camera ref is null");
+            return;
+         }
 
          const photo = await cameraRef.current.takePhoto({
             flash: flash,
             enableShutterSound: true
          });
 
-         const uriPath = photo.path.startsWith('file://') ?
-         photo.path : `file://${photo.path}`;
+         const uriPath = photo.path.startsWith('file://') 
+            ? photo.path 
+            : `file://${photo.path}`;
 
          setImage(uriPath);
          setVisible(false);
 
-      } catch (e) { console.log(e) }
-   }
+      } catch (error) { 
+         console.error('Error taking photo:', error);
+      }
+   }, [flash, setImage, setVisible]);
+
+   const handleClose = useCallback(() => {
+      setVisible(false);
+      setImage(null);
+   }, [setVisible, setImage]);
+
+   const handleSwitch = useCallback(() => {
+      setCameraFace(prev => prev === "back" ? "front" : "back");
+
+      setFlash("off");
+      setTorch("off");
+      setLightIcon("flash-off");
+   }, []);
 
    const circlePress = useRef(new Animated.Value(0)).current;
    const circleScale = circlePress.interpolate({
@@ -157,35 +212,37 @@ const CameraScreen = ({visible, setVisible, setImage, cameraFace}) => {
       }).start();
    }
 
+   if (!device) {
+      return null;
+   }
+
    return (
       <Modal
       animationType='slide'
-      backdropColor={'#000'}
+      // backdropColor={'#000'}
       visible={visible}
       statusBarTranslucent={true}
-      onRequestClose={() => {setVisible(false); setImage(null)}}
+      onRequestClose={handleClose}
       >
          {/* ------------------------------ Flash Options ----------------------------- */}
          <Header 
-         background='#000'
-         left={
-            <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => setVisible(false)}>
-               <Arrows name='chevron-left' size={24} color={'#fff'}/>
-            </TouchableOpacity>
+         hasBack
+         onBack={handleClose}
+         backColor='#fff'
+         backgroundColor='#000'
+         rightIcon={
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+               <TouchableOpacity
+               activeOpacity={0.8}
+               onPress={() => {
+                  if (cameraFace === "back") handleLight()
+                  else () => {};
+               }}>
+                  <Icons name={lightIcon} size={24} color={'#fff'}/>
+               </TouchableOpacity>
+            </View>
          }
-         title={<></>}
-         right={
-            <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => {
-               if (cameraFace === "back") handleLight()
-               else () => {};
-            }}>
-               <Icons name={lightIcon} size={24} color={'#fff'}/>
-            </TouchableOpacity>
-         }/>
+         />
 
          {/* ------------------------------- Camera View ------------------------------ */}
          <Camera 
@@ -254,6 +311,26 @@ const CameraScreen = ({visible, setVisible, setImage, cameraFace}) => {
                   }}
                   />
                </Pressable>
+
+               {canSwitch && (
+                  <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={handleSwitch}
+                  style={{
+                     justifyContent: 'center',
+                     alignItems: 'center',
+                     height: 42,
+                     width: 42,
+                     borderRadius: 8,
+                     borderWidth: 2,
+                     borderColor: '#fff',
+                     position: 'absolute',
+                     right: 12,
+                  }}
+                  >
+                     <Icons name='repeat' size={32} color={'#fff'}/>
+                  </TouchableOpacity>
+               )}
 
             </View>
          </View>

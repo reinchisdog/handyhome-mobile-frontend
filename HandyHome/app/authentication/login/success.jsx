@@ -26,7 +26,7 @@ export default AuthLoadingScreen = () => {
    }
     
    return (
-      <View style={[global.screenContainer, global.centerContainer]}>
+      <View style={[global.screenContainer, global.centerContainer, {backgroundColor: '#fff'}]}>
          <LoadingDots onAnimationEnd={handleRedirect} />
       </View>
    );

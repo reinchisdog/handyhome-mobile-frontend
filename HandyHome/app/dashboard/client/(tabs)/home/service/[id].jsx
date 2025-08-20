@@ -169,7 +169,7 @@ const ServiceCategoryScreen = () => {
          title={"An error has ocurred when starting an Appointment"}
          message={errorMessage}
          buttonText={"Verify Now"}
-         onExit={() => router.replace('/dashboard/client/verify/client')}
+         onExit={() => router.replace('/dashboard/client/verify/user')}
          />
 
          <View

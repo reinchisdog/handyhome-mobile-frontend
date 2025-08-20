@@ -42,8 +42,13 @@ const ClientVerificationScreen = () => {
 
    // Functions
    const handleNext = () => {
+      console.log(clientVerification);
+
       if (step === 2 && isIdPageEmpty()) {
          setErrorMessage("Valid ID Fields are incomplete. Please fill all the inputs to proceed.");
+         setShowErrorModal(true);
+      } else if (step === 3 && isSelfiePageEmpty()) {
+         setErrorMessage("Selfie image is empty. Please fill all the inputs to proceed.");
          setShowErrorModal(true);
       } else if (step === 3) {
          handleClientVerification();
@@ -57,7 +62,7 @@ const ClientVerificationScreen = () => {
          clearClientVerification();
          router.back()
       } else {
-         await backAnimation();
+         backAnimation();
       }
    }
 
@@ -67,6 +72,12 @@ const ClientVerificationScreen = () => {
       const idImage = clientVerification?.primary_id;
 
       return !idType || !idNumber || !idImage;
+   }
+
+   const isSelfiePageEmpty = () => {
+      const selfieImage = clientVerification?.selfie;
+
+      return !selfieImage;
    }
 
    // Effects
@@ -92,77 +103,54 @@ const ClientVerificationScreen = () => {
 
    // Animation
    const nextAnimation = () => {
-      return new Promise((resolve) => {
-         // First scroll to top
-         scrollRef.current?.scrollTo({ y: 0, animated: true });
+      scrollRef.current?.scrollTo({ y: 0, animated: true });
 
-         // Wait for scroll to complete, then start fade animation
-         setTimeout(() => {
-            // First fade out
+      Animated.timing(pageAnimation, {
+         toValue: 0,
+         duration: 500,
+         delay: 300,
+         useNativeDriver: true
+      }).start(() => {
+         setStep(prev => prev + 1);
+
+         Animated.sequence([
             Animated.timing(pageAnimation, {
-               toValue: 0,
-               duration: 150,
+               toValue: 1,
+               duration: 500,
                useNativeDriver: true
-            }).start(() => {
-               // Change step content happens here (in the callback)
-               setStep(prevStep => prevStep + 1);
-               
-               // Then fade back in
-               Animated.timing(pageAnimation, {
-                  toValue: 1,
-                  duration: 150,
-                  useNativeDriver: true
-               }).start(() => {
-                  // Animate progress bar after fade in completes
-                  const progressBarIndex = step - 1;
-                  if (progressBarIndex >= 0 && progressBarIndex < progressBars.length) {
-                     Animated.timing(progressBars[progressBarIndex], {
-                        toValue: 1,
-                        duration: 600,
-                        useNativeDriver: false
-                     }).start();
-                  }
-                  resolve();
-               });
-            });
-         }, 300);
+            }),
+            Animated.timing(progressBars[step - 1], {
+               toValue: 1,
+               duration: 500,
+               useNativeDriver: false
+            })
+         ]).start();
       });
    }
 
    const backAnimation = () => {
-      return new Promise((resolve) => {
-         scrollRef.current?.scrollTo({ y: 0, animated: true });
+      scrollRef.current?.scrollTo({ y: 0, animated: true });
 
-         setTimeout(() => {
+      Animated.timing(pageAnimation, {
+         toValue: 0,
+         duration: 500,
+         delay: 300,
+         useNativeDriver: true
+      }).start(() => {
+         setStep(prev => prev - 1);
+
+         Animated.sequence([
             Animated.timing(pageAnimation, {
-            toValue: 0,
-            duration: 150,
-            useNativeDriver: true
-            }).start(() => {
-            // Use callback form to get fresh step
-            setStep(prevStep => {
-               const newStep = prevStep - 1;
-
-               Animated.timing(pageAnimation, {
-                  toValue: 1,
-                  duration: 150,
-                  useNativeDriver: true
-               }).start(() => {
-                  const progressBarIndex = newStep - 1;
-                  if (progressBarIndex >= 0 && progressBarIndex < progressBars.length) {
-                  Animated.timing(progressBars[progressBarIndex], {
-                     toValue: 0,
-                     duration: 600,
-                     useNativeDriver: false
-                  }).start();
-                  }
-                  resolve();
-               });
-
-               return newStep;
-            });
-            });
-         }, 300);
+               toValue: 1,
+               duration: 500,
+               useNativeDriver: true
+            }),
+            Animated.timing(progressBars[step - 2], {
+               toValue: 0,
+               duration: 500,
+               useNativeDriver: false
+            })
+         ]).start();
       });
    };
 
@@ -837,7 +825,7 @@ const ValidIdPage = () => {
             items={idTypes}
             onSelect={(e) => setClientVerification(prev => ({
                ...prev,
-               id_type: e
+               id_type: e.value
             }))}
             selectedItem={clientVerification.id_type}
             />
@@ -857,6 +845,7 @@ const ValidIdPage = () => {
             data={clientVerification.primary_id}
             dataName={"primary_id"}
             setData={setClientVerification}
+            canSwitch
             />
 
          </View>
@@ -865,9 +854,40 @@ const ValidIdPage = () => {
 };
 
 const SelfiePage = () => {
+   const {clientVerification, setClientVerification} = useClientVerification();
+
    return (
-      <View style={{}}>
-         
+      <View style={{ gap: 24, paddingTop: 12, paddingBottom: 24}}>
+         <View style={{alignItems: 'center', gap: 12}}>
+            <Image 
+            source={require(`../../../../../assets/images/illustrations/Photo-Guide-2.png`)}
+            style={{
+               width: 148,
+               height: 148,
+               aspectRatio: 1/1,
+            }}/>
+            <Text
+            style={{
+               fontFamily: FONTS.roboto400,
+               fontSize: FONT_SIZES.sm,
+               color: COLORS.lettersicons,
+               textAlign: 'justify',
+               padding: 12,
+               width: '100%',
+               backgroundColor: COLORS.secondary,
+               borderRadius: 10,
+            }}>
+               <Text style={{fontFamily: FONTS.roboto700}}>NOTE: </Text>Please take a clear selfie in a well-lit place. Make sure your face is fully visible (no masks, hats, or sunglasses). This will be used only to verify your identity and keep your account secure.
+            </Text>
+         </View>
+
+         <MediaUpload 
+         maxMedia={1}
+         data={clientVerification.selfie}
+         dataName={"selfie"}
+         setData={setClientVerification}
+         setCameraFace='front'
+         />
       </View>
    );
 };

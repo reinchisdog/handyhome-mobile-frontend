@@ -8,6 +8,7 @@ import { useRouter } from 'expo-router';
 import ErrorModal from '../components/ErrorModal';
 // ---- Misc
 import api from '../lib/api';
+import supabase from '../lib/supabase'
 import { useAuth } from './AuthContext';
 import { useConvert } from '../hooks/useConvert'
 
@@ -30,6 +31,7 @@ export const AppointmentProvider = ({ children }) => {
       description: "",
       attachment: null,
    });
+   const [currentAppointment, setCurrentAppointment] = useState(null);
    const [appointmentLoading, setAppointmentLoading] = useState(false);
 
    // Functions
@@ -37,11 +39,16 @@ export const AppointmentProvider = ({ children }) => {
       for (const key in data) {
          if (data.hasOwnProperty(key)) {
             const formKey = parentKey ? `${parentKey}[${key}]` : key;
+            const value = data[key];
 
-            if (typeof data[key] === 'object' && !(data[key] instanceof File)) {
-                appendFormData(formData, data[key], formKey);
+            if (value && typeof value === 'object' && value.uri && value.type) {
+               console.log(`📎 Appending file: ${key} -> ${value.name} (${value.type})`);
+               formData.append(key, value);
+            } else if (typeof value === 'object' && value !== null) {
+               appendFormData(formData, value, formKey);
             } else {
-                formData.append(formKey, data[key]);
+               console.log(`📝 Appending field: ${formKey} -> ${value}`);
+               formData.append(formKey, value);
             }
          }
       }
@@ -69,14 +76,13 @@ export const AppointmentProvider = ({ children }) => {
                'Content-Type' : "multipart/form-data"
             }
          });
+         setCurrentAppointment(appointmentResult?.data?.data);
 
          console.log("[3] Succesful Creation of Appointment. Routing to Worker Waiting");
          router.push("/dashboard/client/appointment/queue");
 
       } catch (err) {
          const message = err?.response?.data?.message || "An unknown error has ocurred when creating your appointment. Please try again.";
-         console.log("[0.1] ", err);
-         console.log("[0.2] Error:", message);
          setErrorTitle("Appointment Error");
          setErrorMessage(message);
          setShowErrorModal(true);
@@ -85,40 +91,66 @@ export const AppointmentProvider = ({ children }) => {
       }
    }
 
+   useEffect(() => {
+      if (!currentAppointment?.id) return;
+
+      appointmentLoading(true);
+      console.log("---- [Appointment Context] Worker Queue Attempt ----");
+      console.log('[1] Waiting');
+
+      const changes = supabase
+         .channel(`appointment-${currentAppointment.id}`)
+         .on(`postgres_changes`, {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'initial_bookings',
+            filter: `id=eq.${currentAppointment.id}`
+         }, (payload) => {
+            console.log("[2] Worker Found");
+            console.log(payload.new);
+            setCurrentAppointment(payload.new);
+            appointmentLoading(false);
+         })
+         .subscribe();
+
+      return () => {
+         changes.unsubscribe();
+      };
+   }, [currentAppointment?.id]);
    
-   const fetchAppointmentStatus = async (id) => {
-      try {
-         const result = await api.get(`/user/book/${id}/check_status`, {
-            headers: {
-               'Authorization' : `Bearer ${token}`
-            }
-         });
+   // const fetchAppointmentStatus = async (id) => {
+   //    try {
+   //       const result = await api.get(`/user/book/${id}/check_status`, {
+   //          headers: {
+   //             'Authorization' : `Bearer ${token}`
+   //          }
+   //       });
 
-         const reqStatus = result?.data?.status || "error";
-         const message = result?.data?.message;
-         const bookStatus = result?.data?.data;
+   //       const reqStatus = result?.data?.status || "error";
+   //       const message = result?.data?.message;
+   //       const bookStatus = result?.data?.data;
 
-         if (reqStatus === "success") {
-            return {
-               success: true,
-               status: bookStatus ? "ready" : "pending"
-            }
-         } else if (reqStatus === "failed" || reqStatus === "error") {
-            throw Error (message);
-         }
+   //       if (reqStatus === "success") {
+   //          return {
+   //             success: true,
+   //             status: bookStatus ? "ready" : "pending"
+   //          }
+   //       } else if (reqStatus === "failed" || reqStatus === "error") {
+   //          throw Error (message);
+   //       }
 
-      } catch (err) {
-         // Cancel Initial Booking
-         const rejectResult = await rejectInitialBooking(id)
-         const message = rejectResult.success ? err?.message || "An unknown error has occured." : rejectResult.message
+   //    } catch (err) {
+   //       // Cancel Initial Booking
+   //       const rejectResult = await rejectInitialBooking(id)
+   //       const message = rejectResult.success ? err?.message || "An unknown error has occured." : rejectResult.message
          
-         return {success: false, message: message}
-      }
-   }
+   //       return {success: false, message: message}
+   //    }
+   // }
 
-   const rejectInitialBooking = async (id) => {
+   const rejectInitialBooking = async () => {
       try {
-         await api.delete(`/user/book/${id}/reject_booking`, {
+         await api.delete(`/user/book/${currentAppointment?.id}/reject_booking`, {
             headers: {
                'Authorization': `Bearer ${token}`
             }
@@ -126,8 +158,10 @@ export const AppointmentProvider = ({ children }) => {
 
          return {success: true}
       } catch (err) {
-         const message = err?.message || "An unknown error has occured."
-         return {success: false, message: message}
+         const message = err?.response?.data?.message || "An unknown error has ocurred when cancelling your appointment. Please try again."
+         setErrorTitle("Initial Appointment Error");
+         setErrorMessage(message);
+         setShowErrorModal(true);
       }
    }
 
@@ -164,7 +198,7 @@ export const AppointmentProvider = ({ children }) => {
         setAppointment,
         appointmentLoading,
         createAppointment,
-        fetchAppointmentStatus,
+      //   fetchAppointmentStatus,
         rejectInitialBooking,
         reviewSummary,
         fetchReviewSummary,

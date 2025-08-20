@@ -3,7 +3,7 @@
 // Imports
 // ---- React and Expo Components
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, useWindowDimensions, ImageBackground } from 'react-native';
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useCallback, useRef } from 'react';
 // ---- Contexts
 import { useCamera } from '../context/CameraContext';
 // ---- Styles and Icons
@@ -15,41 +15,46 @@ const MediaUpload = ({
    data,
    dataName,
    setData,
+   setCameraFace = "back",
+   canSwitch = false
 }) => {
    // Hooks and States
-   const { openCamera, image } = useCamera();
+   const { openCamera, image, clearImage } = useCamera();
    const {width} = useWindowDimensions();
 
-   // Functions
-   const handleMediaPick = async () => {
-      openCamera();
-   }
+   const hasProcessedImage = useRef(false);
 
-   const handleDelete = (index) => {
+   // Functions
+   const handleMediaPick = useCallback(async () => {
+      await openCamera(setCameraFace, canSwitch);
+   }, [setCameraFace, canSwitch, openCamera]);
+
+   const handleDelete = useCallback((index) => {
       setData(prev => {
          const current = prev[dataName];
 
          if (maxMedia === 1) {
-            // For maxMedia = 1
             return { ...prev, [dataName]: null };
          } else {
-            // For maxMedia > 1
-            if (Array.isArray(current) && index !== null) {
+            if (Array.isArray(current) && index !== null && index < current.length) {
                const updated = [...current];
                updated.splice(index, 1);
-
                return { ...prev, [dataName]: updated.length > 0 ? updated : null };
             } else {
-               // Fallback: set to null
                return { ...prev, [dataName]: null };
             }
          }
-      })
-   }
+      });
+   }, [dataName, maxMedia, setData]);
 
    // Effects
    useEffect(() => {
-      if (!image) return;
+      if (!image) {
+         hasProcessedImage.current = false;
+         return;
+      }
+
+      if (hasProcessedImage.current) return;
 
       setData(prev => {
          const current = prev[dataName];
@@ -59,19 +64,29 @@ const MediaUpload = ({
             return { ...prev, [dataName]: image };
          } else {
             // For maxMedia > 1
-            return {
-               ...prev,
-               [dataName]: Array.isArray(current) ?
-                  [...current, image] :
-                  current ?
-                     [current, image] :
-                     [image], 
-            };
+            if (Array.isArray(current)) {
+               // Don't add if already at max capacity
+               if (current.length >= maxMedia) return prev;
+               return { ...prev, [dataName]: [...current, image] };
+            } else if (current) {
+               // Convert single item to array and add new image
+               return { ...prev, [dataName]: [current, image] };
+            } else {
+               // First image
+               return { ...prev, [dataName]: [image] };
+            }
          }
       });
-   }, [image, maxMedia, dataName])
 
-   const normalizedData = Array.isArray(data) ? data : (data ? [data] : []);
+      hasProcessedImage.current = true;
+      clearImage();
+   }, [image, dataName, maxMedia, setData, clearImage])
+
+   const normalizedData = useMemo(() => {
+      return Array.isArray(data) ? data : (data ? [data] : []);
+   }, [data]);
+
+   const canAddMore = normalizedData.length < maxMedia;
 
    return (
       <View 
@@ -82,12 +97,12 @@ const MediaUpload = ({
          flexWrap: 'wrap',
          width: '100%'
       }}>
-         {(normalizedData.length !== maxMedia) &&
+         {canAddMore &&
             <TouchableOpacity
             activeOpacity={0.9}
-            onPress={handleMediaPick}>
-               <View
-               style={styles.imageContainer}>
+            onPress={handleMediaPick}
+            >
+               <View style={styles.imageContainer}>
                   <View style={{alignItems: 'center', gap: 4}}>
                      <Icons name='image-plus' size={24} color={COLORS.lettersicons}/>
                      <Text style={{fontFamily: FONTS.roboto400, fontSize: FONT_SIZES.xs, color: COLORS.labels}}>Add Photo</Text>
@@ -97,7 +112,7 @@ const MediaUpload = ({
          }
          {normalizedData.map((item, index) => (
             <ImageBackground
-            key={index}
+            key={`${item}-${index}`}
             source={{uri: item}}
             style={styles.imageContainer}
             imageStyle={styles.imageUpload}>
