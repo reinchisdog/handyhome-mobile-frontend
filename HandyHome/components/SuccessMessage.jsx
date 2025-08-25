@@ -1,9 +1,15 @@
 import { Animated, StyleSheet, Text, View, Easing} from 'react-native'
 import React, {useRef, useEffect} from 'react'
 import SuccessCheck from '../assets/images/illustrations/SuccessCheck';
+import SuccessAndy from '../assets/images/illustrations/SuccessAndy';
+import FailedAndy from '../assets/images/illustrations/FailedAndy';
 import { launchStyles as launch } from '../styles/launchStyles';
 
-const SuccessMessage = ({title, body}) => {
+const SuccessMessage = ({
+   title, 
+   body, 
+   type = "check" // "andy", "check", "fail"
+}) => {
    const imageAnimation = useRef(new Animated.Value(0)).current;
 
    const imageRotation = imageAnimation.interpolate({
@@ -29,10 +35,24 @@ const SuccessMessage = ({title, body}) => {
       gap: 12,
       paddingHorizontal: 24
     }}>
-      <Animated.View style={{ transform: [{rotate: imageRotation}]}}>
-         <SuccessCheck />
+      <Animated.View style={type !== "fail" && {
+         ...{transform: [{rotate: imageRotation}]}
+      }}>
+         {type === "check" ?
+            <SuccessCheck /> :
+         type === "andy" ?
+            <SuccessAndy /> :
+         type === "fail" ?
+            <FailedAndy /> :
+         null
+         }
       </Animated.View>
-      <Text style={[launch.title, {marginBottom: 0}]}>
+      <Text 
+      style={[
+         launch.title, {
+         marginBottom: 0, 
+         marginTop: type === "andy" || type === "fail" ? 32 : 4,
+      }]}>
          {title}
       </Text>
       <Text style={[launch.description, {paddingHorizontal: 0}]}>

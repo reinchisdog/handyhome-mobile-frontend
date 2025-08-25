@@ -5,63 +5,42 @@
 import { Text, View, Pressable, StyleSheet } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { useSignup } from '../../../context/SignupContext';
+import { useConvert } from '../../../hooks/useConvert';
 // ---- Custom Components
 import BasicInput from '../../../components/authentication/BasicInput';
 import RadioGroup from '../../../components/authentication/RadioGroup';
+import InputDateTime from '../../../components/InputDateTime';
+import DatePicker from 'react-native-date-picker';
 // ---- Styles and Icons
 import Icons from '@expo/vector-icons/MaterialIcons';
 import { globalStyles as global } from '../../../styles/globalStyles';
 import { authStyles as auth } from '../../../styles/authStyles';
 import { COLORS, FONTS, FONT_SIZES } from '../../../styles/constants';
-// ---- Other Libraries
-import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default PersonalDetails = () => {
   // States and Hooks
+  const {convertDateToFormattedDate} = useConvert();
+
   const [showPicker, setShowPicker] = useState(false);
   const { signupData, updateSignupData } = useSignup();
 
-  const formatDateToYYYYMMDD = (date) => {
-    if (!(date instanceof Date)) {
-        throw new Error("Invalid date object");
-    }
-
-    const month = String(date.getMonth() + 1).padStart(2, '0'); 
-    const day = String(date.getDate()).padStart(2, '0');
-    const year = String(date.getFullYear());
-
-    return `${year}-${month}-${day}`;
-  };
-
-  const formateDatetoMMDDYY = (dateString) => {
-    const [year, month, day] = dateString.split("-");
-    const shortYear = year.slice(-2); 
-  
-    return `${month}/${day}/${shortYear}`;
-  };
-
-  const handleDate = (event, selectedValue) => {
-    const date = formatDateToYYYYMMDD(selectedValue);
-    setShowPicker(false);
-
-    updateSignupData('birth_date', date);
- }
-
-  const showDatePicker = () => {
-    setShowPicker(!showPicker);
-  }
 
   return (
     <View style={auth.inputsContainer}>
-      {showPicker &&
-        <DateTimePicker
-        value={new Date()}
-        mode="date"
-        display="default"
-        onChange={handleDate}
-        maximumDate={new Date()}
+      <DatePicker 
+      modal
+      open={showPicker}
+      date={signupData.birth_date || new Date()}
+      mode="date"
+      onConfirm={(date) => {
+        updateSignupData("birth_date", date);
+        setShowPicker(false);
+      }}
+      onCancel={() => {setShowPicker(false)}}
+      theme='light'
+      dividerColor={COLORS.accent}
+      maximumDate={new Date()}
       />
-      }
 
       {/* -------------------------- Personal Information -------------------------- */}
       <View style={auth.inputSet}>
@@ -84,19 +63,12 @@ export default PersonalDetails = () => {
       {/* ------------------------------- Birth Date ------------------------------- */}
       <View style={auth.inputSet}>
       <Text style={auth.inputSetTitle}>BIRTH DATE</Text>
-        <Pressable 
-        onPress={showDatePicker}
-        style={styles.modalInputBox}>
-        {!signupData.birth_date ?
-          <Text style={[styles.modalInputText, {color: COLORS.strokes}]}>
-              MM/DD/YYYY
-          </Text> :
-          <Text style={[styles.modalInputText]}>
-              {formateDatetoMMDDYY(signupData.birth_date)}
-          </Text> 
-        }
-          <Icons name='calendar-month' size={24} color={COLORS.lettersicons} />
-        </Pressable>
+        <InputDateTime
+        type="date"
+        placeholder="MM/DD/YYYY"
+        value={convertDateToFormattedDate(signupData.birth_date, "/")}
+        onPress={() => setShowPicker(true)}
+        />
       </View>
 
       {/* --------------------------------- Gender --------------------------------- */}

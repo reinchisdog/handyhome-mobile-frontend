@@ -13,9 +13,11 @@ const COLORS = {
    labelsDisabled: 'rgba(156, 156, 156, 0.5)',
    strokes: '#3A454D40',
    red: '#EE4F4F',
+   redPress: '#AB3030',
    green: '#0EC05B',
    screenbg: '#E5EDF3',
-   modalbg: 'rgba(0, 0, 0, 0.2)'
+   modalbg: 'rgba(0, 0, 0, 0.2)',
+   summaryPress: 'rgb(210, 230, 255)'
 }
 
 const FONT_SIZES = {

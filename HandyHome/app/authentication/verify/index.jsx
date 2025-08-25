@@ -15,8 +15,7 @@ import { authStyles as auth } from '../../../styles/authStyles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 // ---- Config and Other Libraries
 import { useRouter } from 'expo-router';
-import axios from 'axios';
-import {API_URL} from '../../../config';
+import api from '../../../lib/api';
 
 const SignupVerifyScreen = () => {
    // Hooks and States
@@ -38,7 +37,7 @@ const SignupVerifyScreen = () => {
          console.log("1. Preparing verification data...");
          validateCode();
 
-         const result = await axios.post(`${API_URL}/auth/verify-account`, code, {
+         const result = await api.post(`/auth/verify-account`, code, {
             headers: {
                'Content-Type': 'application/json',
             }

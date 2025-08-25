@@ -1,15 +1,18 @@
 // Layout: Client Layout
 
 import { Stack } from 'expo-router';
+import { AppointmentProvider } from '../../../context/AppointmentContext';
 
 const ClientLayout = () => {
    return (
-      <Stack
-        screenOptions={{
-        headerShown: false,
-        animation: 'simple_push'
-        }}
-      />
+      <AppointmentProvider>
+         <Stack
+         screenOptions={{
+            headerShown: false,
+            animation: 'simple_push'
+         }}
+         />
+      </AppointmentProvider>
    )
 }
 

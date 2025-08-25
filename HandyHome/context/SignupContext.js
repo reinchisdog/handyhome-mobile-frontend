@@ -3,17 +3,17 @@
 // Hooks and React Components
 import { createContext, useState, useEffect, useContext } from "react";
 import { useRouter } from "expo-router";
-// Config
-import {API_URL} from '../config';
 // Custom Components
 import ErrorModal from "../components/ErrorModal";
 // Other Libraries
-import axios from "axios";
+import api from "../lib/api";
+import { useConvert } from "../hooks/useConvert";
 
 const SignupContext = createContext({})
 
 export const SignupProvider = ({children}) => {
    // States and Hooks
+   const {convertDateToFormattedDate} = useConvert();
    const router = useRouter();
    const [step, setStep] = useState(1);
    const [signupData, setSignupData] = useState({
@@ -235,20 +235,24 @@ export const SignupProvider = ({children}) => {
             return;
 
          console.log("--- [Signup Context]: Sign Up Attempt ---");
-         console.log("1. Signing In");
+         console.log("[1] Converting Data");
+         const converted = {
+            ...signupData,
+            birth_date: convertDateToFormattedDate(signupData.birth_date)
+         }
 
-         await axios.post(`${API_URL}/auth/signup`, signupData, {
-         headers: {
-            'Content-Type': 'application/json',
-         },
+         await api.post(`/auth/signup`, converted, {
+            headers: {
+               'Content-Type': 'application/json',
+            },
          });
          
-         console.log("2. Succesful Signing In")
+         console.log("[2] Succesful Signing In")
 
          goToVerify();
          clearSignUp();
       } catch (err) {
-         console.log("2. Failed Signing In")
+         console.log("[0] Failed Signing In")
          console.log(err);
          const message = err.response?.data.message || "An error has ocurred when trying to sign in. Please try again.";
 

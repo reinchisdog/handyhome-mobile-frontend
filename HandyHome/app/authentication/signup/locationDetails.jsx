@@ -8,6 +8,8 @@ import { useSignup } from '../../../context/SignupContext';
 // Components
 import BasicInput from '../../../components/authentication/BasicInput';
 import DropdownBox from '../../../components/authentication/DropdownBox';
+import InputBasic from '../../../components/InputBasic';
+import InputDropdown from '../../../components/InputDropdown';
 // Styles and Icons
 import { authStyles as auth } from '../../../styles/authStyles';
 // Other Libraries
@@ -17,13 +19,13 @@ const LocationDetails = () => {
   // Hooks and States
   const { signupData, updateHomeData } = useSignup();
   const [ provinceList, setProvinceList ] = useState([]);
-  const [ selectedProvince, setSelectedProvince ] = useState({});
+  const [ selectedProvince, setSelectedProvince ] = useState(null);
 
   const [ municipalList, setMunicipalList ] = useState([]);
-  const [ selectedMunicipal, setSelectedMunicipal ] = useState({});
+  const [ selectedMunicipal, setSelectedMunicipal ] = useState(null);
 
   const [ barangayList, setBarangayList ] = useState([]);
-  const [ selectedBarangay, setSelectedBarangay ] = useState({});
+  const [ selectedBarangay, setSelectedBarangay ] = useState(null);
 
   /* -------------------------------- Functions ------------------------------- */
   useEffect(() => {
@@ -94,11 +96,15 @@ const LocationDetails = () => {
   
 
   useEffect(() => {
-    getMunicipalList(selectedProvince.value);
+    if (!selectedProvince) return;
+    
+    getMunicipalList(selectedProvince?.value);
   }, [selectedProvince])
 
   useEffect(() => {
-    getBarangayList(selectedMunicipal.value);
+    if (!selectedProvince) return;
+
+    getBarangayList(selectedMunicipal?.value);
   }, [selectedMunicipal])
 
   // When province list loads, match saved title and fetch municipal list
@@ -149,49 +155,50 @@ const LocationDetails = () => {
       <View style={auth.inputSet}>
         <Text style={auth.inputSetTitle}>ADDRESS</Text>
         {/* ---- Block Number */}
-        <BasicInput 
-          placeholder={"Block / No. / Street"}
-          onChangeText={(e) => updateHomeData('block', e)}
-          value={signupData.home_address.block}
+        <InputBasic
+        placeholder={"Block / No. / Street"}
+        onChangeText={(e) => updateHomeData('block', e)}
+        value={signupData.home_address.block}
         />
 
         {/* ---- Province/District */}
-        <DropdownBox 
-          defaultItem='Select Province'
-          items = {provinceList}
-          onSelect={(e) => {
-            setSelectedProvince(e);
-            setSelectedMunicipal({});
-            setSelectedBarangay({});
-            updateHomeData('province', e.title);
-            getMunicipalList(e.title); 
-          }}
-          
-          selectedItem={selectedProvince}
+        <InputDropdown
+        placeholder='Select Province'
+        items={provinceList}
+        onSelect={(e) => {
+          setSelectedProvince(e);
+          setSelectedMunicipal({});
+          setSelectedBarangay({});
+          updateHomeData('province', e.title);
+          getMunicipalList(e.title); 
+        }}
+        
+        selectedItem={selectedProvince}
         />
+
         {/* ---- Municipality */}
-        <DropdownBox 
-          items = {municipalList}
-          defaultItem="Select City/Municipality"
-          onSelect={(e) => {
-            setSelectedMunicipal(e);
-            setSelectedBarangay({});
-            updateHomeData('municipal', e.title);
-            getBarangayList(e.title);
-          }}
-          
-          selectedItem={selectedMunicipal}
+        <InputDropdown 
+        items = {municipalList}
+        placeholder="Select City/Municipality"
+        onSelect={(e) => {
+          setSelectedMunicipal(e);
+          setSelectedBarangay({});
+          updateHomeData('municipal', e.title);
+          getBarangayList(e.title);
+        }}
+        selectedItem={selectedMunicipal}
         />
+
         {/* ---- Barangay */}
-        <DropdownBox 
-          items = {barangayList}
-          defaultItem="Select Barangay"
-          onSelect={(e) => {
-            setSelectedBarangay(e);
-            updateHomeData('barangay', e.title);
-          }}
-          
-          selectedItem={selectedBarangay}
+        <InputDropdown
+        items = {barangayList}
+        placeholder="Select Barangay"
+        onSelect={(e) => {
+          setSelectedBarangay(e);
+          updateHomeData('barangay', e.title);
+        }}
+        
+        selectedItem={selectedBarangay}
         />
         
       </View>

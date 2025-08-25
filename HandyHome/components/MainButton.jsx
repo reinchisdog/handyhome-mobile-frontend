@@ -5,9 +5,10 @@ import { globalStyles as global } from '../styles/globalStyles'
 import { COLORS, FONTS, FONT_SIZES } from '../styles/constants'
 
 const MainButton = ({
-   type = "primary",
+   type = "primary", // "alert", "secondary"
    disabled = false,
    loading = false,
+   size = "full", // "grow", "shrink", or "full"
    onPress,
    text
 }) => {
@@ -16,6 +17,8 @@ const MainButton = ({
 
       if (type === "primary") {
          return pressed ? COLORS.primaryPress : COLORS.primary
+      } else if (type === "alert") {
+         return pressed ? COLORS.redPress : COLORS.red
       } else {
          return pressed ? COLORS.secondaryPress : '#fff'
       }
@@ -26,8 +29,22 @@ const MainButton = ({
 
       if (type === "primary") {
          return pressed ? COLORS.primaryPress : COLORS.primary
+      } else if (type === "alert") {
+         return pressed ? COLORS.redPress : COLORS.red
       } else {
          return COLORS.labels
+      }
+   }
+
+   const getFlexStyle = () => {
+      switch (size) {
+         case "grow":
+            return { flex: 1 };
+         case "shrink":
+            return { flexShrink: 1 };
+         case "full":
+         default:
+            return { width: '100%' };
       }
    }
 
@@ -40,6 +57,11 @@ const MainButton = ({
    const bgLoadingSecondary = loadingButton.interpolate({
       inputRange: [0, 1],
       outputRange: ['#fff', '#e1e4e6'],
+      extrapolate: 'clamp'
+   })
+   const bgLoadingAlert = loadingButton.interpolate({
+      inputRange: [0, 1],
+      outputRange: [COLORS.red, '#f07373'],
       extrapolate: 'clamp'
    })
 
@@ -75,9 +97,9 @@ const MainButton = ({
          borderRadius: 24,
          borderColor: getBorderColor(pressed),
          height: 44,
-         width: '100%',
          overflow: 'hidden',
          backgroundColor: getBackgroundColor(pressed),
+         ...getFlexStyle()
       }]}>
          <Animated.View
          style={{
@@ -85,13 +107,16 @@ const MainButton = ({
             width: '100%',
             justifyContent: 'center',
             alignItems: 'center',
-            backgroundColor: (!loading) ? 'transparent' : ( type === "primary") ? bgLoadingPrimary : bgLoadingSecondary,
+            backgroundColor: (!loading) ? 'transparent' : 
+            (type === "primary") ? bgLoadingPrimary : 
+            (type === "alert") ? bgLoadingAlert : bgLoadingSecondary,
          }}>
             <Text
             style={{
                fontFamily: FONTS.roboto700,
                fontSize: FONT_SIZES.md,
-               color: disabled ? COLORS.textDisabled : type === "primary" ? '#fff' : COLORS.accent,
+               color: disabled ? COLORS.textDisabled : 
+               type === "primary" || type === "alert" ? '#fff' : COLORS.accent,
                opacity: !(disabled || loading) ? 1 : 0.5
             }}>
                {text}

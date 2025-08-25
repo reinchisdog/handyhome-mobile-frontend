@@ -1,17 +1,23 @@
+// Component: General Modal
 import {Text, View, Pressable, Modal} from 'react-native';
 import { globalStyles as global } from '../styles/globalStyles';
 import { COLORS, FONTS, FONT_SIZES } from '../styles/constants';
 
 import MainButton from './MainButton';
 
-export default ErrorModal = ({visible, setVisible, title, message, onExit, buttonText, buttonLoad = false, otherOnExit, otherButtonText, otherButtonLoad = false}) => {
+export default GeneralModal = ({
+   visible, setVisible, title, message, isAlert = false,
+   primaryText, primaryFunction, primaryLoading = false,
+   secondaryText, secondaryFunction, secondaryLoading = false,
+}) => {
    return (
-      <Modal
+      <Modal 
       visible={visible}
       statusBarTranslucent={true}
       animationType='fade'
       backdropColor={COLORS.modalbg}
-      onRequestClose={() => setVisible(false)}>
+      onRequestClose={() => setVisible(false)}
+      >
          <Pressable
          onPress={() => setVisible(false)}
          style={{
@@ -20,21 +26,27 @@ export default ErrorModal = ({visible, setVisible, title, message, onExit, butto
             alignItems: 'center'
          }}>
             <View style={global.centerModal}>
-               <Text style={{
+               <Text 
+               style={{
                   fontFamily: FONTS.roboto700,
                   fontSize: FONT_SIZES.md,
-                  color: COLORS.red,
-                  textAlign: 'center',
-               }}>{title}</Text>
+                  color: isAlert ? COLORS.accent : COLORS.primary,
+                  textAlign: 'center'
+               }}>
+                  {title}
+               </Text>
 
                <View style={global.divider}/>
 
-               <Text style={{
+               <Text 
+               style={{
                   fontFamily: FONTS.roboto400,
                   fontSize: FONT_SIZES.sm,
                   color: COLORS.lettersicons,
                   textAlign: 'center'
-               }}>{message}</Text>
+               }}>
+                  {message}
+               </Text>
 
                <View 
                style={{
@@ -42,11 +54,11 @@ export default ErrorModal = ({visible, setVisible, title, message, onExit, butto
                   gap: 12,
                   alignItems: 'stretch'
                }}>
-                  {(otherOnExit || otherButtonText) &&
+                  { secondaryText &&
                      <Pressable
-                     onPress={otherButtonLoad ? () => {} : otherOnExit}
+                     onPress={secondaryLoading ? () => {} : secondaryFunction}
                      style={({pressed}) => [{
-                        backgroundColor: pressed && !otherButtonLoad ? COLORS.secondaryPress : '#fff',
+                        backgroundColor: pressed && !secondaryLoading ? COLORS.secondaryPress : '#fff',
                         flexShrink: 1,
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -58,30 +70,29 @@ export default ErrorModal = ({visible, setVisible, title, message, onExit, butto
                            fontFamily: FONTS.roboto700,
                            fontSize: FONT_SIZES.md,
                            color: COLORS.labels,
-                           opacity: otherButtonLoad ? 0.5 : 1
+                           opacity: secondaryLoading ? 0.5 : 1
                         }}>
-                           {otherButtonText}
+                           {secondaryText}
                         </Text>
                      </Pressable>
                   }
 
-                  <MainButton 
-                  text={buttonText || "Ok"}
-                  type="secondary"
-                  size={otherOnExit || otherButtonText ? "grow" : "full"}
-                  onPress={() => {
-                     if (onExit) {
-                     onExit(); 
-                     }
-                     setVisible(false); 
-                  }}
-                  loading={buttonLoad}
-                  />
+                  { primaryText && 
+                     <MainButton 
+                     type={isAlert ? 'alert' : 'primary'}
+                     size='grow'
+                     text={primaryText}
+                     onPress={primaryFunction}
+                     loading={primaryLoading}
+                     />
+                  }
+               </View>
 
-               </View> 
+
             </View>
+
          </Pressable>
 
       </Modal>
-   );
+   )
 }

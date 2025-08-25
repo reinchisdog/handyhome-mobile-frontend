@@ -9,7 +9,7 @@ import { COLORS, FONTS, FONT_SIZES } from '../styles/constants';
 import Icons from '@expo/vector-icons/MaterialIcons'
 
 const InputDateTime = ({
-   type,
+   type, // "date", "time"
    placeholder,
    value,
    onPress
@@ -23,7 +23,7 @@ const InputDateTime = ({
          <Text 
          style={[
             styles.modalInputText, {
-            paddingHorizontal: 16, 
+            // paddingHorizontal: 16, 
             color: COLORS.strokes
          }]}>
             {placeholder}
@@ -32,7 +32,7 @@ const InputDateTime = ({
          <Text 
          style={[
             styles.modalInputText, {
-            paddingHorizontal: 16
+            // paddingHorizontal: 16
          }]}>
             {value}
          </Text> 

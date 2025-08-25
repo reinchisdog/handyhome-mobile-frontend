@@ -109,5 +109,83 @@ export const globalStyles = StyleSheet.create({
         fontFamily: FONTS.roboto400,
         fontSize: FONT_SIZES.sm,
         color: COLORS.red
+    },
+    summaryBox: {
+        // borderBottomWidth: StyleSheet.hairlineWidth,
+        // borderBlockColor: COLORS.labels,
+        width: '100%',
+        overflow: 'hidden',
+        borderRadius: 8,
+        padding: 6,
+    },
+    summaryBoxPressable: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        gap: 24,
+        padding: 6,
+        borderRadius: 8,
+        // backgroundColor: 'green',
+        // width: '100%'
+    },
+    summaryBoxView: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'stretch',
+        gap: 24,
+        padding: 6,
+        borderRadius: 8,
+        // backgroundColor: 'green',
+        // width: '100%'
+    },
+    left: {
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        gap: 8,
+        // backgroundColor: 'red',
+        height: '100%',
+        flexGrow: 1,
+        flexShrink: 1
+    },
+    right: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        gap: 4,
+        // backgroundColor: 'blue',
+        height: '100%',
+        flexGrow: 1,
+        flexShrink: 1
+    },
+    leftText: {
+        fontFamily: FONTS.roboto600,
+        fontSize: FONT_SIZES.md,
+        color: COLORS.labels,
+    },
+    righText: {
+        fontFamily: FONTS.roboto600,
+        fontSize: FONT_SIZES.md,
+        color: COLORS.lettersicons
+    },
+    shadowBottom: {
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: -2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 5, 
+    },
+    shadowTop: {
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 5, 
     }
 })

@@ -1,8 +1,8 @@
-// Context: Appointment Context
+// Context: Appointment Context - FIXED VERSION
 
 // Imports
 // ---- React and Expo Components
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { useRouter } from 'expo-router';
 // ---- Other Components
 import ErrorModal from '../components/ErrorModal';
@@ -33,6 +33,25 @@ export const AppointmentProvider = ({ children }) => {
    });
    const [currentAppointment, setCurrentAppointment] = useState(null);
    const [appointmentLoading, setAppointmentLoading] = useState(false);
+   const [queueError, setQueueError] = useState(false);
+
+   const [summary, setSummary] = useState(null);
+   const [summaryError, setSummaryError] = useState(false);
+   const [summaryLoading, setSummaryLoading] = useState(true);
+
+   const [worker, setWorker] = useState(null);
+   const [workerError, setWorkerError] = useState(false);
+   const [workerLoading, setWorkerLoading] = useState(true);
+
+   // New worker fetch error state
+   const [newWorkerError, setNewWorkerError] = useState(false);
+   const [retryCount, setRetryCount] = useState(0);
+   const MAX_RETRIES = 2;
+   
+   const [confirmLoading, setConfirmLoading] = useState(false);
+
+   // Add ref to track current subscription
+   const subscriptionRef = useRef(null);
 
    // Functions
    const appendFormData = (formData, data, parentKey = '') => {
@@ -54,6 +73,14 @@ export const AppointmentProvider = ({ children }) => {
       }
    }
 
+   // Helper function to cleanup subscription
+   const cleanupSubscription = () => {
+      if (subscriptionRef.current) {
+         subscriptionRef.current.unsubscribe();
+         subscriptionRef.current = null;
+      }
+   }
+
    const createAppointment = async () => {
       try {
          console.log("---- [Appointment Context] Initial Appointment Attempt ----");
@@ -65,6 +92,7 @@ export const AppointmentProvider = ({ children }) => {
             time: convertDateToTime24(appointment.time),
             attachment: convertUriToFile(appointment.attachment),
          }
+         console.log(converted);
 
          const formData = new FormData();
          appendFormData(formData, converted);
@@ -78,11 +106,11 @@ export const AppointmentProvider = ({ children }) => {
          });
          setCurrentAppointment(appointmentResult?.data?.data);
 
-         console.log("[3] Succesful Creation of Appointment. Routing to Worker Waiting");
+         console.log("[3] Successful Creation of Appointment. Routing to Worker Waiting");
          router.push("/dashboard/client/appointment/queue");
 
       } catch (err) {
-         const message = err?.response?.data?.message || "An unknown error has ocurred when creating your appointment. Please try again.";
+         const message = err?.response?.data?.message || err?.message || "An unknown error has occurred when creating your appointment. Please try again.";
          setErrorTitle("Appointment Error");
          setErrorMessage(message);
          setShowErrorModal(true);
@@ -91,12 +119,29 @@ export const AppointmentProvider = ({ children }) => {
       }
    }
 
-   useEffect(() => {
-      if (!currentAppointment?.id) return;
+   const clearAppointment = () => {
+      setAppointment({
+         date: null,
+         time: null,
+         service_id: null,
+         sub_service_id: null,
+         description: "",
+         attachment: null,
+      })
+   }
 
-      appointmentLoading(true);
+   useEffect(() => {
+      if (!currentAppointment?.id) {
+         cleanupSubscription();
+         return;
+      }
+
+      // Cleanup any existing subscription
+      cleanupSubscription();
+
+      setAppointmentLoading(true);
       console.log("---- [Appointment Context] Worker Queue Attempt ----");
-      console.log('[1] Waiting');
+      console.log('[1] Waiting for appointment ID:', currentAppointment.id);
 
       const changes = supabase
          .channel(`appointment-${currentAppointment.id}`)
@@ -109,85 +154,201 @@ export const AppointmentProvider = ({ children }) => {
             console.log("[2] Worker Found");
             console.log(payload.new);
             setCurrentAppointment(payload.new);
-            appointmentLoading(false);
+            setAppointmentLoading(false);
          })
          .subscribe();
 
+      // Store reference to current subscription
+      subscriptionRef.current = changes;
+
       return () => {
-         changes.unsubscribe();
+         cleanupSubscription();
       };
    }, [currentAppointment?.id]);
-   
-   // const fetchAppointmentStatus = async (id) => {
-   //    try {
-   //       const result = await api.get(`/user/book/${id}/check_status`, {
-   //          headers: {
-   //             'Authorization' : `Bearer ${token}`
-   //          }
-   //       });
 
-   //       const reqStatus = result?.data?.status || "error";
-   //       const message = result?.data?.message;
-   //       const bookStatus = result?.data?.data;
-
-   //       if (reqStatus === "success") {
-   //          return {
-   //             success: true,
-   //             status: bookStatus ? "ready" : "pending"
-   //          }
-   //       } else if (reqStatus === "failed" || reqStatus === "error") {
-   //          throw Error (message);
-   //       }
-
-   //    } catch (err) {
-   //       // Cancel Initial Booking
-   //       const rejectResult = await rejectInitialBooking(id)
-   //       const message = rejectResult.success ? err?.message || "An unknown error has occured." : rejectResult.message
-         
-   //       return {success: false, message: message}
-   //    }
-   // }
-
-   const rejectInitialBooking = async () => {
+   const rejectAppointment = async () => {
       try {
+         console.log("---- [Appointment Context] Booking Cancellation Attempt ----");
+         console.log("[1] Cancelling Booking:", currentAppointment?.id);
+         
+         // Cleanup subscription before cancelling
+         cleanupSubscription();
+         
          await api.delete(`/user/book/${currentAppointment?.id}/reject_booking`, {
             headers: {
                'Authorization': `Bearer ${token}`
             }
          });
-
-         return {success: true}
+         console.log("[2] Cancellation Successful");
+         
+         // Reset all states
+         setCurrentAppointment(null);
+         setAppointmentLoading(false);
+         setQueueError(false);
+         setNewWorkerError(false);
+         setRetryCount(0);
+         
+         if (retryCount < MAX_RETRIES) {
+            router.replace('/dashboard/client');
+         } else {
+            router.replace('/dashboard/client/appointment/failed');
+         }
+         
+         clearAppointment();
+         setAppointmentLoading(false);
+         
       } catch (err) {
-         const message = err?.response?.data?.message || "An unknown error has ocurred when cancelling your appointment. Please try again."
+         console.log("[0] Cancellation Failed");
+         const message = err?.response?.data?.message || "An unknown error has occurred when cancelling your appointment. Please try again."
          setErrorTitle("Initial Appointment Error");
          setErrorMessage(message);
          setShowErrorModal(true);
       }
    }
 
-   const [reviewSummary, setReviewSummary] = useState(null);
-   const [summaryLoading, setSummaryLoading] = useState(true);
-
-   const fetchReviewSummary = async (id) => {
+   const fetchSummary = async (id) => {
       try {
-         const result = await api.get(`/user/book/${id}/view_review_summary`, {
+         setSummaryLoading(true);
+         console.log("---- [Appointment Context] Summary Fetch Attempt ----");
+         console.log("[1] Fetching Summary");
+         const summaryResult = await api.get(`/user/book/${id}/view_review_summary`, {
             headers: {
                'Authorization' : `Bearer ${token}`
             }
          })
 
-         const status = result?.data?.status || "error";
-         const message = result?.data?.message;
+         const summaryData = summaryResult?.data?.data;
+         console.log("[2] Successful Fetching:");
+         console.log(summaryData);
+         setSummary(summaryData);
+         setSummaryLoading(false);
 
-         if (status === "success") {
-            setReviewSummary(result?.data?.data);
-            return {succes: true}
-         } else if (status === "failed" || status === "error") {
-            throw new Error(message);
+         if (worker === null) {
+            console.log("[3] Fetching Worker Info,", summaryData?.booking?.accepted_by);
+            fetchWorkerInfo(summaryData?.booking?.accepted_by || currentAppointment?.accepted_by);
          }
+         
+
       } catch (err) {
-         const message = err?.message || "An unknown error has occurred fetching the review summary"
-         return {success: false, message: message}
+         const message = err?.response?.data?.message || err?.message || "An unknown error has occurred fetching the review summary"
+         console.log("[0] Error Fetching:", message);
+         setSummaryError(true);
+         setErrorMessage(message);
+         setShowErrorModal(true);
+      }
+   }
+
+   const fetchWorkerInfo = async (id) => {
+      try {
+         setWorkerLoading(true);
+         console.log("---- [Appointment Context] Worker Fetch Attempt ----");
+         console.log("[1] Fetching Worker");
+         const workerResult = await api.get(`/user/book/worker/${id}/view`, {
+            headers: {
+               'Authorization' : `Bearer ${token}`
+            }
+         })
+
+         const workerData = workerResult?.data?.data;
+         console.log("[2] Successful Fetching:");
+         console.log(workerData);
+         setWorker(workerData);
+         setWorkerLoading(false);
+
+      } catch (err) {
+         const message = err?.response?.data?.message || err?.message || "An unknown error has occurred fetching the review summary"
+         console.log("[0] Error Fetching:", message);
+         setWorkerError(true);
+         setErrorMessage(message);
+         setShowErrorModal(true);
+      } 
+   }
+
+   const fetchNewWorker = async (id) => {
+      try {
+         console.log("---- [Appointment Context] New Worker Fetch Attempt ----");
+         console.log("[1] Fetching New Worker for ID:", id);
+         
+         // Set loading state and navigate first
+         setAppointmentLoading(true);
+
+         if (retryCount === 0) {
+            router.replace(`/dashboard/client/appointment/queue`);
+         }
+         
+         // Clean up existing subscription
+         cleanupSubscription();
+         
+         // Make API call to find new worker
+         const workerResult = await api.get(`/user/book/${id}/find_new_worker`, {
+            headers: {
+               'Authorization' : `Bearer ${token}`
+            }
+         });
+
+         console.log("[2] Successful New Worker Request");
+         const workerData = workerResult?.data?.data;
+         
+         setRetryCount(0);
+         if (workerData) {
+            setCurrentAppointment(workerData);
+         }
+
+      } catch (err) {
+         console.log("[0] New Worker Fetch Failed");
+         const message = err?.response?.data?.message || "Unable to find another service provider at the moment."
+         
+         // Set queue error instead of turning off loading
+         setQueueError(true);
+         setNewWorkerError(true);
+         setErrorTitle("No Providers Available");
+         setErrorMessage(message);
+         setShowErrorModal(true);
+         // Don't set appointmentLoading to false here - keep in loading state until resolved
+      }
+   }
+
+   const retryFindNewWorker = async () => {
+      setQueueError(false);  // Reset error state
+      setNewWorkerError(false);
+      setShowErrorModal(false);
+      
+      if (retryCount < MAX_RETRIES) {
+         setRetryCount(prev => prev + 1);
+         await fetchNewWorker(currentAppointment?.id);
+      } else {
+         // Max retries reached, show cancellation option
+         setQueueError(true);
+         setNewWorkerError(true);
+         setErrorTitle("Still No Providers");
+         setErrorMessage("We've tried multiple times but couldn't find an available provider. You can cancel this booking and try again later.");
+         setShowErrorModal(true);
+      }
+   }
+
+   const confirmAppointment = async (id) => {
+      try {
+         console.log("---- [Appointment Context] Confirming Attempt ----");
+         setConfirmLoading(true);
+         console.log("[1] Confirming Booking:", id);
+         await api.put(`/user/book/${id}/confirm_booking`, {}, {
+            headers: {
+               'Authorization': `Bearer ${token}`
+            }
+         })
+
+         console.log("[2] Confirmed Succesfully, Routing to Success Screen");
+         router.replace('/dashboard/client/appointment/success');
+         clearAppointment();
+         setAppointmentLoading(false);
+      } catch (err) {
+         console.log("[0] Confirming Failed");
+         const message = err?.response?.data?.message || err?.message || "An unknown error has occurred while confirming your booking. Please try again.";
+         setErrorMessage(message);
+         setErrorTitle("Booking Confirmation Error");
+         setShowErrorModal(true);
+      } finally {
+         setConfirmLoading(false);
       }
    }
 
@@ -196,21 +357,52 @@ export const AppointmentProvider = ({ children }) => {
       value={{
         appointment,
         setAppointment,
+        currentAppointment,
+        setCurrentAppointment, // Expose this for manual state management if needed
         appointmentLoading,
+        setAppointmentLoading,
+        queueError,
         createAppointment,
-      //   fetchAppointmentStatus,
-        rejectInitialBooking,
-        reviewSummary,
-        fetchReviewSummary,
+        rejectAppointment,
+
+        summary,
         summaryLoading,
-        setSummaryLoading
+        fetchSummary,
+
+        worker,
+        workerLoading,
+        fetchWorkerInfo,
+
+        fetchNewWorker,
+        retryFindNewWorker,
+        newWorkerError,
+        retryCount,
+        MAX_RETRIES,
+
+        confirmAppointment,
+        confirmLoading,
       }}>
          <ErrorModal 
          visible={showErrorModal}
          setVisible={setShowErrorModal}
          message={errorMessage}
          title={errorTitle}
+         onExit={summaryError ? () => {
+            setSummaryError(false);
+            fetchSummary(currentAppointment?.id);
+         } : workerError ? () => {
+            setWorker(false);
+            fetchWorkerInfo(currentAppointment?.accepted_by);
+         } : newWorkerError ? (retryCount < MAX_RETRIES ? retryFindNewWorker : rejectAppointment) : null}
+         buttonText={
+            summaryError || workerError ? "Try again" : 
+            newWorkerError ? (retryCount < MAX_RETRIES ? "Try Again" : "Cancel Booking") : 
+            null
+         }
+         otherOnExit={newWorkerError && retryCount < MAX_RETRIES ? rejectAppointment : null}
+         otherButtonText={newWorkerError && retryCount < MAX_RETRIES ? "Cancel Booking" : null}
          />
+         
          {children}
       </AppointmentContext.Provider>
    )

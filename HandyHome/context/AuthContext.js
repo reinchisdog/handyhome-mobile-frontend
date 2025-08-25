@@ -17,6 +17,7 @@ export const AuthProvider = ({children}) => {
    // States
    const [ user, setUser ] = useState(null);
    const [ token, setToken ] = useState(null);
+   const [ isTokenValid, setIsTokenValid ] = useState(false);
    const [ hasOnboarded, setHasOnboarded ] = useState(null);
    const [ isLoading, setIsLoading ] = useState(false);
    const [ isAuthReady, setIsAuthReady ] = useState(false);
@@ -63,10 +64,11 @@ export const AuthProvider = ({children}) => {
          const userObj = userResult?.data?.data;
          setUser(userObj);
          console.log("4. Succesfully Fetched User Data:", JSON.stringify(userObj));
-
+         setIsTokenValid(true);
          setIsLoading(false);
       } catch (err) {
          console.log('Fetch user failed:', err.response?.data || err.message);
+         setIsTokenValid(false);
          logout();
       }
    }
@@ -142,6 +144,7 @@ export const AuthProvider = ({children}) => {
          login,
          logout,
          token,
+         isTokenValid,
          user,
          isLoading,
          hasOnboarded,

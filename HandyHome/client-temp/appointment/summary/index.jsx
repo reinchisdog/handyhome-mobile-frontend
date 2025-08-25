@@ -500,7 +500,7 @@ export default ReviewSummary = () => {
                   height: '100%'
                 }}/>
               ) : (
-                <Text style={styles.righText}>{`\u20b1 ${reviewSummary?.booking?.price}`}</Text>
+                <Text style={styles.righText}><Text style={styles.righText}>{`\u20b1 ${reviewSummary?.booking?.price}`}</Text></Text>
               )}
             </View>
             {/* <View style={styles.summaryBoxView}>
