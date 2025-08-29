@@ -34,14 +34,23 @@ const StarterTabLayout = () => {
             name="home"
             options={{
                title: "Home",
-               tabBarIcon: ({ color, size }) => (
-                  <Icons1 
-                     name="home" 
-                     size={size} 
-                     color={color} 
-                  />
-               ),
+               tabBarIcon: ({ focused, color, size }) => {
+                  const iconName = focused ? 'home' : 'home-outline';
+                  return <Icons1 name={iconName} color={color} size={size} />;
+               },
                href: "/dashboard/client/(tabs)/home"
+            }}
+         />
+
+         <Tabs.Screen 
+            name="bookings"
+            options={{
+               title: "Bookings",
+               tabBarIcon: ({ focused, color, size }) => {
+                  const iconName = focused ? 'calendar-account' : 'calendar-account-outline';
+                  return <Icons1 name={iconName} color={color} size={size} />;
+               },
+               href: "/dashboard/client/(tabs)/bookings"
             }}
          />
 

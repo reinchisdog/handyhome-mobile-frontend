@@ -25,6 +25,7 @@ const AddressModal = ({
    data,
    setData,
    onSubmit,
+   onClose,
 }) => {
    // Hooks and States
    const insets = useSafeAreaInsets();
@@ -152,14 +153,14 @@ const AddressModal = ({
       statusBarTranslucent={true}
       animationType='slide'
       backdropColor={COLORS.modalbg}
-      onRequestClose={() => setVisible(false)}
+      onRequestClose={() => {onClose ? onClose() : setVisible(false)}}
       >
          <KeyboardAvoidingView
          behavior='position'
          keyboardVerticalOffset={-insets.bottom - 48}
          >
             <Pressable
-            onPress={() => setVisible(false)}
+            onPress={() => {onClose ? onClose() : setVisible(false)}}
             style={{
                height: height,
                width: width,

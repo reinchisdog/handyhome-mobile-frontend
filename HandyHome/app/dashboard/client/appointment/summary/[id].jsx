@@ -67,7 +67,10 @@ const AppointmentSummaryScreen = () => {
 
    const handleRejectAppointment = async () => {
       setCancelLoading(true);
-      await rejectAppointment();
+      console.log(summary?.booking?.id);
+      const appointmentId = id || summary?.booking?.id;
+
+      await rejectAppointment(appointmentId);
 
       setCancelLoading(false);
    }
@@ -135,24 +138,29 @@ const AppointmentSummaryScreen = () => {
 
             <View style={global.divider}/>
 
-            <ScrollView style={{flexShrink: 1, width: '100%'}} contentContainerStyle={{flexGrow: 1, paddingVertical: 24, gap: 12}}
-            sc>
-               <View 
-               style={{
-                  borderRadius: 12,
-                  overflow: 'hidden',
-                  width: '100%'
-               }}>
-                  <Image 
-                  source={{uri: summary?.booking?.attachment}}
+            <ScrollView 
+            style={{flexShrink: 1, width: '100%'}} 
+            contentContainerStyle={{flexGrow: 1, paddingVertical: 24, gap: 12}}
+            >
+               {summary?.booking?.attachment &&
+                  <View 
                   style={{
-                     width: '100%',
-                     height: undefined,
-                     aspectRatio: 1/1,
-                  }}
-                  resizeMode='cover'
-                  />
-               </View>
+                     borderRadius: 12,
+                     overflow: 'hidden',
+                     width: '100%'
+                  }}>
+                     <Image 
+                     source={{uri: summary?.booking?.attachment}}
+                     style={{
+                        width: '100%',
+                        height: undefined,
+                        aspectRatio: 1/1,
+                     }}
+                     resizeMode='cover'
+                     />
+                  </View>
+               }
+               
 
                <View
                style={{
@@ -431,7 +439,7 @@ const AppointmentSummaryScreen = () => {
                      global.summaryBoxPressable, {
                      backgroundColor: pressed ? COLORS.summaryPress : '#fff'
                   }]}
-                  onPress={() => {}}
+                  onPress={() => {router.push('/dashboard/client/appointment/summary/payment')}}
                   >
                      <View style={[ global.left , { alignItems: 'center' }]}>
                         {(summary) && summary?.booking?.payment_method === "Cash" ? 

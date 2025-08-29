@@ -18,6 +18,7 @@ const AddressContainer = ({item, selected, onSelect}) => {
          width: '100%',
          flexDirection: 'row',
          alignItems: 'center',
+         justifyContent: 'space-between',
          gap: 8,
          borderRadius: 10,
          padding: 12,
@@ -25,20 +26,27 @@ const AddressContainer = ({item, selected, onSelect}) => {
          backgroundColor: '#fff',
          borderColor: pressed ? COLORS.lightblue : '#fff'
       }]}>
-         <Icons name='map-marker' size={24} color={COLORS.primary}/>
-
-         <Text
-         numberOfLines={2}
-         style={{
-            textAlign: 'left',
-            fontFamily: FONTS.roboto400,
-            fontSize: FONT_SIZES.sm,
-            color: COLORS.lettersicons,
+         <View style={{
+            flexDirection: 'row',
+            gap: 8,
+            alignItems: 'center',
             flexShrink: 1,
-         }}
-         >
-            {`${item.block}, ${item.barangay}, ${item.municipal}, ${item.province}`}
-         </Text>
+         }}>
+            <Icons name='map-marker' size={24} color={COLORS.primary}/>
+
+            <Text
+            numberOfLines={2}
+            style={{
+               textAlign: 'left',
+               fontFamily: FONTS.roboto400,
+               fontSize: FONT_SIZES.sm,
+               color: COLORS.lettersicons,
+               flexShrink: 1,
+            }}
+            >
+               {`${item.block}, ${item.barangay}, ${item.municipal}, ${item.province}`}
+            </Text>
+         </View>
 
          <View
          style={{

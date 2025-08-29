@@ -6,6 +6,7 @@ const COLORS = {
    secondaryPress: '#d1dbe6',
    accent: '#F7931E',
    lightblue: '#A4DCFF',
+   lightbluePressed: '#62a5d9',
    darkblue: '#0A466C',
    lettersicons: '#3A454D',
    textDisabled: '#B3B3B3',

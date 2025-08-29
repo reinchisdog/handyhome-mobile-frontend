@@ -1,50 +1,29 @@
-import { StyleSheet, Text, View, Animated, TouchableHighlight, useWindowDimensions, StatusBar } from 'react-native'
-import React, {useState, useEffect, useRef} from 'react'
-import { useEmergency } from '../../../../../../context/EmergencyContext';
+// Screen: Emergency Screen
+
+// Imports
+// ---- React and Expo Components
+import { StyleSheet, Text, View, Animated, StatusBar } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-
-import Icons from '@expo/vector-icons/MaterialCommunityIcons'
-import {globalStyles as global} from '../../../../../../styles/globalStyles';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useBookingDetails } from '../../../../../../context/BookingDetailsContext';
+// ---- Styles and Icons
+import Icons from '@expo/vector-icons/MaterialCommunityIcons';
+import { globalStyles as global } from '../../../../../../styles/globalStyles';
 import { COLORS, FONTS, FONT_SIZES } from '../../../../../../styles/constants';
+import MainButton from '../../../../../../components/MainButton';
 
-export default EmergencyScreen = () => {
+const EmergencyScreen = () => {
+   // Hooks and States
    const router = useRouter();
-   const {handleEmergency, clearEmergency} = useEmergency();
-   const {id} = useLocalSearchParams();
+   const insets = useSafeAreaInsets();
+   const { id } = useLocalSearchParams();
+   const { handleEmergency, emergencySuccess, clearEmergency } = useBookingDetails();
 
    const countdown = 5;
    const [timer, setTimer] = useState(countdown);
-   const [submitted, setSubmitted] = useState(false);
 
-    useEffect(() => {
-      if (timer > 0){
-         setTimeout(() => {
-            setTimer(prev => prev - 1);
-         }, 1000)
-      } else {
-         handleSubmit();
-      }
-      // console.log(timer)
-    }, [timer])
-
-   const handleSubmit = async () => {
-      console.log("[Booking ID]", id);
-      const result = await handleEmergency(id)
-
-      if (result.status === "success") {
-         console.log("[Emergency] success");
-      } else if (result.status === "failed") {
-         console.log("[Emergency] failed");
-         handleCancel();
-      }
-   }
-
-   const handleCancel = () => {
-      clearEmergency();
-      router.back();
-   }
-
-
+   // Animation
    const circleLoop = useRef(new Animated.Value(0)).current;
    const circleSize = circleLoop.interpolate({
       inputRange: [0, 1],
@@ -57,30 +36,44 @@ export default EmergencyScreen = () => {
       extrapolate: 'clamp'
    })
 
+   // Effects
+   useEffect(() => {
+      if (timer > 0){
+         setTimeout(() => {
+            setTimer(prev => prev - 1);
+         }, 1000)
+      } else {
+         handleEmergency(id);
+      }
+   }, [timer])
+
    useEffect(() => {
       circleLoop.setValue(0);
       Animated.loop(
-        Animated.timing(circleLoop, {
-          toValue: 1,
-          duration: 1500,
-          useNativeDriver: false,
-        })
+         Animated.timing(circleLoop, {
+            toValue: 1,
+            duration: 1500,
+            useNativeDriver: false,
+         })
       ).start(() => {
          
       });
    }, []);
 
    return (
-      <View style={[
-         global.screenContainer, 
-         global.centerContainer, {
-         backgroundColor: '#000', 
-         position: 'relative', 
-         padding: 24,
-         paddingTop: StatusBar.currentHeight,
-      }]}> 
+      <View
+      style={[
+         global.screenContainer, {
+         backgroundColor: '#000',
+         position: 'relative',
+         paddingTop: StatusBar.currentHeight + 24
+      }]}>
          {/* ---- Top */}
-         <View style={{width: '100%'}}>
+         <View 
+         style={{
+            width: '100%', 
+            paddingHorizontal: 24
+         }}>
             <Text style={{
                fontFamily: FONTS.roboto500,
                fontSize: FONT_SIZES.md,
@@ -100,16 +93,20 @@ export default EmergencyScreen = () => {
          </View>
 
          {/* ---- Middle */}
-         <View style={styles.middleItem}>
-            <View style={{
+         <View 
+         style={{
+            flex: 1, 
+            justifyContent: 'center', 
+            alignItems: 'center',
+            paddingHorizontal: 24
+         }}>
+            <View 
+            style={{
                justifyContent: 'center',
                alignItems: 'center',
-               position: 'relative',
-               paddingHorizontal: 24
+               position: 'relative'
             }}>
-               {(timer > 0) ? 
-                  <CountdownCircle timer={timer}/> : <EmergencyMessage />
-               }
+               {(timer > 0) ? <CountdownCircle timer={timer}/> : <EmergencyMessage />}
                <Animated.View style={[
                   styles.circleItem, {
                   height: circleSize,
@@ -120,15 +117,18 @@ export default EmergencyScreen = () => {
          </View>
 
          {/* ---- Bottom */}
-         <View style={[global.buttonsContainer, {position: 'absolute', bottom: 0}]}>
-            <TouchableHighlight
-            underlayColor={'#ab3232'}
-            style={[global.primaryBtn, {backgroundColor: COLORS.red}]}
-            onPress={handleCancel}>
-               <Text style={global.primaryBtnText}>
-                  {(submitted)? "Go Back" : "Cancel"}
-               </Text>
-            </TouchableHighlight>
+         <View style={[
+            global.buttonsContainer, {
+            paddingBottom: insets.bottom
+         }]}>
+            <MainButton 
+            type='alert'
+            text={emergencySuccess ? "Go Back" : "Cancel"}
+            onPress={() => {
+               clearEmergency();
+               router.back();
+            }}
+            />
          </View>
       </View>
    )
@@ -165,14 +165,13 @@ const EmergencyMessage = () => {
    }, [periods])
 
    return (
-      <View style={{gap: 12, position: 'absolute', zIndex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24, flexShrink: 1}}>
+      <View style={{gap: 12, position: 'absolute', zIndex: 1, justifyContent: 'center', alignItems: 'center'}}>
          <Icons name="alarm-light" size={40} color={COLORS.red} />
          <Text style={{
             fontFamily: FONTS.roboto600,
             fontSize: FONT_SIZES.xxl,
             color: '#fff',
-            textAlign: 'center',
-            flexShrink: 1
+             textAlign: 'center'
          }}>
             {`Sending Location and Booking Details to Admin and Emergency Contacts${".".repeat(periods)}`}
          </Text>
@@ -180,11 +179,9 @@ const EmergencyMessage = () => {
    )
 }
 
+export default EmergencyScreen;
+
 const styles = StyleSheet.create({
-   middleItem: {
-      width: '100%',
-      position: 'relative'
-   },
    circleItem: {
       aspectRatio: '1/1',
       backgroundColor: COLORS.red,

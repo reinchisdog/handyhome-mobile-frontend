@@ -34,7 +34,7 @@ export const AppDataProvider = ({children}) => {
    // Functions
    const fetchServices = async () => { 
       try {
-         console.log("BASE URL:", process.env.EXPO_PUBLIC_API_URL);
+         // console.log("BASE URL:", process.env.EXPO_PUBLIC_API_URL);
          console.log("API URL:", api);
 
          const res = await api.get(`/general/services`);

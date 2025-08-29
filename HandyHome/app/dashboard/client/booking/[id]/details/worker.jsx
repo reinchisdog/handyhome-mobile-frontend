@@ -1,32 +1,31 @@
-// Screen: Appointment Worker
+// Screen: Booking Worker
 
 // Imports
 // ---- React Components
 import { StyleSheet, Text, View, ScrollView, Dimensions } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 // ---- Contexts
-import { useAuth } from '../../../../../context/AuthContext';
-import { useAppointment } from '../../../../../context/AppointmentContext';
+import { useAuth } from '../../../../../../context/AuthContext';
+import { useBookingDetails } from '../../../../../../context/BookingDetailsContext';
 // ---- Other Components
-import Header from '../../../../../components/Header';
-import WorkerHeader from '../../../../../components/WorkerHeader';
+import Header from '../../../../../../components/Header';
+import WorkerHeader from '../../../../../../components/WorkerHeader';
 import { Tabs, MaterialTabBar } from 'react-native-collapsible-tab-view';
-import WorkerAboutTab from '../../../../../components/WorkerAboutTab';
-import WorkerReviewTab from '../../../../../components/WorkerReviewTab';
-import ErrorModal from '../../../../../components/ErrorModal';
+import WorkerAboutTab from '../../../../../../components/WorkerAboutTab';
+import WorkerReviewTab from '../../../../../../components/WorkerReviewTab';
 // ---- Styles and Icons
-import { globalStyles as global } from '../../../../../styles/globalStyles';
-import { COLORS, FONTS, FONT_SIZES } from '../../../../../styles/constants';
+import { globalStyles as global } from '../../../../../../styles/globalStyles';
+import { COLORS, FONTS, FONT_SIZES } from '../../../../../../styles/constants';
 // ---- Other Libs
-import api from '../../../../../lib/api';
+import api from '../../../../../../lib/api';
 
 const initialLayout = { width: Dimensions.get('window').width };
 const MAX_LIMIT = 10;
 
-const AppointmentWorker = () => {
+const BookingWorker = () => {
    // Hooks and States
    const { token } = useAuth();
-   const { worker } = useAppointment();
+   const { worker } = useBookingDetails();
 
    const [reviews, setReviews] = useState([]);
    const [page, setPage] = useState(1);
@@ -45,7 +44,7 @@ const AppointmentWorker = () => {
             setLoadingMore(true);
          }
 
-         console.log("---- [Appointment Worker Reviews] Fetching Attempt ----");
+         console.log("---- [Booking Worker Reviews] Fetching Attempt ----");
          console.log("[1] Fetching Reviews");
          const reviewsResult = await api.get(`/user/book/worker/${worker?.user?.id}/reviews`, {
             params: {
@@ -120,7 +119,7 @@ const AppointmentWorker = () => {
 
          <Tabs.Container
          renderHeader={() => (
-            <WorkerHeader
+            <WorkerHeader 
             name={worker?.user?.name}
             number={worker?.user?.phone_number}
             photo={worker?.user?.profile_photo}
@@ -141,7 +140,7 @@ const AppointmentWorker = () => {
             <Tabs.Tab name='About' label="About">
                <WorkerAboutTab data={worker?.worker}/>
             </Tabs.Tab>
-             <Tabs.Tab name='Reviews' label="Reviews">
+            <Tabs.Tab name='Reviews' label="Reviews">
                <WorkerReviewTab 
                reviews={reviews}
                reviewsLoading={reviewsLoading}
@@ -152,13 +151,8 @@ const AppointmentWorker = () => {
                />
             </Tabs.Tab>
          </Tabs.Container>
-
-            
-
       </View>
    )
 }
 
-export default AppointmentWorker
-
-const styles = StyleSheet.create({})
+export default BookingWorker;

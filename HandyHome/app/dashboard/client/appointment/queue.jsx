@@ -19,7 +19,7 @@ import { COLORS, FONTS, FONT_SIZES } from '../../../../styles/constants';
 
 const AppointmentQueueScreen = () => {
    // Hooks and States
-   const { currentAppointment, appointmentLoading, setAppointmentLoading, rejectAppointment } = useAppointment();
+   const { currentAppointment, appointmentLoading, setAppointmentLoading, rejectAppointment, summary } = useAppointment();
    const router = useRouter();
    const insets = useSafeAreaInsets();
    const {width} = useWindowDimensions();
@@ -30,7 +30,10 @@ const AppointmentQueueScreen = () => {
    // Functions
    const handleRejectAppointment = async () => {
       setCancelLoading(true);
-      await rejectAppointment();
+      console.log(summary?.booking?.id);
+      const appointmentId = currentAppointment?.id || summary?.booking?.id;
+
+      await rejectAppointment(appointmentId);
 
       setCancelLoading(false);
    }

@@ -43,6 +43,7 @@ export const AppointmentProvider = ({ children }) => {
    const [workerError, setWorkerError] = useState(false);
    const [workerLoading, setWorkerLoading] = useState(true);
 
+
    // New worker fetch error state
    const [newWorkerError, setNewWorkerError] = useState(false);
    const [retryCount, setRetryCount] = useState(0);
@@ -83,6 +84,9 @@ export const AppointmentProvider = ({ children }) => {
 
    const createAppointment = async () => {
       try {
+         setSummary(null);
+         setWorker(null);
+
          console.log("---- [Appointment Context] Initial Appointment Attempt ----");
          setAppointmentLoading(true);
          console.log("[1] Preparing Appointment Data");
@@ -166,15 +170,17 @@ export const AppointmentProvider = ({ children }) => {
       };
    }, [currentAppointment?.id]);
 
-   const rejectAppointment = async () => {
+   const rejectAppointment = async (id) => {
       try {
+         const currentId = id || currentAppointment?.id;
+
          console.log("---- [Appointment Context] Booking Cancellation Attempt ----");
-         console.log("[1] Cancelling Booking:", currentAppointment?.id);
+         console.log("[1] Cancelling Booking:", currentId);
          
          // Cleanup subscription before cancelling
          cleanupSubscription();
          
-         await api.delete(`/user/book/${currentAppointment?.id}/reject_booking`, {
+         await api.delete(`/user/book/${currentId}/reject_booking`, {
             headers: {
                'Authorization': `Bearer ${token}`
             }

@@ -39,20 +39,19 @@ const AppointmentAddress = () => {
    const [saveDisabled, setSaveDisabled] = useState(true);
 
    const [newAddress, setNewAddress] = useState({
-      block: "",
-      barangay: "",
-      municipal: "",
-      province: "",
+      block: null,
+      barangay: null,
+      municipal: null,
+      province: null,
    })
    const [newAddressLoading, setNewAddressLoading] = useState(false);
-   const [newAddressDisabled, setNewAddressDisabled] = useState(false);
    const [showNewAddress, setShowNewAddress] = useState(false);
 
    const [showError, setShowError] = useState(false);
    const [errorMessage, setErrorMessage] = useState("");
 
    // Functions
-   const handleAddressBookingChange = async () => {
+   const handleAddressUpdate = async () => {
       try {
          setSaveLoading(true);
          console.log("---- [Addresses Screen] Change Address Attempt ----");
@@ -74,25 +73,41 @@ const AppointmentAddress = () => {
          setErrorMessage(message);
          setShowError(true);
       } finally {
-         setSaveLoading(true);
+         setSaveLoading(false);
       }
+   }
+
+   const verifyAddressAdd = () => {
+      const isFilled = 
+         !!newAddress.block && newAddress.block.trim() !== "" &&
+         !!newAddress.barangay && newAddress.barangay.trim() !== "" &&
+         !!newAddress.municipal && newAddress.municipal.trim() !== "" &&
+         !!newAddress.province && newAddress.province.trim() !== "";
+
+      return isFilled
    }
 
    const handleAddressAdd = async () => {
       try {
          setNewAddressLoading(true);
          console.log("---- [Addresses Screen] Add Address Attempt ----")
-         console.log("[1] Adding New Address:", newAddress);
+         console.log("[3] Verifying Data:", newAddress);
+
+         if (!verifyAddressAdd()) {
+            throw new Error ('Address fields are not all filled. Please enter the appropriate address to continue.');
+         }
+
+         console.log("[2] Adding New Address:", newAddress);
          await api.post(`/user/addresses`, newAddress, {
             headers: {
                'Authorization': `Bearer ${token}`
             }
          });
 
-         console.log("[2] Address Add Succesful, Fetching Updated Addresses ");
+         console.log("[3] Address Add Succesful, Fetching Updated Addresses ");
          await fetchAddresses();
 
-         console.log("[3] Addresses Fetch Succesful");
+         console.log("[4] Addresses Fetch Succesful");
          setShowNewAddress(false);
       } catch(err) {
          console.log("[0] Address Add Error");
@@ -111,6 +126,7 @@ const AppointmentAddress = () => {
          municipal: null,
          province: null,
       })
+      setShowNewAddress(false);
    }
 
    // Effects
@@ -146,10 +162,10 @@ const AppointmentAddress = () => {
          visible={showNewAddress}
          setVisible={setShowNewAddress}
          loading={newAddressLoading}
-         disabled={newAddressDisabled}
          data={newAddress}
          setData={setNewAddress}
          onSubmit={handleAddressAdd}
+         onClose={clearNewAddress}
          />
 
          <View
@@ -199,11 +215,11 @@ const AppointmentAddress = () => {
                backgroundColor: '#fff'
             }]}>
                <MainButton 
-               type='secondary'
+               type='primary'
                text={"Save"}
                loading={saveLoading}
                disabled={saveDisabled}
-               onPress={handleAddressBookingChange}
+               onPress={handleAddressUpdate}
                />
             </View>
          </View>

@@ -43,7 +43,7 @@ const HomeScreen = () => {
          rightIcon={
             <TouchableOpacity 
             // onPress={() => {console.log("[Routing] to Notification")}}
-            onPress={() => router.push('/dashboard/client/appointment/summary/78')}
+            onPress={() => router.push('/dashboard/client/appointment/summary/81')}
             style={{position: 'relative', height: 24, width: 24}}
             >
                {false && (
