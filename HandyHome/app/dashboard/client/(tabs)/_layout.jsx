@@ -54,6 +54,17 @@ const StarterTabLayout = () => {
             }}
          />
 
+         <Tabs.Screen 
+            name="diy"
+            options={{
+               title: "DIY",
+               tabBarIcon: ({ focused, color, size }) => {
+                  const iconName = focused ? 'wrench' : 'wrench-outline';
+                  return <Icons1 name={iconName} color={color} size={22} />;
+               },
+               href: "/dashboard/client/(tabs)/diy"
+            }}
+         />
 
       </Tabs>
    )

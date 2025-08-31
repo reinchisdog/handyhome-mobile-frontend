@@ -1,6 +1,7 @@
 /* --------------------------------- Imports -------------------------------- */
 import { StyleSheet, Text, View, TouchableHighlight, Image, useWindowDimensions, StatusBar } from 'react-native'
-import { useRouter } from 'expo-router'
+import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import React from 'react'
 // Styles and Icons
 import LogoText from '../../components/LogoText';
@@ -11,8 +12,9 @@ import { COLORS, FONT_SIZES, FONTS } from '../../styles/constants';
 
 export default AuthStartingPage = () => {
   /* ----------------------------- Initialization ----------------------------- */
-  const {width} = useWindowDimensions();
+  const {width, height} = useWindowDimensions();
   const route = useRouter();
+  const insets = useSafeAreaInsets();
 
   return (
     <View 
@@ -22,13 +24,14 @@ export default AuthStartingPage = () => {
       justifyContent: 'space-between', 
       alignItems: 'center', 
       paddingTop: 72 + StatusBar.currentHeight,
-      paddingBottom: 72,
       backgroundColor: '#fff'
     }]}>
       {/* Logo */}
       <View style={{
         alignItems: 'center',
-        gap: 8
+        gap: 8,
+        position: 'relative',
+        zIndex: 1,
       }}>
         <LogoText size={40}/>
         <Text style={{
@@ -41,7 +44,12 @@ export default AuthStartingPage = () => {
       </View>
 
       {/* Buttons */}
-      <View style={[global.buttonsContainer, {position: 'relative', zIndex: 1}]}>
+      <View style={[
+        global.buttonsContainer, {
+        position: 'relative', 
+        zIndex: 1,
+        paddingBottom: insets.bottom
+      }]}>
         <MainButton 
         text="Create a new account"
         type="secondary"
@@ -59,7 +67,7 @@ export default AuthStartingPage = () => {
       <View
       style={{
         position: 'absolute',
-        bottom: 0,
+        bottom: - (height/8),
         width: width,
         aspectRatio: '375/576',
         zIndex: 0,

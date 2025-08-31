@@ -8,6 +8,7 @@ import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import { AppDataProvider, useAppData } from '../context/AppDataContext';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { KeyboardProvider } from 'react-native-keyboard-controller'
 // ---- Libraries
 import * as SplashScreen from 'expo-splash-screen';
 
@@ -55,8 +56,10 @@ const RootLayout = () => {
 		<AuthProvider>
 		<AppDataProvider>
 		<SafeAreaProvider>
+		<KeyboardProvider>
 			<AppInitializer />
 			<Slot />
+		</KeyboardProvider>
 		</SafeAreaProvider>
 		</AppDataProvider>
 		</AuthProvider>

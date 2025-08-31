@@ -16,8 +16,33 @@ const BookingReceipt = () => {
    const { details } = useBookingDetails();
 
    // Renders
-   const renderDate = (date, time) => {
+   const renderDate = (dateStr, timeStr) => {
+      if (timeStr === "24:00:00") {
+         let date = new Date(dateStr);
 
+         date.setDate(date.getDate() + 1);
+
+         let formattedDate = date.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+         });
+
+         return `${formattedDate} | "12:00 AM"`;
+      }
+
+      let dateTime = new Date(`${dateStr}T${timeStr}`);
+      let formattedDate = dateTime.toLocaleDateString("en-US", {
+         year: "numeric",
+         month: "long",
+         day: "numeric",
+      });
+      let formattedTime = dateTime.toLocaleTimeString("en-US", {
+         hour: "numeric",
+         minute: "2-digit",
+      });
+
+      return `${formattedDate} | ${formattedTime}`;
    }
 
    return (
