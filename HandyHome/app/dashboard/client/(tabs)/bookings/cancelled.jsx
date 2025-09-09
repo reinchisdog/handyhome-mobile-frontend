@@ -113,11 +113,7 @@ const CancelledBooking = () => {
          alignItems: 'center',
          justifyContent: 'center'
       }}>
-         {loadingMore && (
-            <LoadingDots size={12} />
-         )}
-         
-         {(loading && bookings.length === 0) && (
+         {(loadingMore || (loading && bookings.length === 0)) && (
             <LoadingDots size={12} />
          )}
 

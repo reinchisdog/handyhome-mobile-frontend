@@ -157,7 +157,7 @@ const AddressModal = ({
       >
          <KeyboardAvoidingView
          behavior='position'
-         keyboardVerticalOffset={-insets.bottom - 48}
+         keyboardVerticalOffset={-insets.bottom + 24}
          >
             <Pressable
             onPress={() => {onClose ? onClose() : setVisible(false)}}

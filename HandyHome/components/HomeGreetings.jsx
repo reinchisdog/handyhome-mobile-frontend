@@ -36,7 +36,7 @@ const HomeGreetings = ({name}) => {
             color: COLORS.lettersicons
          }]}>
             Hello, <Text style={[{ color: COLORS.primary }]}>
-               {name.trim() || "there"}!
+               {name?.trim() || "there"}!
             </Text>
          </Text>
       </View>

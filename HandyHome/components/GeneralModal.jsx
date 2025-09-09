@@ -59,7 +59,7 @@ export default GeneralModal = ({
                      onPress={secondaryLoading ? () => {} : secondaryFunction}
                      style={({pressed}) => [{
                         backgroundColor: pressed && !secondaryLoading ? COLORS.secondaryPress : '#fff',
-                        flexShrink: 1,
+                        flex: 1,
                         alignItems: 'center',
                         justifyContent: 'center',
                         borderRadius: 22,

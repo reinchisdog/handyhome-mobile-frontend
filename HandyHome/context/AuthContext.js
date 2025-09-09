@@ -10,11 +10,13 @@ import
 } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../lib/api';
+import { useRouter } from 'expo-router';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({children}) => {
    // States
+   const router = useRouter()
    const [ user, setUser ] = useState(null);
    const [ token, setToken ] = useState(null);
    const [ isTokenValid, setIsTokenValid ] = useState(false);
@@ -63,7 +65,8 @@ export const AuthProvider = ({children}) => {
 
          const userObj = userResult?.data?.data;
          setUser(userObj);
-         console.log("4. Succesfully Fetched User Data:", JSON.stringify(userObj));
+         console.log("4. Succesfully Fetched User Data:");
+         console.log(userObj);
          setIsTokenValid(true);
          setIsLoading(false);
       } catch (err) {
@@ -111,14 +114,17 @@ export const AuthProvider = ({children}) => {
    
    const logout = async () => {
       try {
+         router.replace('/authentication/login');
+ 
+         await api.post('/auth/logout', {}, {
+            headers: { Authorization: `Bearer ${token}` },
+         });
+         await AsyncStorage.removeItem('token');
          setUser(null);
          setToken(null);
-         await AsyncStorage.removeItem('token');
-
-         return { success: true };
+         console.log("--- [Auth Context]: Logged Out ---");
       } catch (err) {
          const message = err.response?.data.message || "An error has ocurred when trying to login. Please try again.";
-         return { success: false, message };
       }
       
    }
@@ -144,12 +150,15 @@ export const AuthProvider = ({children}) => {
          login,
          logout,
          token,
+         setToken,
          isTokenValid,
          user,
+         setUser,
          isLoading,
          hasOnboarded,
          completeOnboarding,
-         isAuthReady
+         isAuthReady,
+         tryFetchUser
       }}>
          {children}
       </AuthContext.Provider>

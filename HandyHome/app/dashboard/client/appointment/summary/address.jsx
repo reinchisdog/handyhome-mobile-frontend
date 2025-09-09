@@ -23,7 +23,6 @@ import { COLORS, FONTS, FONT_SIZES } from '../../../../../styles/constants';
 import Icons from '@expo/vector-icons/MaterialCommunityIcons';
 // ---- Other Libs
 import api from '../../../../../lib/api';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AppointmentAddress = () => {
    // Hooks and States
@@ -32,7 +31,6 @@ const AppointmentAddress = () => {
    const {currentAppointment, fetchSummary} = useAppointment();
    const router = useRouter();
    const insets = useSafeAreaInsets();
-   const { width } = useWindowDimensions();
 
    const [selectedAddress, setSelectedAddress] = useState(null);
    const [saveLoading, setSaveLoading] = useState(false);

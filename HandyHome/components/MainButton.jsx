@@ -8,7 +8,7 @@ const MainButton = ({
    type = "primary", // "alert", "secondary"
    disabled = false,
    loading = false,
-   size = "full", // "grow", "shrink", or "full"
+   size = "full", // "grow", "shrink", "half", or "full"
    onPress,
    text
 }) => {
@@ -38,10 +38,14 @@ const MainButton = ({
 
    const getFlexStyle = () => {
       switch (size) {
-         case "grow":
+         case "flex": 
             return { flex: 1 };
+         case "grow":
+            return { flexGrow: 1 };
          case "shrink":
             return { flexShrink: 1 };
+         case "half":
+            return { width: '50%' };
          case "full":
          default:
             return { width: '100%' };

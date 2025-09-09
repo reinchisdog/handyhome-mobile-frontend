@@ -28,7 +28,7 @@ const DiyLoadingScreen = () => {
    }, [promptLoading, result])
 
    return (
-      <View style={[global.screenContainer, global.centerContainer, {backgroundColor: COLORS.screenbg}]}>
+      <View style={[global.screenContainer, global.centerContainer, {backgroundColor: '#fff'}]}>
          <View style={{gap: 48, alignItems: 'center', padding: 24}}>
             <LoadingDots />
             <Text

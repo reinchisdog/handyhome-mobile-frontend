@@ -36,16 +36,28 @@ export const useConvert = () => {
    }, []);
 
    // * DATE TO FORMATTED DATE (MM-DD-YYYY)
-   const convertDateToFormattedDate = useCallback((dateObject, separator = '-') => {
+   const convertDateToFormattedDate = useCallback((dateObject, format = '-') => {
       if (!dateObject || !(dateObject instanceof Date) || isNaN(dateObject.getTime())) {
          return '';
       }
+
+      const monthNames = [
+         'January', 'February', 'March', 'April', 'May', 'June',
+         'July', 'August', 'September', 'October', 'November', 'December'
+      ];
 
       const month = String(dateObject.getMonth() + 1).padStart(2, '0');
       const day = String(dateObject.getDate()).padStart(2, '0');
       const year = dateObject.getFullYear();
 
-      return `${month}${separator}${day}${separator}${year}`;
+      // Handle long format: January 01, 2004
+      if (format === 'long') {
+         const monthName = monthNames[dateObject.getMonth()];
+         return `${monthName} ${day}, ${year}`;
+      }
+
+      // Original separator-based format
+      return `${month}${format}${day}${format}${year}`;
    }, []);
 
    // * URI TO FILE (Single)
@@ -98,6 +110,7 @@ export const useConvert = () => {
             type: getMimeType(extension),
          };
 
+         console.log(fileObject);
          return fileObject;
       } catch (err) {
          console.error('Error transforming URI to File Object:', err);

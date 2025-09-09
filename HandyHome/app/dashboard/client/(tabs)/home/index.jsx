@@ -76,7 +76,7 @@ const HomeScreen = () => {
 
                <PromoSlide />
 
-               {!user.can_book && showVerify && (
+               {!user?.can_book && showVerify && (
                   <UnverifiedPrompt hidePrompt={() => setShowVerify(false)}/>
                )}
 

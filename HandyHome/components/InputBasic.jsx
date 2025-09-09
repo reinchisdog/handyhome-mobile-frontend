@@ -19,7 +19,8 @@ export default function InputBasic({
   keyboardType="default",
   onChangeText,
   value,
-  floatLabel = true, // New prop to control floating label behavior
+  floatLabel = true, 
+  floatColor = COLORS.screenbg
 }) {
   const [placeholderText, setPlaceholderText] = useState(floatLabel ? placeholder : placeholder);
 
@@ -38,13 +39,13 @@ export default function InputBasic({
   const labelY = useRef(new Animated.Value(0)).current;
   const animLabelY = labelY.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, -29]
+    outputRange: [0, -28]
   })
 
   const labelBackground = useRef(new Animated.Value(0)).current;
   const animLabelBG = labelBackground.interpolate({
     inputRange: [0, 1],
-    outputRange: ["#fff", COLORS.screenbg]
+    outputRange: ["#fff", floatColor]
   })
 
   const labelColor = useRef(new Animated.Value(0)).current;
@@ -221,9 +222,11 @@ export default function InputBasic({
             {translateY: animLabelY}],
           color: animLabelColor,
           backgroundColor: animLabelBG,
-          paddingHorizontal: 2,
+          paddingHorizontal: 4,
           fontFamily: FONTS.roboto700 ,
           opacity: labelOpacity,
+          height: FONT_SIZES.sm,
+          lineHeight: FONT_SIZES.sm,
         }}>
           {placeholder}
         </Animated.Text>

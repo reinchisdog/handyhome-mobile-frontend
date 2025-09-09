@@ -125,7 +125,7 @@ const ServiceCategoryScreen = () => {
    }
 
    const handleCategoryClick = async (item) => {
-      if (!user.can_book) {
+      if (!user?.can_book) {
          setErrorMessage("You're account has not been verified and is not able to book. Please verify your account now if you wish to proceed.");
          setShowError(true);
          return;

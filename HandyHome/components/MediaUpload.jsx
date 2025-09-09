@@ -5,7 +5,7 @@
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, useWindowDimensions, ImageBackground } from 'react-native';
 import React, { useEffect, useMemo, useCallback, useRef } from 'react';
 // ---- Contexts
-import { useCamera } from '../context/CameraContext';
+import { useMedia } from '../context/MediaContext';
 // ---- Styles and Icons
 import Icons from '@expo/vector-icons/MaterialCommunityIcons';
 import { COLORS, FONTS, FONT_SIZES } from '../styles/constants';
@@ -15,19 +15,30 @@ const MediaUpload = ({
    data,
    dataName,
    setData,
-   setCameraFace = "back",
-   canSwitch = false
+   mode = "both", // "both", "camera", "picker"
+   hasSwitch = false,
+   initialCameraType = 'back'
 }) => {
    // Hooks and States
-   const { openCamera, image, clearImage } = useCamera();
-   const {width} = useWindowDimensions();
+   const { openCamera, openImagePicker, returnedImage, clearImage } = useMedia();
 
    const hasProcessedImage = useRef(false);
 
    // Functions
    const handleMediaPick = useCallback(async () => {
-      await openCamera(setCameraFace, canSwitch);
-   }, [setCameraFace, canSwitch, openCamera]);
+      if (mode === "both") {
+         await openCamera(
+            hasSwitch, true, initialCameraType
+         )
+      } else if (mode === "camera") {
+         await openCamera(
+            hasSwitch, false, initialCameraType
+         )
+      } else if (mode === "picker") {
+         await openImagePicker()
+      }
+
+   }, [hasSwitch, openCamera]);
 
    const handleDelete = useCallback((index) => {
       setData(prev => {
@@ -49,7 +60,7 @@ const MediaUpload = ({
 
    // Effects
    useEffect(() => {
-      if (!image) {
+      if (!returnedImage) {
          hasProcessedImage.current = false;
          return;
       }
@@ -61,26 +72,26 @@ const MediaUpload = ({
 
          if (maxMedia === 1) {
             // For maxMedia = 1
-            return { ...prev, [dataName]: image };
+            return { ...prev, [dataName]: returnedImage };
          } else {
             // For maxMedia > 1
             if (Array.isArray(current)) {
                // Don't add if already at max capacity
                if (current.length >= maxMedia) return prev;
-               return { ...prev, [dataName]: [...current, image] };
+               return { ...prev, [dataName]: [...current, returnedImage] };
             } else if (current) {
                // Convert single item to array and add new image
-               return { ...prev, [dataName]: [current, image] };
+               return { ...prev, [dataName]: [current, returnedImage] };
             } else {
                // First image
-               return { ...prev, [dataName]: [image] };
+               return { ...prev, [dataName]: [returnedImage] };
             }
          }
       });
 
       hasProcessedImage.current = true;
       clearImage();
-   }, [image, dataName, maxMedia, setData, clearImage])
+   }, [returnedImage, dataName, maxMedia, setData, clearImage])
 
    const normalizedData = useMemo(() => {
       return Array.isArray(data) ? data : (data ? [data] : []);
@@ -110,7 +121,8 @@ const MediaUpload = ({
                </View>
             </TouchableOpacity>
          }
-         {normalizedData.map((item, index) => (
+
+         {normalizedData?.map((item, index) => (
             <ImageBackground
             key={`${item}-${index}`}
             source={{uri: item}}

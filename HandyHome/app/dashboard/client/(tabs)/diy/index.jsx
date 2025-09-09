@@ -20,7 +20,7 @@ import { useDiy } from '../../../../../context/DiyContext';
 const DiyQuestionScreen = () => {
    // Hooks and States
    const { user } = useAuth();
-   const { commonPrompts, prompt, setPrompt, promptLoading, handlePrompt } = useDiy();
+   const { commonPrompts, prompt, setPrompt, promptLoading, handlePrompt, language, setLanguage, languageOptions } = useDiy();
 
 
    return (
@@ -109,7 +109,46 @@ const DiyQuestionScreen = () => {
                      value={prompt}
                      onChangeText={(e) => setPrompt(e)}
                      />
+
+                     <View
+                     style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        overflow: 'hidden',
+                        borderRadius: 8,
+                        outlineWidth: 1,
+                        outlineColor: COLORS.strokes
+                     }}>
+                     {languageOptions.map((item, index) => (
+                        <Pressable
+                        onPress={() => setLanguage(item)}
+                        key={index}
+                        style={({pressed}) => [{
+                           padding: 4,
+                           flexGrow: 1,
+                           justifyContent: 'center',
+                           alignItems: 'center',
+                           backgroundColor: pressed 
+                              ? (language === item ? COLORS.primaryPress : COLORS.secondaryPress)
+                              : (language === item ? COLORS.primary : COLORS.secondary),
+                           borderColor: COLORS.strokes,
+                           borderLeftWidth: index === 0 ? 0 : 1
+                        }]}>
+                           <Text
+                           style={{
+                              fontFamily: FONTS.roboto500,
+                              fontSize: FONT_SIZES.md,
+                              color: item === language ? '#fff' : COLORS.primary,
+                              textTransform: 'capitalize'
+                           }}>
+                              {item === 'taglish' ? 'mixed' : item}
+                           </Text>
+                        </Pressable>
+                     ))}
+                     </View>
                   </View>
+                  
+                  
 
                   {/* ---- Note */}
                   <View
@@ -148,6 +187,7 @@ const DiyQuestionScreen = () => {
                </Text>
 
                <FlatList 
+               showsHorizontalScrollIndicator={false}
                horizontal
                data={commonPrompts}
                renderItem={({item}) => (
@@ -184,7 +224,8 @@ const DiyQuestionScreen = () => {
          </KeyboardAwareScrollView>
 
          <View 
-         style={{
+         style={[
+            global.shadowBottom, {
             position: 'absolute',
             bottom: 0,
             width: '100%',
@@ -192,7 +233,7 @@ const DiyQuestionScreen = () => {
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
             backgroundColor: '#fff',
-         }}>
+         }]}>
             <MainButton 
             type='primary'
             text='Submit'

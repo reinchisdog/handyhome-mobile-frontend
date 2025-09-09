@@ -34,6 +34,8 @@ export const DiyProvider = ({children}) => {
    const [prompt, setPrompt] = useState("");
    const [promptLoading, setPromptLoading] = useState(false);
    const [result, setResult] = useState(null);
+   const languageOptions = ["english", "tagalog", "taglish"];
+   const [language, setLanguage] = useState("english");
 
    const [errorModal, setErrorModal] = useState(false);
    const [errorMessage, setErrorMessage] = useState("");
@@ -52,7 +54,7 @@ export const DiyProvider = ({children}) => {
             throw new Error("Your description exceeded the character limit, please try a shorter one.");
          }
          
-         const contents = `Give me clear, step-by-step guidance for solving this home issue: "${prompt}". Include the tools or materials needed, and a very short remark if should the client book a service provider instead from our app, HandyHome.`
+         const contents = `In conversational ${language}, give me clear, step-by-step guidance for solving this home issue: "${prompt}". Include the tools or materials needed, and a very short remark if should the client book a service provider instead from our app, HandyHome.`
 
          console.log("[2] Submitting Prompt:", contents);
          router.push('/dashboard/client/diy/loading');
@@ -120,8 +122,10 @@ export const DiyProvider = ({children}) => {
          setPrompt,
          promptLoading,
          handlePrompt,
-
-         result
+         result,
+         languageOptions,
+         language,
+         setLanguage,
       }}>
          <ErrorModal 
          visible={errorModal}

@@ -79,7 +79,7 @@ export const AppDataProvider = ({children}) => {
       const init = async () => {
          try {
             await fetchServices();
-            if (token && isTokenValid) await fetchAddresses();
+            if (token && isTokenValid) fetchAddresses();
             
             setIsAppDataReady(true);
             console.log("[AppData Context]: App Data Ready");

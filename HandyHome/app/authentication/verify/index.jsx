@@ -2,7 +2,7 @@
 
 // Imports
 // ---- React and React Native Components
-import { Text, View, TouchableHighlight, TouchableOpacity, ImageBackground} from 'react-native';
+import { Text, View, ImageBackground } from 'react-native';
 import React, { useState, useRef, useEffect } from 'react';
 // ---- Custom Components
 import BasicInput from '../../../components/authentication/BasicInput';

@@ -7,6 +7,7 @@ import React, {useEffect} from 'react';
 import { useRouter } from 'expo-router';
 // ---- Other Components
 import Header from '../../../../../components/Header';
+import MainButton from '../../../../../components/MainButton';
 // ---- Styles and Icons
 import { globalStyles as global } from '../../../../../styles/globalStyles';
 import { COLORS, FONTS, FONT_SIZES } from '../../../../../styles/constants';
@@ -15,6 +16,7 @@ import { useDiy } from '../../../../../context/DiyContext';
 
 const DiyResultScreen = () => {
    // Hooks and States
+   const router = useRouter();
    const { result } = useDiy();
 
    return (
@@ -32,7 +34,7 @@ const DiyResultScreen = () => {
          backgroundColor={COLORS.primary}
          />
 
-         <View style={{padding: 12, gap: 12, flex: 1}}>
+         <View style={{padding: 12, gap: 24, flex: 1}}>
             <View
             style={{
                padding: 12,
@@ -193,6 +195,50 @@ const DiyResultScreen = () => {
                   </View>
                }
 
+            </View>
+
+            <View
+            style={{
+               padding: 12,
+               paddingVertical: 24,
+               backgroundColor: '#fff',
+               borderRadius: 20,
+               gap: 24
+            }}>
+               <Text
+               style={{
+                  fontFamily: FONTS.roboto600,
+                  fontSize: FONT_SIZES.md,
+                  color: COLORS.lettersicons, 
+                  textAlign: 'center',
+                  paddingHorizontal: 48
+               }}>
+                  Not sure how to fix it? <Text style={{color: COLORS.primary}}>
+                     Hire Someone
+                  </Text> to do it for you.
+               </Text>
+
+               <View
+               style={{
+                  flexDirection: 'row',
+                  gap: 12,
+                  alignItems: 'center',
+                  width: '100%',
+               }}>
+                  <MainButton 
+                  type='secondary'
+                  text='Done'
+                  size='grow'
+                  onPress={() => router.replace('/dashboard/client')}
+                  />
+
+                  <MainButton 
+                  type='primary'
+                  text='Get Help'
+                  size='grow'
+                  onPress={() => router.replace('/dashboard/client/home/services')}
+                  />
+               </View>
             </View>
          </View>
       </ScrollView>

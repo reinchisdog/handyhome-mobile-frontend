@@ -27,6 +27,11 @@ const AppointmentQueueScreen = () => {
    const [cancelModal, setCancelModal] = useState(false);
    const [cancelLoading, setCancelLoading] = useState(false);
 
+   // Animation refs - add animation guard
+   const successLoading = useRef(new Animated.Value(0)).current;
+   const animationStarted = useRef(false);
+   const animationRef = useRef(null);
+
    // Functions
    const handleRejectAppointment = async () => {
       setCancelLoading(true);
@@ -57,33 +62,81 @@ const AppointmentQueueScreen = () => {
       }, [appointmentLoading, currentAppointment?.id, currentAppointment?.accepted_by])
    );
 
+   // Reset animation state when screen focuses
+   useFocusEffect(
+      useCallback(() => {
+         // Reset animation state when component focuses
+         animationStarted.current = false;
+         successLoading.setValue(0);
+         
+         // Cleanup any running animation
+         if (animationRef.current) {
+            animationRef.current.stop();
+            animationRef.current = null;
+         }
+      }, [])
+   );
+
    useEffect(() => {
       console.log('current appointment worker:', currentAppointment?.accepted_by);
-      if (!appointmentLoading && currentAppointment?.accepted_by) {
+      console.log('appointment loading:', appointmentLoading);
+      console.log('animation started:', animationStarted.current);
+      
+      if (!appointmentLoading && 
+          currentAppointment?.accepted_by && 
+          !animationStarted.current) {
          successAnimation();
       }
    }, [appointmentLoading, currentAppointment?.accepted_by]);
 
    // Animation
-   const successLoading = useRef(new Animated.Value(0)).current;
+   // Animation with guards
    const loadingWidth = successLoading.interpolate({
       inputRange: [0, 1],
       outputRange: ['0%', '100%'],
       extrapolate: 'clamp'
    })
 
-   const successAnimation = () => {
-      Animated.timing(successLoading, {
+   const successAnimation = useCallback(() => {
+      if (animationStarted.current) {
+         console.log('Animation already started, skipping');
+         return;
+      }
+
+      if (!currentAppointment?.id) {
+         console.log('No appointment ID, skipping animation');
+         return;
+      }
+
+      animationStarted.current = true;
+      console.log('Starting success animation');
+      
+      animationRef.current = Animated.timing(successLoading, {
          toValue: 1,
          duration: 5000,
          useNativeDriver: false
-      }).start(() => {
-         router.replace({
-            pathname: '/dashboard/client/appointment/summary/[id]',
-            params: {id: currentAppointment?.id}
-         })
-      })
-   }
+      });
+
+      animationRef.current.start((finished) => {
+         if (finished) {
+            console.log('Animation completed, navigating...');
+            router.replace({
+               pathname: '/dashboard/client/appointment/summary/[id]',
+               params: {id: currentAppointment?.id}
+            });
+         }
+         animationRef.current = null;
+      });
+   }, [successLoading, router, currentAppointment?.id]);
+
+   // Cleanup on unmount
+   useEffect(() => {
+      return () => {
+         if (animationRef.current) {
+            animationRef.current.stop();
+         }
+      };
+   }, []);
 
 
    return (

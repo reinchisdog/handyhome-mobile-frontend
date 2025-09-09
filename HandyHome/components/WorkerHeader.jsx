@@ -82,7 +82,7 @@ const WorkerHeader = ({
                      flexShrink: 1,
                      flexWrap: 'wrap',
                      fontFamily: FONTS.roboto600,
-                     fontSize: FONT_SIZES.md,
+                     fontSize: FONT_SIZES.lg,
                      color: COLORS.primary
                   }}>
                      {name}

@@ -155,10 +155,24 @@ export const AppointmentProvider = ({ children }) => {
             table: 'initial_bookings',
             filter: `id=eq.${currentAppointment.id}`
          }, (payload) => {
-            console.log("[2] Worker Found");
-            console.log(payload.new);
-            setCurrentAppointment(payload.new);
-            setAppointmentLoading(false);
+            console.log("[2] Real-time Update Received");
+            console.log("Old data:", payload.old);
+            console.log("New data:", payload.new);
+            
+            const newData = payload.new;
+            const oldData = payload.old;
+            
+            // Check for worker changes
+            if (oldData.accepted_by !== newData.accepted_by) {
+               console.log(`[3] Worker changed: ${oldData.accepted_by} -> ${newData.accepted_by}`);
+            }
+            
+            setCurrentAppointment(newData);
+            
+            // Stop loading if we have a worker
+            if (newData.accepted_by) {
+               setAppointmentLoading(false);
+            }
          })
          .subscribe();
 
@@ -168,7 +182,7 @@ export const AppointmentProvider = ({ children }) => {
       return () => {
          cleanupSubscription();
       };
-   }, [currentAppointment?.id]);
+   }, [currentAppointment?.id, currentAppointment?.accepted_by]);
 
    const rejectAppointment = async (id) => {
       try {
@@ -293,12 +307,9 @@ export const AppointmentProvider = ({ children }) => {
          });
 
          console.log("[2] Successful New Worker Request");
-         const workerData = workerResult?.data?.data;
-         
+         console.log(workerResult?.data?.data?.booking);
+         setCurrentAppointment(workerResult?.data?.data?.booking);
          setRetryCount(0);
-         if (workerData) {
-            setCurrentAppointment(workerData);
-         }
 
       } catch (err) {
          console.log("[0] New Worker Fetch Failed");

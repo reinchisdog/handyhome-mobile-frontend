@@ -60,9 +60,21 @@ const StarterTabLayout = () => {
                title: "DIY",
                tabBarIcon: ({ focused, color, size }) => {
                   const iconName = focused ? 'wrench' : 'wrench-outline';
-                  return <Icons1 name={iconName} color={color} size={22} />;
+                  return <Icons1 name={iconName} color={color} size={size - 3} />;
                },
                href: "/dashboard/client/(tabs)/diy"
+            }}
+         />
+
+         <Tabs.Screen 
+            name="profile"
+            options={{
+               title: "Profile",
+               tabBarIcon: ({ focused, color, size }) => {
+                  const iconName = focused ? 'person' : 'person-outline';
+                  return <Icons2 name={iconName} color={color} size={size} />;
+               },
+               href: "/dashboard/client/(tabs)/profile"
             }}
          />
 

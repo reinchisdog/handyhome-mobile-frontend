@@ -5,7 +5,7 @@ import { ServiceIconMap } from './ServiceIconMap';
 import { globalStyles as global } from '../styles/globalStyles';
 import { COLORS, FONTS, FONT_SIZES } from '../styles/constants';
 
-export default ServiceItem = ({item, selectedItem, onPress}) => {
+export default ServiceItem = ({item, selectedItem, onPress, color = '#fff'}) => {
    return (
       <View style={{alignItems: 'center'}}>
          <Pressable
@@ -21,7 +21,7 @@ export default ServiceItem = ({item, selectedItem, onPress}) => {
          }]}>
             <View 
             style={{
-               backgroundColor: '#fff',
+               backgroundColor: color,
                justifyContent: 'center',
                alignItems: 'center',
                height: 60,

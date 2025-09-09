@@ -117,14 +117,9 @@ const BookingRating = () => {
 
          const formData = new FormData();
          appendFormData(formData, converted);
-
-         const temp = {
-            rating: feedback.rating,
-            review: feedback.review
-         }
-
+         
          console.log("[2] Submitting Feedback");
-         await api.post(`/user/book/${id}/review`, temp, {
+         await api.post(`/user/book/${id}/review`, formData, {
             headers: {
                'Authorization' : `Bearer ${token}`
             }

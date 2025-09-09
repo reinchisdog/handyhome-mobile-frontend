@@ -18,8 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS } from '../../styles/constants';
 // ---- Config and Other Libraries
 import { useRouter } from 'expo-router';
-import axios from 'axios';
-import {API_URL} from '../../config'
+import api from '../../lib/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default ForgotPasswordScreen = () => {
@@ -45,7 +44,7 @@ export default ForgotPasswordScreen = () => {
          console.log("---- [Forgot Password]: Email Verification Attempt ----");
          console.log("1. Validating Email");
          validateEmail();
-         await axios.post(`${API_URL}/auth/forgot-password`, {
+         await api.post(`/auth/forgot-password`, {
             email: identifier.email
          });
 
@@ -96,7 +95,7 @@ export default ForgotPasswordScreen = () => {
          console.log("1. Validating Code");
          validateCode();
          
-         const response = await axios.get(`${API_URL}/auth/check-password-reset-token/${code.verification_token}`);
+         const response = await api.get(`/auth/check-password-reset-token/${code.verification_token}`);
 
          console.log("2. Successfully Verified Code");
          router.push({

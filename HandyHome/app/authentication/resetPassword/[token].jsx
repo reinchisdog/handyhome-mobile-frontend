@@ -18,8 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS } from '../../../styles/constants';
 // ---- Config and Other Libraries
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import axios from 'axios';
-import {API_URL} from '../../../config'
+import api from '../../../lib/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default ResetPasswordScreen = () => {
@@ -49,7 +48,7 @@ export default ResetPasswordScreen = () => {
 
          console.log("1. Validating Passwords");
          validatePassword();
-         await axios.post(`${API_URL}/auth/forgot-password/update-password/${token}`, data);
+         await api.post(`/auth/forgot-password/update-password/${token}`, data);
 
          console.log("2. Successfully Updated Password");
          router.push('/authentication/resetPassword/success');
