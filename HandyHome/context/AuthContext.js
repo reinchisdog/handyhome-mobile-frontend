@@ -28,7 +28,7 @@ export const AuthProvider = ({children}) => {
    // ---- Checks if the user has completed onboarding
    const getOnboarding = async () => {
       const onboarded = JSON.parse(await AsyncStorage.getItem('onboarded'));
-      console.log(`[Auth Context]: Has Onboarded? ${onboarded !== null ? onboarded : false}`);
+      // console.log(`[Auth Context]: Has Onboarded? ${onboarded !== null ? onboarded : false}`);
       setHasOnboarded(onboarded !== null ? onboarded : false); 
    }
    // ---- Completes the onboarding process
@@ -49,7 +49,7 @@ export const AuthProvider = ({children}) => {
          setIsLoading(false);
       }
       } catch (err) {
-         console.log('[Auth Context] Token Error:', err);
+         // console.log('[Auth Context] Token Error:', err);
       }
    }
    // ---- Fetches user data using the token
@@ -65,34 +65,33 @@ export const AuthProvider = ({children}) => {
 
          const userObj = userResult?.data?.data;
          setUser(userObj);
-         console.log("4. Succesfully Fetched User Data:");
-         console.log(userObj);
+         // console.log("4. Succesfully Fetched User Data:");
+         // console.log(userObj);
          setIsTokenValid(true);
          setIsLoading(false);
       } catch (err) {
-         console.log('Fetch user failed:', err.response?.data || err.message);
+         // console.log('Fetch user failed:', err.response?.data || err.message);
          setIsTokenValid(false);
-         logout();
       }
    }
 
    const login = async (loginData) => {
       try {
-         console.log("--- [Auth Context]: Login Attempt ---");
-         console.log("1. Loggin In");
+         // console.log("--- [Auth Context]: Login Attempt ---");
+         // console.log("1. Loggin In");
          const tokenResult = await api.post(`/auth/login`, loginData, {
             headers: {
                'Content-Type': 'application/json',
             },
          });
 
-         console.log("2. Succesful Loggin In")
+         // console.log("2. Succesful Loggin In")
          const token = tokenResult.data.data.token;
          await AsyncStorage.setItem('token', JSON.stringify(token));
          setToken(token);
          console.log("[Auth Context] Token Set:", token); 
          
-         console.log("3. Fetching User Data");
+         // console.log("3. Fetching User Data");
          const userResult = await api.get(`/user`, {
             headers: {
                Authorization: `Bearer ${token}`,
@@ -101,11 +100,12 @@ export const AuthProvider = ({children}) => {
 
          const userObj = userResult.data.data;
          setUser(userObj);
-         console.log("4. Succesfully Fetched User Data:", JSON.stringify(userObj));
+         setIsTokenValid(true);
+         // console.log("4. Succesfully Fetched User Data:", JSON.stringify(userObj));
 
          return { success: true };
       } catch (err){
-         console.log("/// Failed Loggin In ///")
+         // console.log("/// Failed Loggin In ///")
          const message = err.response?.data.message || "An error has ocurred when trying to login. Please try again.";
 
          return { success: false, message };
@@ -114,7 +114,7 @@ export const AuthProvider = ({children}) => {
    
    const logout = async () => {
       try {
-         router.replace('/authentication/login');
+         router.replace('/authentication');
  
          await api.post('/auth/logout', {}, {
             headers: { Authorization: `Bearer ${token}` },
@@ -122,9 +122,9 @@ export const AuthProvider = ({children}) => {
          await AsyncStorage.removeItem('token');
          setUser(null);
          setToken(null);
-         console.log("--- [Auth Context]: Logged Out ---");
+         // console.log("--- [Auth Context]: Logged Out ---");
       } catch (err) {
-         const message = err.response?.data.message || "An error has ocurred when trying to login. Please try again.";
+         const message = err.response?.data.message || "An error has ocurred when trying to logout. Please try again.";
       }
       
    }
@@ -132,7 +132,7 @@ export const AuthProvider = ({children}) => {
    useEffect(() => {
       if (isAuthReady) return;
 
-      console.log("--- [Auth Context]: Initializing Auth Context ---");
+      // console.log("--- [Auth Context]: Initializing Auth Context ---");
       
       const init = async () => {
          await getOnboarding();

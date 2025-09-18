@@ -1,129 +1,102 @@
-import { Text, View, TouchableOpacity, useWindowDimensions, ScrollView } from 'react-native'
-import React, {useEffect, useState} from 'react'
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+// Screens: Bookings Layout
 
-import Header from '../../../../../components/dashboard/Header';
-import UpcomingScreen from './upcoming';
-import CompletedScreen from './completed';
-
-const Tabs = createMaterialTopTabNavigator();
-
+// Import 
+// ---- React and Expo Components
+import { StyleSheet, Text, View, ScrollView } from 'react-native';
+import React from 'react';
+import { withLayoutContext } from 'expo-router';
+// ---- Other Components
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs'
+import Header from '../../../../../components/Header';
+// ---- Styles and Icons
 import { globalStyles as global } from '../../../../../styles/globalStyles';
-import { COLORS, FONT_SIZES, FONTS } from '../../../../../styles/constants';
+import { COLORS, FONTS, FONT_SIZES } from '../../../../../styles/constants';
+
+const { Navigator } = createMaterialTopTabNavigator();
+export const Tabs = withLayoutContext(Navigator);
 
 const BookingsLayout = () => {
-  /* ----------------------------- Initialization ----------------------------- */
-  const { width, height } = useWindowDimensions();
-
-  return (
-    <View style={global.screenContainer}>
-      {/* --------------------------------- Header --------------------------------- */}
-      <Header 
-      background={COLORS.primary} 
-      title = {
-        <Text style={[global.headingText, {color: '#fff'}]}>Bookings</Text>
-      }
-      titleAlign = 'center'
-      titlePosition = 'relative'
-      />
-
-      {/* ------------------------------- Top Tab Bar ------------------------------ */}
-      <Tabs.Navigator
-      initialLayout={{ width: width }}
-      screenOptions={{
-         lazy: true,
+   return (
+      <View style={[global.screenContainer, {backgroundColor: COLORS.screenbg}]}>
+         <Header 
+         hasBack={false}
+         title={"Bookings"}
+         textColor='#fff'
+         backgroundColor={COLORS.primary}
+         />
          
-         // pagerEnabled: false,
-         // lazyPlaceholder = {},
-      }}
-      tabBar={(props) => <BookingTabBar {...props} />}>
-        <Tabs.Screen name="Upcoming" component={UpcomingScreen}/>
-        <Tabs.Screen name="Completed" component={CompletedScreen}/>
-      </Tabs.Navigator>
-      
-    </View>
-  )
-}
+         <Tabs
+         initialRouteName='upcoming'
+         tabBar={({state, descriptors, navigation}) => (
+            <View 
+            style={{
+               flexDirection: 'row',
+               maxHeight: 46,
+               backgroundColor: COLORS.primary,
+               padding: 6,
+               alignItems: 'center',
+               width: '100%',
+               // backgroundColor: 'green'
+            }}>
+               {state.routes.map((route, index) => {
+                  const { options } = descriptors[route.key];
+                  const label = options.tabBarLabel || options.title || route.name;
+                  const isFocused = state.index === index;
 
-const BookingTabBar = ({ state, descriptors, navigation, position, active }) => {
-  return (
-    <View>
-      <View 
-      style={{
-        flexDirection: 'row',
-        backgroundColor: COLORS.primary,
-        height: 36,
-        gap: 12,
-      }}>
-        {state.routes.map((route, index) => {
-          const { options } = descriptors[route.key];
-          const label =
-            options.tabBarLabel !== undefined
-              ? options.tabBarLabel
-              : options.title !== undefined
-                ? options.title
-                : route.name;
+                  const onPress = () => {
+                     const event = navigation.emit({
+                        type: 'tabPress',
+                        target: route.key,
+                        canPreventDefault: true,
+                     });
 
-          const isFocused = state.index === index;
+                     if (!isFocused && !event.defaultPrevented) {
+                        navigation.navigate(route.name);
+                     }
+                  };
 
-          const onPress = () => {
-            const event = navigation.emit({
-              type: 'tabPress',
-              target: route.key,
-            });
+                  return (
+                     <View
+                     key={route.key}
+                     style={{
+                        backgroundColor: isFocused ? '#fff' : 'transparent',
+                        borderRadius: 16,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flex: 1,
+                        height: '100%'
+                     }}
+                     onTouchEnd={onPress}>
+                        <Text
+                        style={{
+                           color: isFocused ? COLORS.accent : '#fff',
+                           fontFamily: FONTS.roboto700,
+                           fontSize: FONT_SIZES.sm,
+                        }}>
+                           {label}
+                        </Text>
+                     </View>
+                  )
+               })
 
-            if (!isFocused && !event.defaultPrevented) {
-              navigation.navigate(route.name);
-            }
-          };
-
-          const onLongPress = () => {
-            navigation.emit({
-              type: 'tabLongPress',
-              target: route.key,
-            });
-          };
-          return (
-            <TouchableOpacity
-              key={index}
-              accessibilityRole="button"
-              accessibilityState={isFocused ? { selected: true } : {}}
-              accessibilityLabel={options.tabBarAccessibilityLabel}
-              testID={options.tabBarTestID}
-              onPress={onPress}
-              onLongPress={onLongPress}
-              style={{ 
-                flex: 1 ,
-                justifyContent: 'center',
-                alignItems: 'center',
-                backgroundColor: (isFocused)? '#fff' :  'transparent',
-                borderTopLeftRadius: 8,
-                borderTopRightRadius: 8
-              }}
-            >
-              <Text 
-                style={{
-                  fontFamily: FONTS.roboto700,
-                  fontSize: FONT_SIZES.sm,
-                  color: (isFocused)? COLORS.accent : '#fff'
-                }}
-              >
-                {label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-        
+               }
+            </View>
+         )}
+         >
+            <Tabs.Screen 
+               name="upcoming" 
+               options={{ title: "Upcoming" }} 
+            />
+            <Tabs.Screen 
+               name="completed" 
+               options={{ title: "Completed" }} 
+            />
+         </Tabs>
+         
       </View>
-      <View 
-      style={{
-        height: 8,
-        backgroundColor: '#fff'
-      }}
-      />
-    </View>
-    
-  )
+   )
 }
 
 export default BookingsLayout
+
+const styles = StyleSheet.create({})

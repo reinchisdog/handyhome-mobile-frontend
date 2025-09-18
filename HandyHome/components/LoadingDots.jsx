@@ -6,7 +6,7 @@ import React, {useEffect, useRef} from 'react';
 import { Animated, useWindowDimensions, Easing } from 'react-native';
 import { COLORS } from '../styles/constants';
 
-export default LoadingDots = ({ size = 16,animationTimeout = 1500, onAnimationEnd = () => {}}) => {
+export default LoadingDots = ({ size = 16, slide = true, animationTimeout = 1500, onAnimationEnd = () => {}}) => {
    const { width } = useWindowDimensions();
 
    const ballAnims = [
@@ -52,16 +52,22 @@ export default LoadingDots = ({ size = 16,animationTimeout = 1500, onAnimationEn
     
       loop.start();
     
-      Animated.timing(contAnim, {
-         toValue: 1,
-         duration: 500,
-         easing: Easing.out(Easing.exp),
-         useNativeDriver: true,
-      }).start(() => {
+      if (slide) {
+         Animated.timing(contAnim, {
+            toValue: 1,
+            duration: 500,
+            easing: Easing.out(Easing.exp),
+            useNativeDriver: true,
+         }).start(() => {
+            setTimeout(() => {
+               onAnimationEnd();
+            }, animationTimeout);
+         });
+      } else {
          setTimeout(() => {
             onAnimationEnd();
          }, animationTimeout);
-      });
+      }
         
    }, []);
 
@@ -70,7 +76,7 @@ export default LoadingDots = ({ size = 16,animationTimeout = 1500, onAnimationEn
       style={{
          flexDirection: 'row',
          gap: size - 4,
-         transform: [{ translateX: cont }],
+         transform: [{ translateX: slide ? cont : 0 }],
       }}>
         {translateYs.map((ty, i) => (
             <Animated.View

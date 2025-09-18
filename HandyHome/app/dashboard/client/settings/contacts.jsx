@@ -293,7 +293,7 @@ const ProfileContacts = () => {
                borderRadius: 8,
                backgroundColor: pressed ? COLORS.primaryPress : COLORS.primary,
                position: 'absolute',
-               bottom: insets.bottom,
+               bottom: insets.bottom + 24,
                right: 24
             }]}>
                <Icons name='add' size={24} color={'#fff'}/>
@@ -482,7 +482,7 @@ const ContactModal = ({
                   right: 0,
                   width: width,
                   padding: 24,
-                  paddingBottom: insets.bottom,
+                  paddingBottom: insets.bottom + 24,
                   backgroundColor: '#fff',
                   borderTopLeftRadius: 20,
                   borderTopRightRadius: 20,

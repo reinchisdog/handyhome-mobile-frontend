@@ -34,7 +34,7 @@ const Header = ({
       style = {[{
          width: width,
          backgroundColor: backgroundColor,
-         paddingTop: StatusBar.currentHeight,
+         paddingTop: StatusBar.currentHeight || 24,
          paddingHorizontal: 24,
          position: position,
          top: 0,

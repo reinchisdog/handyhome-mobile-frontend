@@ -119,7 +119,7 @@ const EmergencyScreen = () => {
          {/* ---- Bottom */}
          <View style={[
             global.buttonsContainer, {
-            paddingBottom: insets.bottom
+            paddingBottom: insets.bottom + 24
          }]}>
             <MainButton 
             type='alert'

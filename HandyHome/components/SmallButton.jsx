@@ -72,7 +72,7 @@ const SmallButton = ({
       onPress={!(disabled || loading) ? onPress : undefined}
       style={({pressed}) => [{
          height: '100%',
-         width: '33.33%',
+         maxWidth: '33.33%',
          flex: 1,
          backgroundColor: getBackgroundColor(pressed),
          borderRadius: 24,

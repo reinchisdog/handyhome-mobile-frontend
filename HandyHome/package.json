@@ -46,6 +46,7 @@
     "react-native-collapsible-tab-view": "^8.0.1",
     "react-native-date-picker": "^5.0.13",
     "react-native-gesture-handler": "~2.24.0",
+    "react-native-gifted-charts": "^1.4.64",
     "react-native-keyboard-controller": "^1.17.4",
     "react-native-modal-datetime-picker": "^18.0.0",
     "react-native-pager-view": "6.7.1",

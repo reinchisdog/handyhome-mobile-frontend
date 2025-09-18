@@ -54,6 +54,9 @@ export const useConvert = () => {
       if (format === 'long') {
          const monthName = monthNames[dateObject.getMonth()];
          return `${monthName} ${day}, ${year}`;
+      } else if (format === 'short') {
+         const monthName = monthNames[dateObject.getMonth()];
+         return `${monthName.slice(0, 3)} ${day}, ${year}`;
       }
 
       // Original separator-based format

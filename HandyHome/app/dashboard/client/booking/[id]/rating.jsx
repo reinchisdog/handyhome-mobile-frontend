@@ -2,7 +2,7 @@
 
 // Imports
 // ---- React and Expo Components
-import { Animated, StyleSheet, Text, View, useWindowDimensions, StatusBar, Image, Pressable, TouchableOpacity } from 'react-native';
+import { Animated, StyleSheet, Text, View, useWindowDimensions, StatusBar, Image, Pressable, TouchableOpacity, Modal } from 'react-native';
 import React, { useState, useRef, useEffect} from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -245,7 +245,7 @@ const BookingRating = () => {
                   gap: 24,
                   justifyContent: 'space-between',
                   padding: 24,
-                  paddingBottom: insets.bottom
+                  paddingBottom: insets.bottom + 24
                }}>
                   <View style={{width: '100%', gap: 24}}>
                      {/* ---- Information */}

@@ -81,7 +81,7 @@ const AppointmentPayment = () => {
          contentContainerStyle={{
             minHeight: height,
             backgroundColor: COLORS.screenbg,
-            paddingBottom: 200 + insets.bottom
+            paddingBottom: 224 + insets.bottom
          }}>
             <Header 
             hasBack
@@ -214,7 +214,7 @@ const AppointmentPayment = () => {
                bottom: 0,
                left: 0,
                right: 0,
-               paddingBottom: insets.bottom,
+               paddingBottom: insets.bottom + 24,
                paddingHorizontal: 24,
                paddingTop: 24,
                borderRadius: 20,

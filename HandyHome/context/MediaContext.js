@@ -41,13 +41,14 @@ export const MediaProvider = ({ children }) => {
       hasMediaPick = false,
       initialCameraType = 'back'
    ) => {
-      if (!permission) {
+      if (!permission?.granted) {
          const granted = await requestPermission();
-         if (!granted) {
+         if (!granted.granted) {
             Linking.openSettings();
             return;
          }
       }
+      
       setConfig(prev => ({
          ...prev,
          hasSwitch: hasSwitch,

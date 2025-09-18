@@ -48,7 +48,7 @@ export default AuthStartingPage = () => {
         global.buttonsContainer, {
         position: 'relative', 
         zIndex: 1,
-        paddingBottom: insets.bottom
+        paddingBottom: insets.bottom + 24
       }]}>
         <MainButton 
         text="Create a new account"

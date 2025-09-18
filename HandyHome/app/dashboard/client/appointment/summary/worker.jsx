@@ -3,7 +3,7 @@
 // Imports
 // ---- React Components
 import { StyleSheet, Text, View, ScrollView, Dimensions } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 // ---- Contexts
 import { useAuth } from '../../../../../context/AuthContext';
 import { useAppointment } from '../../../../../context/AppointmentContext';

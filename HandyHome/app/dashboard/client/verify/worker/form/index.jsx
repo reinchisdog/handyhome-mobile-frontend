@@ -283,7 +283,7 @@ const ApplicationForm = () => {
             stickyHeaderIndices={[0]}
             contentContainerStyle={{
                flexGrow: 1, 
-               paddingBottom: insets.bottom ,
+               paddingBottom: insets.bottom + 24 ,
                gap: 24,
                alignItems: 'center',
             }}>
@@ -390,7 +390,7 @@ const ApplicationForm = () => {
                bottom: 0,
                paddingHorizontal: 24,
                paddingTop: 16,
-               paddingBottom: insets.bottom,
+               paddingBottom: insets.bottom + 24,
                borderTopLeftRadius: 24,
                borderTopRightRadius: 24,
                borderTopStartRadius: 24,

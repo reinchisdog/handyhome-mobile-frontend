@@ -207,7 +207,7 @@ const BookingCancel = () => {
             style={[
                global.shadowBottom ,{
                padding: 24,
-               paddingBottom: insets.bottom,
+               paddingBottom: insets.bottom + 24,
                backgroundColor: '#fff',
                position: 'absolute',
                bottom: 0,

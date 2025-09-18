@@ -23,7 +23,8 @@ export default GeneralModal = ({
          style={{
             flex: 1,
             justifyContent: 'center',
-            alignItems: 'center'
+            alignItems: 'center',
+            backgroundColor: COLORS.modalbg
          }}>
             <View style={global.centerModal}>
                <Text 

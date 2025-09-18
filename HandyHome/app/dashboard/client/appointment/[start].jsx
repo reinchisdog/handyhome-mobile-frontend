@@ -314,13 +314,15 @@ const AppointmentStartScreen = () => {
                      data={appointment.attachment}
                      dataName={"attachment"}
                      setData={setAppointment}
+                     mode='both'
+                     hasSwitch={true}
                      />
                      
                   </View>
                </View>
 
                {/* ---- Button */}
-               <View style={{paddingBottom: insets.bottom, width: '100%'}}>
+               <View style={{paddingBottom: insets.bottom + 24, width: '100%'}}>
                   <MainButton 
                   type='secondary'
                   text={"Proceed"}

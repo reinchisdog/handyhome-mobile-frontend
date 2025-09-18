@@ -1,4 +1,4 @@
-// Component: Booking Item
+// Component: User Booking Item
 
 // Imports
 // ---- React and Expo Components

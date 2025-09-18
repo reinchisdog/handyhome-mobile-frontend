@@ -289,7 +289,7 @@ const ClientVerificationScreen = () => {
             </Animated.View>
             {/* ---- Button */}
             <View
-            style={{ paddingBottom: insets.bottom, width: '100%'}}>
+            style={{ paddingBottom: insets.bottom + 24, width: '100%'}}>
                <MainButton 
                type='primary'
                text={step === 3 ? "Submit" : "Next"}

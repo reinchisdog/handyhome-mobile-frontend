@@ -1,249 +1,213 @@
-import { StyleSheet, Text, View, ScrollView, SafeAreaView, Platform, StatusBar, Image, TouchableHighlight, TouchableOpacity, useWindowDimensions, ImageBackground, Modal } from 'react-native'
-import React, { useState } from 'react'
-import {useRouter} from 'expo-router'
-import { useAuth } from '../../../../context/AuthContext';
-import { useAppData } from '../../../../context/AppDataContext';
+// Screen: Profile
 
-import Header from '../../../../components/dashboard/Header'
-import ProfileTab from '../../../../components/dashboard/profile/ProfileTab'
-
-import { globalStyles as global } from '../../../../styles/globalStyles'
-import { COLORS, FONT_SIZES, FONTS } from '../../../../styles/constants'
+// Imports
+// ---- React and Expo Components
+import { StyleSheet, Text, View, ScrollView, ImageBackground, TouchableOpacity, Image, Pressable } from 'react-native';
+import React, {useState} from 'react';
+import { useRouter } from 'expo-router';
+// ---- Other Components
+import Header from '../../../../components/Header';
+import ProfileTab from '../../../../components/ProfileTab';
+import GeneralModal from '../../../../components/GeneralModal';
+// ---- Styles and Icons
+import { globalStyles as global } from '../../../../styles/globalStyles';
+import { COLORS, FONTS, FONT_SIZES } from '../../../../styles/constants';
 import Icons1 from '@expo/vector-icons/MaterialIcons';
 import Icons2 from '@expo/vector-icons/MaterialCommunityIcons';
 import Arrows from '@expo/vector-icons/Entypo';
+// ---- Other Libs
+import api from '../../../../lib/api';
+import { useAuth } from '../../../../context/AuthContext';
 
-const VerifiedText = () => {
-   return (
-      <View
-         style={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'center',
-            gap: 4,
-            alignItems: 'center',
-            height: 28,
-         }}
-      >  
-         <Icons1 name="verified" size={24} color={COLORS.primary} />
 
-         <Text
-            style={[
-               global.centerContainer, {
-               fontFamily: FONTS.roboto400,
-               fontSize: FONT_SIZES.md,
-               color: COLORS.lettersicons
-            }]}
-         >
-             Verified
-         </Text>
-      </View>
-   )
-}
-
-export default ProfileScreen = () => {
-   const { user } = useAuth();
-   const { profile } = useAppData();
-   const { height } = useWindowDimensions();
+const ProfileScreen = () => {
+   // Hooks and States
    const router = useRouter();
+   const {user, logout} = useAuth();
 
-   const [showLogout, setShowLogout] = useState(false);
-   const handleLogoutShow = () => {
-      console.log("Logout Click")
-      setShowLogout(true);
-   }
+   const [logoutModal, setLogoutModal] = useState(false);
 
    return (
       <>
-         <LogoutModal showModal={showLogout} setShowModal={setShowLogout}/>
-         <ScrollView 
-         style={[global.screenContainer, {backgroundColor: '#fff'}]}
-         >
-            {/* --------------------------------- Header --------------------------------- */}
+         <GeneralModal 
+         visible={logoutModal}
+         setVisible={setLogoutModal}
+         title={"Log Out"}
+         message={"Are you sure you want to log out?"}
+         isAlert={true}
+         primaryText={"Log Out"}
+         primaryFunction={logout}
+         secondaryText={"Cancel"}
+         secondaryFunction={() => setLogoutModal(false)}
+         />
+
+         <ScrollView
+         style={[global.screenContainer, {backgroundColor: '#fff'}]}>
+            <Header hasBack={false}/>
             <ImageBackground
-            source={require('../../../../assets/images/backgrounds/graphic-bg1.png')} 
+            source={require('../../../../assets/images/backgrounds/graphic-bg2.png')}
             style={{
                width: '100%',
-               height: 224 + StatusBar.currentHeight,
-               backgroundColor: COLORS.lightblue,
+               height: 138,
                overflow: 'hidden',
-               borderBottomEndRadius: 42,
-               borderBottomStartRadius: 42,
+               position: 'relative',
+            }}
+            imageStyle={{
+               borderBottomLeftRadius: 24,
+               borderBottomRightRadius: 24,
             }}>
-               <SafeAreaView 
+               <View
                style={{
-                  width: '100%',
-                  height: '100%',
                   paddingHorizontal: 24,
-                  display: 'flex',
                   flexDirection: 'row',
-                  justifyContent: 'center',
                   alignItems: 'center',
                   gap: 12,
-                  zIndex: 1,
-                  paddingTop: Platform.OS === "ios" ? 0 : StatusBar.currentHeight,
                }}>
-                  <Image 
-                  src={profile?.profile_photo_url}
+                  {/* ---- Image */}
+                  <Image
+                  source={{uri: user?.profile_photo_url}}
                   style={{
-                     width: 100,
-                     height: 100,
-                     aspectRatio: '1/1',
-                     flexShrink: 0,
-                     borderRadius: 50,
-                     backgroundColor: '#fff'
-                  }}/>
+                     height: 82,
+                     width: 82,
+                     aspectRatio: 1/1,
+                     justifyContent: 'flex-end',
+                     alignItems: 'flex-end',
+                     position: 'relative',
+                     borderRadius: 41,
+                     backgroundColor: COLORS.se
+                  }} />
 
-                  <View 
-                  style={{
-                     flex: 1,
-                     gap: 8,
-                     justifyContent: 'center',
-                     alignItems: 'flex-start',
-                  }}>
-                     <Text 
+                  {/* ---- Details */}
+                  <View style={{ gap: 6, flex: 1 , alignItems: 'flex-start'}}>
+                     <Text numberOfLines={1}
                      style={{
+                        flexShrink: 1,
                         fontFamily: FONTS.roboto600,
-                        fontSize: FONT_SIZES.xl,
-                        color: COLORS.lettersicons,
+                        fontSize: FONT_SIZES.lg,
+                        color: COLORS.lettersicons
                      }}>
-                        {profile?.full_name || user?.full_name || ""}
+                        {user?.full_name}
                      </Text>
-                     <VerifiedText /> 
+                     
+                     {user?.is_verified ? 
+                        <View style={{flexDirection: 'row', alignItems: 'center', gap: 6}}>
+                           <Icons2 name='check-decagram' size={20} color={COLORS.primary}/>
+                           <Text
+                           style={{
+                              fontFamily: FONTS.roboto400,
+                              fontSize: FONT_SIZES.md,
+                              color: COLORS.lettersicons
+                           }}>
+                              Verified
+                           </Text>
+                        </View>
+                        :
+                        <Pressable
+                        onPress={() => {router.push('dashboard/client/verify/user')}}
+                        style={({pressed}) => [{
+                           flexShrink: 1,
+                           paddingHorizontal: 12,
+                           paddingVertical: 4,
+                           borderRadius: 12,
+                           backgroundColor: pressed ? COLORS.primaryPress : COLORS.primary
+                        }]}
+                        >
+                           <Text
+                           style={{
+                              fontFamily: FONTS.roboto700,
+                              fontSize: FONT_SIZES.md,
+                              color: '#fff'
+                           }}>
+                              Verify Now
+                           </Text>
+                        </Pressable>
+                     }
+                     
                   </View>
 
                   <TouchableOpacity
-                  onPress={() => {router.push('worker-dashboard/worker-details/[id]')}}
-                  >
-                     <Arrows name="chevron-right" size={24} color={COLORS.secondary} />
+                  onPress={() => {router.push('/dashboard/worker/settings/profile/view')}}
+                  style={{
+                     height: '100%',
+                     justifyContent: 'center'
+                  }}>
+                     <Arrows name='chevron-right' size={24} color={'#fff'}/>
                   </TouchableOpacity>
-               </SafeAreaView>
+               </View>
             </ImageBackground>
 
-            {/* ---------------------------------- Tabs ---------------------------------- */}
-            <ProfileTab 
+            <View
+            style={{
+               // gap: 12,
+               padding: 12
+            }}>
+               {/* Account and Security */}
+               <ProfileTab 
+               onPress={() => {router.push('/dashboard/worker/settings/account')}}
                icon={<Icons2 name="key" size={24} color={COLORS.primary} />}
                title="Account and Security"
-               hasArrow={true}
-               onPress={() => {}}
-            />
-            <ProfileTab 
-               icon={<Icons2 name="timetable" size={24} color={COLORS.primary} />}
-               title="Availability"
-               hasArrow={true}
-               onPress={() => {router.push('worker-dashboard/settings/availability')}}
-            />
-            {/* <ProfileTab 
-               icon={<Icons2 name="account-wrench" size={24} color={COLORS.primary} />}
-               title="Service Specialization"
-               hasArrow={true}
-               onPress={() => {}}
-            /> */}
+               />
 
-            <ProfileTab 
+               {/* My Addresses */}
+               {/* <ProfileTab 
+               onPress={() => {router.push('/dashboard/client/settings/address')}}
+               icon={<Icons1 name="location-on" size={24} color={COLORS.primary} />}
+               title="My Addresses"
+               /> */}
+               <ProfileTab 
+               onPress={() => {router.push('/dashboard/worker/settings/availability')}}
+               icon={<Icons2 name="clock" size={24} color={COLORS.primary} />}
+               title="Availability"
+               />
+
+               {/* Emergency Contact */}
+               {/* <ProfileTab 
+               onPress={() => {router.push('/dashboard/client/settings/contacts')}}
+               icon={<Icons1 name="contact-emergency" size={24} color={COLORS.primary} />}
+               title="Emergency Contact"
+               /> */}
+
+               {/* FAQs */}
+               <ProfileTab 
+               onPress={() => {router.push('/dashboard/worker/settings/faqs')}}
                icon={<Icons2 name="message-question" size={24} color={COLORS.primary} />}
                title="FAQs"
-               hasArrow={true}
-               onPress={() => {router.push('comingSoon')}}
-            />
-            <ProfileTab 
-               icon={<Icons1 name="groups" size={24} color={COLORS.primary} />}
-               title="About Us"
-               hasArrow={true}
-               onPress={() => {router.push('comingSoon')}}
-            />
-            <ProfileTab 
+               />
+
+               {/* Terms and Conditions */}
+               <ProfileTab 
+               onPress={() => {router.push('/dashboard/worker/settings/terms')}}
                icon={<Icons2 name="file-document" size={24} color={COLORS.primary} />}
                title="Terms and Conditions"
-               hasArrow={true}
-               onPress={() => {router.push('comingSoon')}}
-            />
-            <ProfileTab 
+               />
+
+               {/* Privacy Policy */}
+               <ProfileTab 
+               onPress={() => {router.push('/dashboard/worker/settings/policies')}}
                icon={<Icons2 name="shield-check" size={24} color={COLORS.primary} />}
                title="Privacy Policy"
-               hasArrow={true}
-               onPress={() => {router.push('comingSoon')}}
-            />
-            <ProfileTab 
+               />
+
+               {/* About Us */}
+               <ProfileTab 
+               onPress={() => {router.push('/dashboard/worker/settings/about')}}
+               icon={<Icons2 name="key" size={24} color={COLORS.primary} />}
+               title="About Us"
+               />
+               
+               {/* Account and Security */}
+               <ProfileTab 
+               onPress={() => {setLogoutModal(true)}}
                icon={<Icons2 name="logout" size={24} color={COLORS.primary} />}
                title="Log Out"
                hasArrow={false}
-               onPress={handleLogoutShow}
-            />
+               />
+            </View>
          </ScrollView>
       </>
    )
 }
 
-const LogoutModal = ({showModal, setShowModal}) => {
-   const router = useRouter();
-   const { logout } = useAuth();
+export default ProfileScreen
 
-   const {width, height} = useWindowDimensions()
-
-   const handleCloseModal = () => {
-      setShowModal(false);
-   }
-
-   const handleLogout = () => {
-      logout();
-      setShowModal(false);
-      router.replace('authentication');
-   }
-
-   return (
-      <Modal 
-      animationType='fade'
-      visible={showModal}
-      backdropColor={'rgba(0, 0, 0, 0.2)'}
-      statusBarTranslucent={true}> 
-         <View 
-         style={{
-            width: width,
-            height: height,
-            position: 'relative',
-            justifyContent: 'center',
-            alignItems: 'center'
-         }}>
-            <View style={global.centerModal}>
-               <Text style={{
-                  fontFamily: FONTS.roboto600,
-                  fontSize: FONT_SIZES.md,
-                  color: COLORS.primary,
-                  textAlign: 'center',
-               }}>
-                  Log Out
-               </Text>
-
-               <View style={global.divider}/>
-
-               <Text style={{
-                  textAlign: 'center',
-                  fontFamily: FONTS.roboto400,
-                  fontSize: FONT_SIZES.md,
-                  color: COLORS.lettersicons
-               }}>
-                  Are you sure you want to log out?
-               </Text>
-
-               <View style={{flexDirection: 'row', gap: 12}}>
-                  <TouchableHighlight
-                  underlayColor="#d8d8d8"
-                  onPress={handleCloseModal}
-                  style={[global.secondaryBtn, {width: 0, flex: 1}]}>
-                     <Text style={[global.secondaryBtnText]}>Cancel</Text>
-                  </TouchableHighlight>
-
-                  <TouchableHighlight 
-                  underlayColor="#0072bc"
-                  onPress={handleLogout}
-                  style={[global.primaryBtn, {width: 0, flex: 1}]}>
-                     <Text style={[global.primaryBtnText]}>Yes, Log Out</Text>
-                  </TouchableHighlight>
-               </View>
-            </View> 
-         </View>  
-
-      </Modal>
-   )
-}
+const styles = StyleSheet.create({})

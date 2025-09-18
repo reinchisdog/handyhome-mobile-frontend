@@ -27,7 +27,7 @@ const ApplicationPreview = () => {
          contentContainerStyle={{
             flexGrow: 1, 
             paddingHorizontal: 24, 
-            paddingBottom: insets.bottom ,
+            paddingBottom: insets.bottom + 24 ,
             gap: 24, 
             justifyContent: 'space-between', 
          }}>

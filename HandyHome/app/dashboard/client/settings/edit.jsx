@@ -148,7 +148,7 @@ const ProfileEditScreen = () => {
                gap: 32,
                flex: 1,
                justifyContent: 'space-between',
-               paddingBottom: insets.bottom
+               paddingBottom: insets.bottom + 24
             }}>
                <View style={{gap: 24, width: '100%', alignItems: 'center'}}>
                   {/* ---- Profile */}

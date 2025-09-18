@@ -48,7 +48,7 @@ const ApplicationSuccessScreen = () => {
          <View
          style={{
             width: width,
-            paddingBottom: insets.bottom,
+            paddingBottom: insets.bottom + 24,
             paddingHorizontal: 24,
             position: 'absolute',
             bottom: 0,

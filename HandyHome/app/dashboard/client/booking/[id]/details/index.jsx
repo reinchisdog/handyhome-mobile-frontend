@@ -29,7 +29,7 @@ const BookingDetails = () => {
    const router = useRouter();
    const { width, height } = useWindowDimensions();
    const { id, status } = useLocalSearchParams();
-   const { details, detailsLoading, fetchDetails, fetchWorker, emergency, setEmergency, clearEmergency } = useBookingDetails();
+   const { details, detailsLoading, fetchDetails, fetchWorker, emergency, setEmergency, clearEmergency, handleComplete, completeLoading } = useBookingDetails();
 
    const [descriptionModal, setDescriptionModal] = useState(false);
    const [emergencyModal, setEmergencyModal] = useState(false);
@@ -93,17 +93,33 @@ const BookingDetails = () => {
       }
    )
 
+   const buttonY = useRef(new Animated.Value(0)).current;
+   const buttonTranslate = buttonY.interpolate({
+      inputRange: [0, 1],
+      outputRange: [insets.bottom + 100 , 0],
+      extrapolate: 'clamp'
+   })
+
+   const buttonAppear = () => {
+      Animated.timing(buttonY, {
+         toValue: 1,
+         duration: 300,
+         useNativeDriver: true
+      }).start();
+   }
+
    // Effects
    useEffect(() => {
       if (!id) return;
 
-      fetchDetails(id);
+      fetchDetails(id, 'user');
    }, [id])
 
    useEffect(() => {
       if (!details || !details?.worker?.id) return;
 
       fetchWorker(details?.worker?.id)
+      buttonAppear();
    }, [details])
 
    return (
@@ -119,7 +135,7 @@ const BookingDetails = () => {
          >
             <View
             style={{
-               paddingBottom: insets.bottom,
+               paddingBottom: insets.bottom + 24,
                paddingHorizontal: 24,
                maxHeight: height - StatusBar.currentHeight - 24,
                width: width,
@@ -219,7 +235,7 @@ const BookingDetails = () => {
                style={{flex: 1}}>
                   <View
                   style={{
-                     paddingBottom: insets.bottom,
+                     paddingBottom: insets.bottom + 24,
                      paddingHorizontal: 24,
                      maxHeight: height - StatusBar.currentHeight - 24,
                      width: width,
@@ -302,7 +318,7 @@ const BookingDetails = () => {
             contentContainerStyle={{
                paddingHorizontal: 12,
                paddingTop: 24,
-               paddingBottom: insets.bottom + 12 + 60,
+               paddingBottom: insets.bottom + 36 + 60,
                gap: 12
             }}>
 
@@ -638,13 +654,13 @@ const BookingDetails = () => {
 
             </ScrollView>
             
-            {(status === 'upcoming' || status === 'ongoing') &&
+            {(details?.status === 'Upcoming' || details?.status === 'Ongoing') &&
                <Animated.View
                style={{
                   height: 60,
                   width: qrWidth,
                   position: 'absolute',
-                  bottom: insets.bottom,
+                  bottom: insets.bottom + 24,
                   right: 12,
                }}>
                <Pressable
@@ -661,6 +677,29 @@ const BookingDetails = () => {
                >
                   <Icons1 name='qrcode' size={32} color={'#fff'}/>
                </Pressable>
+               </Animated.View>
+            }
+            {details?.status === 'Pending' &&
+               <Animated.View
+               style={[
+                  global.shadowBottom, {
+                  position: 'absolute',
+                  paddingBottom: insets.bottom + 24,
+                  paddingHorizontal: 24, 
+                  paddingTop: 12,
+                  backgroundColor: '#fff',
+                  width: '100%',
+                  bottom: 0,
+                  borderRadius: 24,
+                  borderWidth: StyleSheet.hairlineWidth,
+                  borderColor: COLORS.strokes,
+                  transform: [{translateY: buttonTranslate}]
+               }]}>
+                  <MainButton 
+                  text={"Mark as Complete"}
+                  loading={completeLoading}
+                  onPress={() => handleComplete(id)}
+                  />
                </Animated.View>
             }
                

@@ -124,8 +124,8 @@ const QrCodeScreen = () => {
                }}>
                   <QRCode 
                   value={
-                     details?.status === 'Upcoming' ? 'Upcoming Token' :
-                     details?.status === 'Ongoing' ? 'Ongoing Token' : null
+                     details?.status === 'Upcoming' ? details?.start_qr_token :
+                     details?.status === 'Ongoing' || details?.status === 'Pending' ? details?.end_qr_token : null
                   }
                   color={COLORS.lettersicons}
                   size={(width - 144) <= 200 ? (width - 144) : 200}

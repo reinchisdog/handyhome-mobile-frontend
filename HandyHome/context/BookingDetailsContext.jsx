@@ -22,35 +22,45 @@ export const BookingDetailsProvider = ({children}) => {
    const [detailsLoading, setDetailsLoading] = useState(true);
    const [worker, setWorker] = useState(null);
    const [workerLoading, setWorkerLoading] = useState(true);
+   const [cameraModal, setCameraModal] = useState(false);
+   const [qrLoading, setQrLoading] = useState(false);
+   const [completeLoading, setCompleteLoading] = useState(false);
    const [emergency, setEmergency] = useState({
       message: null
    });
    const [emergencySuccess, setEmergencySuccess] = useState(false);
 
    const [showError, setShowError] = useState(false);
-   const [errorTitle, setErrorTitle] = useState(null);
    const [errorMessage, setErrorMessage] = useState(null);
    const [errorType, setErrorType] = useState(false);
 
    // Functions
-   const fetchDetails = async (id) => {
+   const fetchDetails = async (id, role) => {
       try {
          setDetailsLoading(true);
          
          console.log("---- [Booking Context] Booking Details Fetch Attempt ----");
-         console.log("[1] Fetching Details");
-         const detailsResult = await api.get(`/user/book/${id}/view`, {
+         console.log("[1] Fetching Details for Booking", id);
+         
+         let route;
+         if (role === 'user') {
+            route = `/user/book/${id}/view`
+         } else if (role === 'worker') {
+            route = `/worker/bookings/${id}/`
+         }
+
+         const detailsResult = await api.get(route, {
             headers: {
                'Authorization' : `Bearer ${token}`
             }
          })
 
          console.log("[2] Fetching Succesful");
+         console.log(detailsResult?.data?.data);
          setDetails(detailsResult?.data?.data);
          setDetailsLoading(false);
       } catch (err) {
          const message = err?.response?.data?.message || err?.message || "An unknown error has occured when fetching the booking details.";
-         setErrorTitle("Booking Details Error");
          setErrorMessage(message);
          setErrorType('fetch');
          setShowError(true);
@@ -74,12 +84,62 @@ export const BookingDetailsProvider = ({children}) => {
          setWorkerLoading(false);
       } catch (err) {
          const message = err?.response?.data?.message || err?.message || "An unknown error has occured when fetching worker details.";
-         setErrorTitle("Worker Details Error");
          setErrorMessage(message);
          setErrorType('fetch');
          setShowError(true);
       }
    }
+
+   const onQrScanned = async (id, data) => {
+      try {
+         setQrLoading(true);
+         // console.log("---- [Booking Details] QR Scan Attempt ----");
+         // console.log("[1] Scanning QR with token:", data);
+         const body = {token: data}
+         // console.log(body);
+         // console.log(details);
+
+         // console.log("[2] Updating Status of Booking", details?.id);
+         await api.put(`/worker/bookings/update_status`, body, {
+            headers: {'Authorization' : `Bearer ${token}`}
+         });
+         
+         // console.log("[3] Succesfully Updated Booking");
+         await fetchDetails(id, "worker");
+      }  catch (err) {
+         console.log("[0] Update Error");
+         const message = err?.response?.data?.message || err?.message || "An unknown error has occurred when updating the booking status.";
+         setErrorMessage(message);
+         setErrorType(null);
+         setShowError(true);
+      } finally {
+         setQrLoading(false);
+         setCameraModal(false);
+      }
+   }
+
+   const handleComplete = async (id) => {
+      try {
+         setCompleteLoading(true);
+         console.log("---- [Booking Details] Complete Attempt ----");
+         console.log("[1] Completing Status of Booking", details?.id);
+         await api.put(`user/book/${id}/mark_as_completed`, {}, {
+            headers: {'Authorization' : `Bearer ${token}`}
+         });
+         
+         console.log("[3] Succesfully Updated Booking");
+         await fetchDetails(id, "user");
+      } catch (err) {
+         console.log("[0] Update Error");
+         const message = err?.response?.data?.message || err?.message || "An unknown error has occurred when updating the booking status.";
+         setErrorMessage(message);
+         setErrorType(null);
+         setShowError(true);
+      } finally {
+         setCompleteLoading(false);
+      }
+   }
+   
 
    const clearEmergency = () => {
       setEmergency({
@@ -101,7 +161,6 @@ export const BookingDetailsProvider = ({children}) => {
          setEmergencySuccess(true);
       } catch (err) {
          const message = err?.response?.data?.message || err?.message || "An unknown error has occured when sending emergency alerts.";
-         setErrorTitle("Emergency Error");
          setErrorMessage(message);
          setErrorType('emergency');
          setShowError(true);
@@ -119,6 +178,13 @@ export const BookingDetailsProvider = ({children}) => {
          workerLoading,
          fetchWorker,
 
+         cameraModal,
+         setCameraModal,
+         onQrScanned,
+         qrLoading,
+         handleComplete,
+         completeLoading,
+
          emergency,
          setEmergency,
          clearEmergency,
@@ -128,7 +194,7 @@ export const BookingDetailsProvider = ({children}) => {
          <ErrorModal 
          visible={showError}
          setVisible={setShowError}
-         title={errorTitle}
+         title={"Something Went Wrong"}
          message={errorMessage}
          buttonText={
             errorType === 'fetch' ? 'Go Back' : 
@@ -136,7 +202,7 @@ export const BookingDetailsProvider = ({children}) => {
             'Ok'
          }
          onExit={
-            errorType === 'fetch' ? () => router.back : 
+            errorType === 'fetch' ? () => router.back() : 
             errorType === 'emergency' ? () => handleEmergency(details?.id) :
             () => setShowError(false)
          }/>

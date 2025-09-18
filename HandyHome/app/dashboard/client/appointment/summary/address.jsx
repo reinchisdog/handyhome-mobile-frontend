@@ -206,7 +206,7 @@ const AppointmentAddress = () => {
                bottom: 0,
                left: 0,
                right: 0,
-               paddingBottom: insets.bottom,
+               paddingBottom: insets.bottom + 24,
                paddingHorizontal: 24,
                paddingTop: 24,
                borderRadius: 20,

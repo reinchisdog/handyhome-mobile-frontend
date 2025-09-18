@@ -455,7 +455,7 @@ const ValidIdModal = ({handleModalData}) => {
       contentContainerStyle={{
          flexGrow: 1,
          paddingHorizontal: 24,
-         paddingBottom: insets.bottom,
+         paddingBottom: insets.bottom + 24,
          gap: 24,
          justifyContent: 'space-between',
       }}>
@@ -544,7 +544,7 @@ const CertificateModal = ({handleModalData}) => {
       contentContainerStyle={{
          flexGrow: 1,
          paddingHorizontal: 24,
-         paddingBottom: insets.bottom,
+         paddingBottom: insets.bottom + 24,
          gap: 24,
          justifyContent: 'space-between',
       }}>
@@ -721,7 +721,7 @@ const ExperienceModal = ({handleModalData}) => {
       contentContainerStyle={{
          flexGrow: 1,
          paddingHorizontal: 24,
-         paddingBottom: insets.bottom,
+         paddingBottom: insets.bottom + 24,
          gap: 24,
          justifyContent: 'space-between',
       }}>

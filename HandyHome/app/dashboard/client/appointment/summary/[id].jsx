@@ -115,7 +115,7 @@ const AppointmentSummaryScreen = () => {
       >     
          <View 
          style={{
-            paddingBottom: insets.bottom,
+            paddingBottom: insets.bottom + 24,
             paddingHorizontal: 24,
             maxHeight: height - StatusBar.currentHeight - 24,
             width: width,
@@ -202,7 +202,7 @@ const AppointmentSummaryScreen = () => {
          contentContainerStyle={{
             minHeight: height,
             backgroundColor: COLORS.screenbg,
-            paddingBottom: 200 + insets.bottom
+            paddingBottom: 224 + insets.bottom
          }}>
             <Header
             hasBack={false}
@@ -485,7 +485,7 @@ const AppointmentSummaryScreen = () => {
             right: 0,
             width: '100%',
             paddingTop: 12,
-            paddingBottom: insets.bottom,
+            paddingBottom: insets.bottom + 24,
             paddingHorizontal: 24,
             backgroundColor: '#fff',
             zIndex: 100,

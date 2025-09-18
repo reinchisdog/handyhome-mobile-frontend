@@ -16,7 +16,7 @@ const TermsConditionsScreen = ({handleBack}) => {
    const insets = useSafeAreaInsets();
 
    return (
-      <View style={[global.screenContainer, {paddingBottom: insets.bottom}]}>
+      <View style={[global.screenContainer, {paddingBottom: insets.bottom + 24}]}>
          <Header 
          background={"#fff"}
          left={

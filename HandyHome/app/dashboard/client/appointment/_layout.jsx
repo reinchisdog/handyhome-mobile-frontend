@@ -5,11 +5,11 @@
 import { Stack } from "expo-router"
 // Contexts
 import { KeyboardProvider } from "react-native-keyboard-controller"
-import { CameraProvider } from "../../../../context/CameraContext"
+import { MediaProvider } from "../../../../context/MediaContext"
 
 const AppointmentLayout = () => {
    return (
-      <CameraProvider>
+      <MediaProvider>
       <KeyboardProvider>
          <Stack 
          screenOptions={{
@@ -18,7 +18,7 @@ const AppointmentLayout = () => {
          }}
          />
       </KeyboardProvider>
-      </CameraProvider>
+      </MediaProvider>
    )
 }
 

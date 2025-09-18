@@ -163,7 +163,7 @@ const AppointmentQueueScreen = () => {
             {appointmentLoading ? (
                <>
                   <View style={{gap: 48, alignItems: 'center'}}>
-                     <LoadingDots />
+                     <LoadingDots size={16}/>
                      <Text
                      style={{
                         fontFamily: FONTS.roboto500,
@@ -177,7 +177,7 @@ const AppointmentQueueScreen = () => {
 
                   <View 
                   style={{
-                     paddingBottom: insets.bottom, 
+                     paddingBottom: insets.bottom + 24, 
                      paddingHorizontal: 24, 
                      position: 'absolute', 
                      bottom: 0, 

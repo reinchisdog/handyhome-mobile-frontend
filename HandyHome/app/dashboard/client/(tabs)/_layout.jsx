@@ -29,6 +29,7 @@ const StarterTabLayout = () => {
          tabBarActiveTintColor: COLORS.primary,
          // tabBarStyle: isHomeIndex ? undefined : { display: "none" },
       }}
+      backBehavior='fullHistory'
       >
          <Tabs.Screen 
             name="home"

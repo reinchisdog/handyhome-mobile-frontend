@@ -33,7 +33,8 @@ const HomeGreetings = ({name}) => {
          <Text 
          style={[
             global.headingText, {
-            color: COLORS.lettersicons
+            color: COLORS.lettersicons,
+            flexShrink: 1
          }]}>
             Hello, <Text style={[{ color: COLORS.primary }]}>
                {name?.trim() || "there"}!
