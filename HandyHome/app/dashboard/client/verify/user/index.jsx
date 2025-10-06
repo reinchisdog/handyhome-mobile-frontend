@@ -791,7 +791,6 @@ const ValidIdPage = () => {
       {title: "Passport", value: "Passport"},
       {title: "SSS ID", value: "SSS ID"},
       {title: "National ID", value: "National ID"},
-      {title: "Other", value: "Other"},
    ]   
 
    return (

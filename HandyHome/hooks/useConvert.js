@@ -113,7 +113,7 @@ export const useConvert = () => {
             type: getMimeType(extension),
          };
 
-         console.log(fileObject);
+         // console.log(fileObject);
          return fileObject;
       } catch (err) {
          console.error('Error transforming URI to File Object:', err);

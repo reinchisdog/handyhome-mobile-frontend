@@ -19,6 +19,65 @@ const DiyResultScreen = () => {
    const router = useRouter();
    const { result } = useDiy();
 
+   const parseFormattedText = (text) => {
+      if (!text || typeof text !== 'string') {
+         return text;
+      }
+
+      const parts = [];
+      let currentIndex = 0;
+      let key = 0;
+
+      // Combined regex to match both ** ** and / /
+      const regex = /(\*\*[^*]+\*\*|\/\/[^/]+\/\/)/g;
+      let match;
+
+      while ((match = regex.exec(text)) !== null) {
+         // Add text before the match
+         if (match.index > currentIndex) {
+            parts.push(
+            <Text key={key++}>
+               {text.slice(currentIndex, match.index)}
+            </Text>
+            );
+         }
+
+         const matchedText = match[0];
+         
+         // Check if it's bold (**text**)
+         if (matchedText.startsWith('**') && matchedText.endsWith('**')) {
+            const boldText = matchedText.slice(2, -2);
+            parts.push(
+            <Text key={key++} style={{ fontWeight: 'bold' }}>
+               {boldText}
+            </Text>
+            );
+         }
+         // Check if it's italic (/text/)
+         else if (matchedText.startsWith('//') && matchedText.endsWith('//')) {
+            const italicText = matchedText.slice(1, -1);
+            parts.push(
+            <Text key={key++} style={{ fontStyle: 'italic' }}>
+               {` ${italicText} `}
+            </Text>
+            );
+         }
+
+         currentIndex = match.index + matchedText.length;
+      }
+
+      // Add remaining text
+      if (currentIndex < text.length) {
+         parts.push(
+            <Text key={key++}>
+            {text.slice(currentIndex)}
+            </Text>
+         );
+      }
+
+      return parts;
+   };
+
    return (
       <ScrollView
       stickyHeaderIndices={[0]}
@@ -37,8 +96,7 @@ const DiyResultScreen = () => {
          <View style={{padding: 12, gap: 24, flex: 1}}>
             <View
             style={{
-               padding: 12,
-               paddingVertical: 24,
+               padding: 16,
                backgroundColor: '#fff',
                borderRadius: 20,
                gap: 24
@@ -61,20 +119,41 @@ const DiyResultScreen = () => {
                   }}
                   />
 
-                  <Text 
-                  style={[
-                     global.headingText, {
-                     color: COLORS.lettersicons,
-                     flexShrink: 1,
-                  }]}>
-                     To solve your issue: <Text style={[{ color: COLORS.primary, fontFamily: FONTS.roboto500 }]}>
-                        "{result?.issue_phrase}"
+                  {result?.unrelated_message ?
+                     <Text 
+                     style={[
+                        global.headingText, {
+                        color: COLORS.accent,
+                        flexShrink: 1,
+                     }]}>
+                        Not a DIY Request
+                     </Text> :
+                     <Text 
+                     style={[
+                        global.headingText, {
+                        color: COLORS.lettersicons,
+                        flexShrink: 1,
+                     }]}>
+                        To solve your issue: <Text style={[{ color: COLORS.primary, fontFamily: FONTS.roboto500 }]}>
+                           "{result?.issue_phrase}"
+                        </Text>
                      </Text>
-                  </Text>
+                  }
                </View>
 
                <View style={global.divider}/>
                
+               {/* Unrelated Message */}
+               {result?.unrelated_message &&
+                  <Text style={{
+                     fontFamily: FONTS.roboto400,
+                     fontSize: FONT_SIZES.md,
+                     color: COLORS.lettersicons
+                  }}>
+                     {parseFormattedText(result?.unrelated_message)}
+                  </Text>
+               }
+
                {/* Tools/Materials */}
                {result?.tools_materials &&
                   <View style={{ gap: 6 }}>
@@ -96,7 +175,7 @@ const DiyResultScreen = () => {
                               <Text
                               style={{
                                  fontFamily: FONTS.roboto600,
-                                 fontSize: FONT_SIZES.sm,
+                                 fontSize: FONT_SIZES.md,
                                  color: COLORS.labels,
                               }}>
                                  –
@@ -104,11 +183,11 @@ const DiyResultScreen = () => {
                               <Text
                               style={{
                                  fontFamily: FONTS.roboto400,
-                                 fontSize: FONT_SIZES.sm,
+                                 fontSize: FONT_SIZES.md,
                                  color: COLORS.lettersicons,
                                  flexShrink: 1
                               }}>
-                                 {item}
+                                 {parseFormattedText(item)}
                               </Text>
                            </View>
                         ))}
@@ -132,7 +211,7 @@ const DiyResultScreen = () => {
                            <Text 
                            style={{
                               fontFamily: FONTS.roboto500,
-                              fontSize: FONT_SIZES.sm,
+                              fontSize: FONT_SIZES.md,
                               color: COLORS.primary
                            }}>
                               {item.title}
@@ -161,7 +240,7 @@ const DiyResultScreen = () => {
                                        color: COLORS.lettersicons,
                                        flexShrink: 1
                                     }}>
-                                       {subitem}
+                                       {parseFormattedText(subitem)}
                                     </Text>
                                  </View>
                               ))}
@@ -190,7 +269,7 @@ const DiyResultScreen = () => {
                         textAlign: 'justify',
                         paddingHorizontal: 12
                      }}>
-                        {result?.remarks}
+                        {parseFormattedText(result?.remarks)}
                      </Text>
                   </View>
                }

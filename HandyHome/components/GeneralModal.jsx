@@ -71,7 +71,8 @@ export default GeneralModal = ({
                            fontFamily: FONTS.roboto700,
                            fontSize: FONT_SIZES.md,
                            color: COLORS.labels,
-                           opacity: secondaryLoading ? 0.5 : 1
+                           opacity: secondaryLoading ? 0.5 : 1,
+                           textAlign: 'center'
                         }}>
                            {secondaryText}
                         </Text>
@@ -81,7 +82,7 @@ export default GeneralModal = ({
                   { primaryText && 
                      <MainButton 
                      type={isAlert ? 'alert' : 'primary'}
-                     size='grow'
+                     size='flex'
                      text={primaryText}
                      onPress={primaryFunction}
                      loading={primaryLoading}

@@ -14,7 +14,7 @@ import { COLORS, FONTS, FONT_SIZES } from '../styles/constants';
 
 const MAX_LINES = 3;
 
-const ReviewContainer = ({review}) => {
+const ReviewContainer = ({review, handleImageModal}) => {
    // Hooks and States
    const {convertDateToFormattedDate} = useConvert();
    const [isExpanded, setIsExpanded] = useState(false);
@@ -44,15 +44,6 @@ const ReviewContainer = ({review}) => {
          {/* ---- Service and Rating */}
          <View style={{flexDirection: 'row', alignItems: 'stretch', justifyContent: 'space-between', gap: 16, marginBottom: 8, }}>
             <View style={{flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1}}>
-               <Image 
-               style={{
-                  height: 36,
-                  width: 36,
-                  aspectRatio: 1/1,
-                  borderRadius: 18,
-                  backgroundColor: COLORS.secondary
-               }}
-               />
                <Text
                numberOfLines={1}
                style={{
@@ -61,7 +52,7 @@ const ReviewContainer = ({review}) => {
                   fontSize: FONT_SIZES.sm,
                   color: COLORS.labels
                }}>
-                  {"Full Name"}
+                  {review.user_name || review.user.name}
                </Text>
             </View>
 
@@ -81,7 +72,7 @@ const ReviewContainer = ({review}) => {
             fontSize: FONT_SIZES.sm,
             color: COLORS.primary
          }}>
-            {"Sub Service"}
+            {review.service}
          </Text>
 
          <View style={[global.divider, {marginVertical: 12}]}/>
@@ -96,7 +87,7 @@ const ReviewContainer = ({review}) => {
          numberOfLines={isExpanded ? undefined : MAX_LINES}
          onTextLayout={onTextLayout}
          >
-            {review.comment}
+            {review.review || review.comment}
          </Text>
 
          {showMore && (
@@ -120,6 +111,7 @@ const ReviewContainer = ({review}) => {
          )}
 
          {review.attachment &&
+         <Pressable onPress={() => handleImageModal(review.attachment)}>
             <Image 
             source={{uri: review?.attachment}}
             style={{
@@ -129,6 +121,7 @@ const ReviewContainer = ({review}) => {
                marginVertical: 8
             }}
             />
+         </Pressable>
          }
 
          <Text

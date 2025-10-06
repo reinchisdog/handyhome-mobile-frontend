@@ -79,7 +79,7 @@ export default PersonalDetails = () => {
         items={[
           {name: "Male", val: "Male"},
           {name: "Female", val: "Female"},
-          {name: "Rather not say", val: "Other"}
+          {name: "Non-binary/Other", val: "Other"}
         ]}
         direction="row"
         value={signupData.gender}

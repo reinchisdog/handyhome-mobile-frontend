@@ -65,8 +65,8 @@ export const AuthProvider = ({children}) => {
 
          const userObj = userResult?.data?.data;
          setUser(userObj);
-         // console.log("4. Succesfully Fetched User Data:");
-         // console.log(userObj);
+         console.log("4. Succesfully Fetched User Data:");
+         console.log(userObj);
          setIsTokenValid(true);
          setIsLoading(false);
       } catch (err) {

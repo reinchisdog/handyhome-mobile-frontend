@@ -17,7 +17,7 @@ const ClientVerificationContext = createContext();
 export const ClientVerificationProvider = ({ children }) => {
    // Hooks and States
    const router = useRouter();
-   const { token } = useAuth();
+   const { token, tryFetchUser } = useAuth();
    const { convertUriToFile } = useConvert();
    const [showErrorModal, setShowErrorModal] = useState(false);
    const [errorMessage, setErrorMessage] = useState("");
@@ -82,6 +82,8 @@ export const ClientVerificationProvider = ({ children }) => {
             timeout: 60000,
          })
 
+         await tryFetchUser(token);
+         
          console.log("[3] Succesful Submission of Verification. Routing to Success Screen");
          router.replace("/dashboard/client/verify/user/success");
 

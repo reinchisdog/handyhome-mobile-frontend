@@ -354,7 +354,7 @@ const AnalyticsScreen = () => {
                               <View style={{flexDirection: 'row', gap: 8, alignItems: 'center'}}>
                                  <Icons1 name='emoticon-sad-outline' size={24} color={COLORS.red}/>
                                  <Text style={styles.sentimentScore}>
-                                    {renderSentiment(sentiment?.negative_score)}
+                                    {renderSentiment(sentiment?.negative_sentiments)}
                                  </Text>
                               </View>
                            </View>
@@ -364,7 +364,7 @@ const AnalyticsScreen = () => {
                               <View style={{flexDirection: 'row', gap: 8, alignItems: 'center'}}>
                                  <Icons1 name='emoticon-neutral-outline' size={24} color={COLORS.accent}/>
                                  <Text style={styles.sentimentScore}>
-                                    {renderSentiment(sentiment?.neutral_score)}
+                                    {renderSentiment(sentiment?.neutral_sentiments)}
                                  </Text>
                               </View>
                            </View>
@@ -374,7 +374,7 @@ const AnalyticsScreen = () => {
                               <View style={{flexDirection: 'row', gap: 8, alignItems: 'center'}}>
                                  <Icons1 name='emoticon-outline' size={24} color={COLORS.green}/>
                                  <Text style={styles.sentimentScore}>
-                                    {renderSentiment(sentiment?.positive_score)}
+                                    {renderSentiment(sentiment?.positive_sentiments)}
                                  </Text>
                               </View>
                            </View>

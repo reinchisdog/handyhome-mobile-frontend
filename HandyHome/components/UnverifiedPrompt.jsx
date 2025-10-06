@@ -11,7 +11,7 @@ import { COLORS, FONTS, FONT_SIZES } from '../styles/constants';
 import Icons from '@expo/vector-icons/MaterialCommunityIcons';
 
 
-const UnverifiedPrompt = ({ hidePrompt }) => {
+const UnverifiedPrompt = ({ hidePrompt, isPending }) => {
    // Hooks and States
    const router = useRouter();
    const {width} = useWindowDimensions();
@@ -65,59 +65,61 @@ const UnverifiedPrompt = ({ hidePrompt }) => {
             color: COLORS.lettersicons
          }}
          >
-            Verify your account to fully access booking features and ensure secure transactions.
+            {isPending ? 'Your verification is still being processed. Please wait for a bit while our staff is reviewing your identity.' : 'Verify your account to fully access booking features and ensure secure transactions.'}
          </Text>
 
-         <View 
-         style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
-            gap: 12,
-         }}>
-            <Pressable 
-            style={({pressed}) => [{
-               backgroundColor: pressed ? COLORS.strokes : "transparent",
-               height: 32,
-               width: 100,
-               borderRadius: 16,
-               justifyContent: 'center',
-               alignItems: 'center'
-            }]}
-            underlayColor='#0072bc'
-            onPress={closeVerify}
-            >
-               <Text 
-               style={{
-                  fontFamily: FONTS.roboto700,
-                  fontSize: FONT_SIZES.md,
-                  color: COLORS.lettersicons
-               }}>
-                  Maybe Later
-               </Text>
-            </Pressable>
+         {!isPending &&
+            <View 
+            style={{
+               flexDirection: 'row',
+               alignItems: 'center',
+               justifyContent: 'flex-end',
+               gap: 12,
+            }}>
+               <Pressable 
+               style={({pressed}) => [{
+                  backgroundColor: pressed ? COLORS.strokes : "transparent",
+                  height: 32,
+                  width: 100,
+                  borderRadius: 16,
+                  justifyContent: 'center',
+                  alignItems: 'center'
+               }]}
+               underlayColor='#0072bc'
+               onPress={closeVerify}
+               >
+                  <Text 
+                  style={{
+                     fontFamily: FONTS.roboto700,
+                     fontSize: FONT_SIZES.md,
+                     color: COLORS.lettersicons
+                  }}>
+                     Maybe Later
+                  </Text>
+               </Pressable>
 
-            <Pressable 
-            style={({pressed}) => [{
-               backgroundColor: pressed ? COLORS.primaryPress : COLORS.primary,
-               height: 32,
-               width: 100,
-               borderRadius: 16,
-               justifyContent: 'center',
-               alignItems: 'center'
-            }]}
+               <Pressable 
+               style={({pressed}) => [{
+                  backgroundColor: pressed ? COLORS.primaryPress : COLORS.primary,
+                  height: 32,
+                  width: 100,
+                  borderRadius: 16,
+                  justifyContent: 'center',
+                  alignItems: 'center'
+               }]}
 
-            onPress={() => {router.push('dashboard/client/verify/user/')}}>
-               <Text 
-               style={{
-                  fontFamily: FONTS.roboto700,
-                  fontSize: FONT_SIZES.md,
-                  color: COLORS.secondary
-               }}>
-                  Verify Now
-               </Text>
-            </Pressable>
-         </View>
+               onPress={() => {router.push('dashboard/client/verify/user/')}}>
+                  <Text 
+                  style={{
+                     fontFamily: FONTS.roboto700,
+                     fontSize: FONT_SIZES.md,
+                     color: COLORS.secondary
+                  }}>
+                     Verify Now
+                  </Text>
+               </Pressable>
+            </View>
+         }
       </Animated.View>   
    )
 }

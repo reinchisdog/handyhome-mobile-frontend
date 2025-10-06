@@ -11,7 +11,6 @@ import { useAuth } from '../../../../../context/AuthContext';
 import { useAppData } from '../../../../../context/AppDataContext';
 import { useAppointment } from '../../../../../context/AppointmentContext';
 // ---- Other Components
-import { KeyboardProvider } from 'react-native-keyboard-controller';
 import Header from '../../../../../components/Header';
 import MainButton from '../../../../../components/MainButton';
 import AddressContainer from '../../../../../components/AddressContainer';
@@ -147,7 +146,7 @@ const AppointmentAddress = () => {
    }, [newAddress])
 
    return (
-      <KeyboardProvider>
+      <>
          <ErrorModal
          visible={showError}
          setVisible={setShowError}
@@ -221,7 +220,7 @@ const AppointmentAddress = () => {
                />
             </View>
          </View>
-      </KeyboardProvider>
+      </>
       
    )
 }

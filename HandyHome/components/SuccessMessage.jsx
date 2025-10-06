@@ -3,12 +3,13 @@ import React, {useRef, useEffect} from 'react'
 import SuccessCheck from '../assets/images/illustrations/SuccessCheck';
 import SuccessAndy from '../assets/images/illustrations/SuccessAndy';
 import FailedAndy from '../assets/images/illustrations/FailedAndy';
+import NeutralAndy from '../assets/images/illustrations/NeutralAndy';
 import { launchStyles as launch } from '../styles/launchStyles';
 
 const SuccessMessage = ({
    title, 
    body, 
-   type = "check" // "andy", "check", "fail"
+   type = "check" // "andy", "neutral", "check", "fail"
 }) => {
    const imageAnimation = useRef(new Animated.Value(0)).current;
 
@@ -44,6 +45,8 @@ const SuccessMessage = ({
             <SuccessAndy /> :
          type === "fail" ?
             <FailedAndy /> :
+         type === "neutral" ?
+            <NeutralAndy /> :
          null
          }
       </Animated.View>

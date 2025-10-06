@@ -7,7 +7,7 @@ import React, { useEffect, useState, useCallback } from 'react'
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 // ---- Other Components
-import { KeyboardProvider, KeyboardAvoidingView } from 'react-native-keyboard-controller';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import Header from '../../../../components/Header';
 import MainButton from '../../../../components/MainButton';
 import InputBasic from '../../../../components/InputBasic';
@@ -237,7 +237,7 @@ const ProfileContacts = () => {
    )
 
    return (
-      <KeyboardProvider>
+      <>
          <ErrorModal 
          visible={errorModal}
          setVisible={setErrorModal}
@@ -299,7 +299,7 @@ const ProfileContacts = () => {
                <Icons name='add' size={24} color={'#fff'}/>
             </Pressable>
          </View>
-      </KeyboardProvider>
+      </>
    )
 }
 

@@ -147,6 +147,7 @@ const CancelledBooking = () => {
             <RefreshControl 
             refreshing={refreshing}
             colors={[COLORS.lightblue, COLORS.primary]}
+            onRefresh={fetchRefresh}
             />
          }
          showsVerticalScrollIndicator={false}

@@ -141,7 +141,7 @@ const OngoingBooking = () => {
                text: "Details",
                function: () => {router.push({
                   pathname: '/dashboard/client/booking/[id]/details',
-                  params: {id: item.id, status: 'ongoing'}
+                  params: {id: item.id}
                })},
             }}
             />
@@ -160,6 +160,7 @@ const OngoingBooking = () => {
             <RefreshControl 
             refreshing={refreshing}
             colors={[COLORS.lightblue, COLORS.primary]}
+            onRefresh={fetchRefresh}
             />
          }
          showsVerticalScrollIndicator={false}

@@ -110,18 +110,22 @@ const BookingRating = () => {
 
          console.log("---- [Booking] Submit Feedback Attempt----");
          console.log("[1] Converting Data");
-         const converted = {
-            ...feedback,
-            attachment: convertUriToFile(feedback.attachment)
-         }
+         // const converted = {
+         //    ...feedback,
+         //    attachment: convertUriToFile(feedback.attachment)
+         // }
 
          const formData = new FormData();
-         appendFormData(formData, converted);
-         
-         console.log("[2] Submitting Feedback");
+         formData.append('review', feedback.review);
+         formData.append('rating', feedback.rating);
+         formData.append('attachment', convertUriToFile(feedback.attachment));
+         // appendFormData(formData, converted);
+         console.log("[2] Submitting Feedback for Booking:", id);
+         console.log(feedback);
          await api.post(`/user/book/${id}/review`, formData, {
             headers: {
-               'Authorization' : `Bearer ${token}`
+               'Authorization' : `Bearer ${token}`,
+               'Content-Type': 'multipart/form-data'
             }
          })
 

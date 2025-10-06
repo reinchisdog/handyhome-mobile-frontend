@@ -130,19 +130,6 @@ const WorkerBookingItem = ({request, booking, left, right}) => {
                </View>
                
             </View>
-
-            {request &&
-               <Pressable
-               style={({pressed}) =>[{
-                  width: 32,
-                  borderRadius: 24,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  opacity: pressed ? 0.5 : 1,
-               }]}>
-                  <Arrows name='chevron-right' size={24} color={COLORS.accent}/>
-               </Pressable>
-            }
          </View>
 
          {/* ---- Buttons */}

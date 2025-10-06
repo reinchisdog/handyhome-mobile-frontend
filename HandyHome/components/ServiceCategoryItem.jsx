@@ -16,7 +16,7 @@ const ServiceCategoryItem = ({item, serviceName, serviceId, onPress}) => {
       onPress={onPress}
       style={({pressed}) => [{
          width: '100%',
-         height: 150,
+         // height: 150,
          backgroundColor: '#fff',
          padding: 12,
          gap: 10,
@@ -58,7 +58,6 @@ const ServiceCategoryItem = ({item, serviceName, serviceId, onPress}) => {
                   }}
                   >{item.name}</Text>
                   <Text
-                  numberOfLines={3}
                   style={{
                      fontFamily: FONTS.roboto400,
                      fontSize: FONT_SIZES.sm,
@@ -73,7 +72,8 @@ const ServiceCategoryItem = ({item, serviceName, serviceId, onPress}) => {
                   display: 'flex',
                   flexDirection: 'row',
                   alignItems: 'flex-end',
-                  justifyContent: 'space-between'
+                  justifyContent: 'space-between', 
+                  marginTop: 8,
                }}
                >
                   <View>

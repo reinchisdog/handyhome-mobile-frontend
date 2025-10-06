@@ -48,11 +48,13 @@ export const SignupProvider = ({children}) => {
          const firstName = signupData.first_name?.trim() || "";
          const lastName = signupData.last_name?.trim() || "";
          const gender = signupData.gender?.trim() || "";
+         const birthdate = signupData.birth_date
          
          areFilled = (
             firstName !== "" &&
             lastName !== "" &&
-            gender !== ""
+            gender !== "" &&
+            birthdate !== null
          );
       } else if (step === 3) { 
          const address = signupData.home_address || {};
@@ -108,6 +110,8 @@ export const SignupProvider = ({children}) => {
    const validatePersonal = () => {
       const firstName = signupData.first_name?.trim() || "";
       const lastName = signupData.last_name?.trim() || "";
+      const birthDate = signupData.birth_date;
+      const minimumAge = 18 * 365.25 * 24 * 60 * 60 * 1000;
 
       if (firstName.length <= 1 || lastName.length <= 1) {
          return "First name and last name must be longer than 2 characters.";
@@ -115,6 +119,10 @@ export const SignupProvider = ({children}) => {
 
       if (!/^[A-Za-z]+$/.test(firstName) || !/^[A-Za-z]+$/.test(lastName)) {
          return "First name and last name must only contain letters.";
+      }
+      
+      if ((new Date() - birthDate) < minimumAge) {
+         return "You must be the age of 18 or above to register."
       }
 
       return null;

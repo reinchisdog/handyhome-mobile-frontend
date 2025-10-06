@@ -32,7 +32,7 @@ const UpcomingBooking = () => {
    const [refreshing, setRefreshing] =useState(false);
    const [hasMore, setHasMore] = useState(true);
 
-
+   // Functions
    const fetchBookings = async (pageNum = 1, isRefresh = false) => {
       if ((loading || loadingMore) && !isRefresh) return;
 
@@ -50,7 +50,7 @@ const UpcomingBooking = () => {
             setLoadingMore(true);
          }
 
-         console.log("---- [Upcoming] Fetching Attempt ----");
+         console.log("---- [Completed] Fetching Attempt ----");
          console.log("[1] Fetching Bookings");
          const bookingResult = await api.get('/worker/bookings/completed',{
             params: {
@@ -134,18 +134,11 @@ const UpcomingBooking = () => {
          renderItem={({item}) => (
             <WorkerBookingItem 
             booking={item}
-            left={{
+            right={{
                text: "Details",
                function: () => {router.push({
                   pathname: '/dashboard/worker/booking/[id]/details',
-                  params: {id: item.id, status: 'completed'}
-               })},
-            }}
-            right={{
-               text: "View Rating",
-               function: () => {router.push({
-                  pathname: '/dashboard/worker/booking/[id]/details',
-                  params: {id: item.id, status: 'completed'}
+                  params: {id: item.id}
                })},
             }}
             />
@@ -164,6 +157,7 @@ const UpcomingBooking = () => {
             <RefreshControl 
             refreshing={refreshing}
             colors={[COLORS.lightblue, COLORS.primary]}
+            onRefresh={fetchRefresh}
             />
          }
          showsVerticalScrollIndicator={false}

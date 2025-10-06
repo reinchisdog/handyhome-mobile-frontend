@@ -29,17 +29,22 @@ const AppointmentWorker = () => {
    const { worker } = useAppointment();
 
    const [reviews, setReviews] = useState([]);
+   const [reviewCount, setReviewCount] = useState({
+      total: 0,
+      attachment: 0,
+   })
    const [page, setPage] = useState(1);
    const [reviewsLoading, setReviewsLoading] = useState(false);
    const [loadingMore, setLoadingMore] = useState(false);
    const [hasMore, setHasMore] = useState(true);
 
    // Functions
-   const fetchReviews = async (pageNum = 1) => {
+   const fetchReviews = async (pageNum = 1, attachments = false, filter = 'all') => {
       if (reviewsLoading || loadingMore) return;
 
       try {
          if (pageNum === 1) {
+            setReviews([]);
             setReviewsLoading(true);
          } else {
             setLoadingMore(true);
@@ -51,6 +56,8 @@ const AppointmentWorker = () => {
             params: {
                page: pageNum,
                limit: MAX_LIMIT,
+               attachments: attachments,
+               filter: filter,
             },
             headers: {
                'Authorization': `Bearer ${token}`
@@ -59,6 +66,12 @@ const AppointmentWorker = () => {
 
          console.log("[2] Fetching Succesful");
          const reviewsData = reviewsResult?.data?.data?.reviews;
+         // console.log(reviewsData);
+         setReviewCount(prev => ({
+            ...prev,
+            total: reviewsResult?.data?.data?.total_reviews,
+            attachment: reviewsResult?.data?.data?.reviews_with_attachments,
+         }))
          if (pageNum === 1) {
             setReviews(reviewsData);
          } else {
@@ -74,10 +87,10 @@ const AppointmentWorker = () => {
       }
    }
 
-   const fetchMore = useCallback(async () => {
+   const fetchMore = useCallback(async (attachments, filter) => {
       if (!hasMore || loadingMore || reviewsLoading) return;
 
-      await fetchReviews(page + 1);
+      await fetchReviews(page + 1, attachments, filter);
    }, [hasMore, loadingMore, reviewsLoading, page])
 
    // Effects
@@ -144,6 +157,7 @@ const AppointmentWorker = () => {
              <Tabs.Tab name='Reviews' label="Reviews">
                <WorkerReviewTab 
                reviews={reviews}
+               reviewCount={reviewCount}
                reviewsLoading={reviewsLoading}
                loadingMore={loadingMore}
                fetchReviews={fetchReviews}

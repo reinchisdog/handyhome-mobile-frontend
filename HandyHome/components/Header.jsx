@@ -11,7 +11,7 @@ import Arrows from '@expo/vector-icons/Entypo';
 
 const Header = ({
    backgroundColor = '#fff',
-   textColor = COLORS.darkblue,
+   textColor = COLORS.primary,
    hasBack = true,
    onBack,
    backColor = COLORS.primary,
@@ -54,6 +54,10 @@ const Header = ({
             {hasBack ? (
                <TouchableOpacity
                onPress={onBack ? onBack : () => router.back()}
+               style={{
+                  width: 24,
+                  height: 24
+               }}
                >
                   <Arrows name="chevron-left" color={backColor} size={24}/>
                </TouchableOpacity>

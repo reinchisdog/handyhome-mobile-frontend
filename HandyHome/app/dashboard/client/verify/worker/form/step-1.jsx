@@ -34,11 +34,21 @@ const FormCredentials = ({data, setData}) => {
    const { setConfig, returnedImage, openCamera, openImagePicker, openDocumentPicker } = useMedia();
    const [showModal, setShowModal] = useState(false);
    const [modalType, setModalType] = useState(null); //"ids", "certs", "work"
+
    const [errorModal, setErrorModal] = useState(false);
    const [errorMessage, setErrorMessage] = useState("");
 
    const handleSingleData = async (variable) => {
       const file = await openDocumentPicker();
+      const fileName = file.name;
+
+      if (variable === 'nbi') {
+         if (!fileName.endsWith('jpg') && !fileName.endsWith('jpeg')) {
+            setErrorMessage('NBI Clearance should be in the jpg/jpeg format. Please try again.');
+            setErrorModal(true);
+            return;
+         }
+      }
 
       setData(prev => ({
          ...prev,
@@ -101,7 +111,7 @@ const FormCredentials = ({data, setData}) => {
          <ErrorModal 
          visible={errorModal}
          setVisible={setErrorModal}
-         title={"Something went wrong"}
+         title={"Something went wrong!"}
          message={errorMessage}
          />
 
@@ -205,7 +215,7 @@ const FormCredentials = ({data, setData}) => {
             {/* NBI Clearance */}
             <ApplicationUpload 
             icon={<Icons2 name='file-document' size={24} color={COLORS.primary}/>}
-            title="NBI Clearance"
+            title="NBI Clearance (Optional)"
             label="Add File"
             data={data.nbi}
             renderData={
@@ -754,7 +764,7 @@ const ExperienceModal = ({handleModalData}) => {
                color: COLORS.darkblue,
                textAlign: 'left',
             }}>
-               Company Affiliation
+               Work Experience
             </Text>
             {/* ---- Content */}
             <InputBasic 

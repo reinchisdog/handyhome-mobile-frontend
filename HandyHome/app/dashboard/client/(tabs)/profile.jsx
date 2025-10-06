@@ -9,6 +9,7 @@ import { useRouter } from 'expo-router';
 import Header from '../../../../components/Header';
 import ProfileTab from '../../../../components/ProfileTab';
 import GeneralModal from '../../../../components/GeneralModal';
+import ErrorModal from '../../../../components/ErrorModal';
 // ---- Styles and Icons
 import { globalStyles as global } from '../../../../styles/globalStyles';
 import { COLORS, FONTS, FONT_SIZES } from '../../../../styles/constants';
@@ -26,6 +27,9 @@ const ProfileScreen = () => {
    const {user, logout} = useAuth();
 
    const [logoutModal, setLogoutModal] = useState(false);
+   const [errorModal, setErrorModal] = useState(false);
+   const [errorMessage, setErrorMessage] = useState("");
+   const [errorTitle, setErrorTitle] = useState("");
 
    return (
       <>
@@ -39,6 +43,13 @@ const ProfileScreen = () => {
          primaryFunction={logout}
          secondaryText={"Cancel"}
          secondaryFunction={() => setLogoutModal(false)}
+         />
+
+         <ErrorModal
+         visible={errorModal}
+         setVisible={setErrorModal}
+         message={errorMessage}
+         title={errorTitle}
          />
 
          <ScrollView
@@ -89,7 +100,7 @@ const ProfileScreen = () => {
                         {user?.full_name}
                      </Text>
                      
-                     {user?.is_verified ? 
+                     {user?.can_book ? 
                         <View style={{flexDirection: 'row', alignItems: 'center', gap: 6}}>
                            <Icons2 name='check-decagram' size={20} color={COLORS.primary}/>
                            <Text
@@ -103,7 +114,14 @@ const ProfileScreen = () => {
                         </View>
                         :
                         <Pressable
-                        onPress={() => {router.push('dashboard/client/verify/user')}}
+                        onPress={ user?.identity_status?.status === 'Pending' ?
+                           () => {
+                              setErrorTitle('Account not yet verified!');
+                              setErrorMessage('Your verification is still being processed. Please wait for a bit while our staff is reviewing your identity.');
+                              setErrorModal(true);
+                           } :
+                           () => {router.push('dashboard/client/verify/user')}
+                        }
                         style={({pressed}) => [{
                            flexShrink: 1,
                            paddingHorizontal: 12,
@@ -192,7 +210,14 @@ const ProfileScreen = () => {
 
                {/* Be a Service Provider */}
                <ProfileTab 
-               onPress={() => {router.push('/dashboard/client/verify/worker')}}
+               onPress={user?.identity_status?.status === 'Pending' || !user?.can_book ?
+                  () => {
+                     setErrorTitle('Account not yet verified!');
+                     setErrorMessage('Your account needs verifying first before being able apply as a Service Provider.');
+                     setErrorModal(true);
+                  } :
+                  () => {router.push('/dashboard/client/verify/worker')}
+               }
                icon={<Icons2 name="wrench" size={24} color={COLORS.primary} />}
                title="Be a Service Provider"
                />

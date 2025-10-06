@@ -167,8 +167,8 @@ const LocationDetails = () => {
         items={provinceList}
         onSelect={(e) => {
           setSelectedProvince(e);
-          setSelectedMunicipal({});
-          setSelectedBarangay({});
+          setSelectedMunicipal(null);
+          setSelectedBarangay(null);
           updateHomeData('province', e.title);
           getMunicipalList(e.title); 
         }}
@@ -182,7 +182,7 @@ const LocationDetails = () => {
         placeholder="Select City/Municipality"
         onSelect={(e) => {
           setSelectedMunicipal(e);
-          setSelectedBarangay({});
+          setSelectedBarangay(null);
           updateHomeData('municipal', e.title);
           getBarangayList(e.title);
         }}

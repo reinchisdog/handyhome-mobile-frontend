@@ -3,8 +3,8 @@
 // Imports
 // ---- React and Expo Components
 import { Image, StyleSheet, Text, View, ScrollView, useWindowDimensions } from 'react-native';
-import React from 'react';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useCallback, useEffect } from 'react';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 // ---- Other Components
 import Header from '../../../../../../components/Header';
@@ -20,7 +20,7 @@ const QrCodeScreen = () => {
    const router = useRouter();
    const insets = useSafeAreaInsets();
    const {width} = useWindowDimensions();
-   const {details} = useBookingDetails();
+   const {details, setQrPage} = useBookingDetails();
    const {id} = useLocalSearchParams();
 
    // Render
@@ -52,6 +52,16 @@ const QrCodeScreen = () => {
 
       return `${formattedDate} | ${formattedTime}`;
    }
+
+   useFocusEffect(
+      useCallback(() => {
+         setQrPage(true);
+
+         return () => {
+            setQrPage(false);
+         }
+      }, [])
+   )
 
    return (
       <ScrollView 

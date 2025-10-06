@@ -2,7 +2,7 @@
 
 // Imports
 // ---- React and Expo Components
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, Pressable, ImageBackground, Animated, useWindowDimensions, Modal, StatusBar } from 'react-native'
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, Pressable, ImageBackground, Animated, useWindowDimensions, Modal, StatusBar, FlatList, TouchableWithoutFeedback } from 'react-native'
 import React, { useState, useEffect, useRef } from 'react'
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -23,32 +23,42 @@ import api from '../../../../../../lib/api';
 // import { useAuth } from '../../../../../../context/AuthContext';
 import { useBookingDetails } from '../../../../../../context/BookingDetailsContext';
 
-const BookingDetails = () => {
+const ClientBookingDetails = () => {
    // Hooks and States
    const insets = useSafeAreaInsets();
    const router = useRouter();
    const { width, height } = useWindowDimensions();
-   const { id, status } = useLocalSearchParams();
-   const { details, detailsLoading, fetchDetails, fetchWorker, emergency, setEmergency, clearEmergency, handleComplete, completeLoading } = useBookingDetails();
+   const { id } = useLocalSearchParams();
+   const { details, detailsLoading, fetchDetails, fetchChatSession, fetchWorker, emergency, setEmergency, clearEmergency, handleComplete, completeLoading,  materials } = useBookingDetails();
 
    const [descriptionModal, setDescriptionModal] = useState(false);
    const [emergencyModal, setEmergencyModal] = useState(false);
 
+   const [addonExpanded, setAddonExpanded] = useState(false);
+   const PREVIEW_COUNT = 3;
+
+   const [addonPrice, setAddonPrice] = useState(0);
+
    // Renders
    const renderHeaderText = () => {
+      const status = details?.status?.toLowerCase();
       switch (status) {
          case 'upcoming': return "Get ready! Your appointment is coming up.";
          case 'ongoing': return "Service is underway.";
+         case 'pending': return "Service is underway.";
          case 'completed': return "All done! Don't forget to rate your experience.";
          default: return null
       }
    }
    
    const renderSubHeaderText = () => {
+      const status = details?.status?.toLowerCase();
       switch (status) {
          case 'upcoming':
             return `Scheduled for ${details?.date} at ${details?.time}.`;
          case 'ongoing':
+            return `Need help? Contact us anytime by using the Emergency Button.`;
+         case 'pending':
             return `Need help? Contact us anytime by using the Emergency Button.`;
          case 'completed':
             return `Leaving a review helps us improve our services.`;
@@ -121,6 +131,13 @@ const BookingDetails = () => {
       fetchWorker(details?.worker?.id)
       buttonAppear();
    }, [details])
+
+   useEffect(() => {
+      const total = materials
+         .reduce((sum, material) => sum + (material.price * material.quantity), 0);
+
+      setAddonPrice(total);
+   }, [materials]);
 
    return (
       <>
@@ -227,7 +244,7 @@ const BookingDetails = () => {
                height: '100%',
                position: 'relative'
             }}>
-               <Pressable
+               <TouchableWithoutFeedback
                onPress={() => {
                   clearEmergency();
                   setEmergencyModal(false);
@@ -290,7 +307,7 @@ const BookingDetails = () => {
                      }}
                      />
                   </View>
-               </Pressable>
+               </TouchableWithoutFeedback>
 
             </KeyboardAvoidingView>
          </Modal>
@@ -301,11 +318,27 @@ const BookingDetails = () => {
             backgroundColor: COLORS.screenbg, 
             position: 'relative'
          }]}>
+            {detailsLoading &&
+               <View style={{
+                  position: 'absolute',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  top: 0,
+                  left: 0,
+                  width: width,
+                  height: height,
+                  backgroundColor: '#fff',
+                  zIndex: 999999
+               }}>
+                  <LoadingDots slide={false}/>
+               </View>
+            }
+
             <Header 
             hasBack
             title='Booking Details'
             backgroundColor='#fff'
-            rightIcon={status === 'ongoing' && (
+            rightIcon={(details?.status === 'Ongoing' || details?.status === 'Pending') && (
                <TouchableOpacity onPress={() => {setEmergencyModal(true)}}>
                   <Icons1 name='alarm-light' size={24} color={COLORS.red}/>
                </TouchableOpacity>
@@ -434,7 +467,7 @@ const BookingDetails = () => {
                            fontFamily: FONTS.roboto400,
                            fontSize: FONT_SIZES.sm,
                            color: COLORS.lettersicons,
-                           flexShrink: 1,
+                           flex: 1,
                            textAlign: 'justify'
                         }}>   
                            {details?.description}
@@ -443,18 +476,122 @@ const BookingDetails = () => {
                      </Pressable>
                      
                   </View>
+
+                  {/* ---- Add-ons */}
+                  <Text style={[styles.sectionTitle, {paddingHorizontal: 12, paddingBottom: 6}]}>
+                     Add-ons
+                  </Text>
+                  <FlatList 
+                  data={addonExpanded ? materials : materials.slice(0, PREVIEW_COUNT)}
+                  scrollEnabled={false}
+                  renderItem={({item}) => (
+                      <View style={{
+                        paddingHorizontal: 12,
+                        paddingVertical: 4,
+                        flexDirection: 'row', 
+                        alignItems: 'center', 
+                        gap: 8, 
+                        justifyContent: 'space-between'
+                     }}>
+                        <Text 
+                        numberOfLines={1}
+                        style={{
+                           fontFamily: FONTS.roboto600,
+                           fontSize: FONT_SIZES.md,
+                           color: COLORS.lettersicons,
+                           flexShrink: 1,
+                        }}>
+                           {item.name}
+                        </Text>
+
+                        <Text 
+                        style={{
+                           fontFamily: FONTS.roboto400,
+                           fontSize: FONT_SIZES.md,
+                           color: COLORS.lettersicons,
+                        }}>
+                           x {item.quantity}
+                        </Text>
+
+                     </View>
+                  )}
+                  ListFooterComponent={
+                     materials.length > PREVIEW_COUNT &&
+                     <TouchableOpacity
+                     onPress={() => setAddonExpanded(!addonExpanded)}style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 4,
+                        paddingTop: 4,
+                        paddingBottom: 12,
+                        paddingHorizontal: 12,
+                     }}>
+                        <Text style={[styles.sectionTitle, {color: COLORS.accent}]}>
+                           {addonExpanded ? 'Show Less' : 'Show More'}
+                        </Text>
+                        <Arrows name={addonExpanded ? 'chevron-up' : 'chevron-down'} size={24} color={COLORS.accent}/>
+                     </TouchableOpacity>
+                  }
+                  contentContainerStyle={{
+                     paddingBottom: materials.length > PREVIEW_COUNT ? 0 : 12
+                  }}/>
                   
                   <View style={[{paddingHorizontal: 12}]}>
                      <View style={[global.divider]}/>
                   </View>
                   
                   {/* ---- Price */}
-                  <Text style={[styles.sectionView, styles.sectionTitle, {textAlign: 'right'}]}>
-                     Total: <Text style={{color: COLORS.lettersicons}}>
-                        {`\u20B1 ${details?.price}`}
+                  <View style={{
+                     gap: 8, 
+                     marginHorizontal: 12, 
+                     paddingVertical: 16,
+                     borderBottomWidth: 1,
+                     borderColor: COLORS.strokes
+                  }}>
+                     <View style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 8
+                     }}>
+                        <Text style={[styles.sectionTitle]}>
+                           Base Labor Fee:
+                        </Text>
+                        <Text style={[styles.sectionTitle, {color: COLORS.lettersicons}]}>
+                           {`\u20B1 ${details?.price}`}
+                        </Text>
+                     </View>
+                     <View style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 8
+                     }}>
+                        <Text style={[styles.sectionTitle]}>
+                           Add-ons Fee:
+                        </Text>
+                        <Text style={[styles.sectionTitle, {color: COLORS.lettersicons}]}>
+                           {`\u20B1 ${addonPrice}`}
+                        </Text>
+                     </View>
+                  </View>
+
+                  <View style={{
+                     flexDirection: 'row',
+                     justifyContent: 'space-between',
+                     alignItems: 'center',
+                     gap: 8,
+                     padding : 12
+                  }}>
+                     <Text style={[styles.sectionTitle]}>
+                        Estimated Total:
                      </Text>
-                  </Text>
-                  
+                     <Text style={[styles.sectionTitle, {color: COLORS.lettersicons}]}>
+                        {`\u20B1 ${addonPrice + details?.price}`}
+                     </Text>
+                  </View>
+               
                </View>
 
                {/* ---- Worker */}
@@ -549,30 +686,34 @@ const BookingDetails = () => {
                   </Text>
                   <View style={styles.sectionPressable}>
                      {/* ---- Chat Message */}
-                     <Pressable 
-                     onPress={() => {}}
-                     style={({pressed}) => [
-                        styles.sectionPressable, {
-                           flexDirection: 'row', 
-                           justifyContent: 'space-between',
-                           alignItems: 'center',
-                           gap: 12,
-                           backgroundColor: pressed ? COLORS.summaryPress : 'transparent'
-                     }]}>
-                        <Icons2 name='chat' size={24} color={COLORS.primary}/>
-                        <Text style={{
-                           fontFamily: FONTS.roboto400,
-                           fontSize: FONT_SIZES.md,
-                           color: COLORS.lettersicons,
-                           flex: 1
-                        }}>
-                           Message Service Provider
-                        </Text>
-                        <Arrows name='chevron-right' size={24} color={COLORS.accent}/>
-                     </Pressable>
+                     {details?.status !== "Completed" &&
+                        <Pressable 
+                        onPress={() => {fetchChatSession(details?.session)}}
+                        style={({pressed}) => [
+                           styles.sectionPressable, {
+                              flexDirection: 'row', 
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              gap: 12,
+                              backgroundColor: pressed ? COLORS.summaryPress : 'transparent'
+                        }]}>
+                           <Icons2 name='chat' size={24} color={COLORS.primary}/>
+                           <Text style={{
+                              fontFamily: FONTS.roboto400,
+                              fontSize: FONT_SIZES.md,
+                              color: COLORS.lettersicons,
+                              flex: 1
+                           }}>
+                              Message Service Provider
+                           </Text>
+                           <Arrows name='chevron-right' size={24} color={COLORS.accent}/>
+                        </Pressable>
+                     }
+                     
                      {/* ---- FAQs */}
+                     
                      <Pressable 
-                     onPress={() => {}}
+                     onPress={() => {router.push('/dashboard/client/settings/faqs')}}
                      style={({pressed}) => [
                         styles.sectionPressable, {
                            flexDirection: 'row', 
@@ -690,10 +831,12 @@ const BookingDetails = () => {
                   backgroundColor: '#fff',
                   width: '100%',
                   bottom: 0,
-                  borderRadius: 24,
+                  borderTopLeftRadius: 24,
+                  borderTopRightRadius: 24, 
                   borderWidth: StyleSheet.hairlineWidth,
                   borderColor: COLORS.strokes,
-                  transform: [{translateY: buttonTranslate}]
+                  transform: [{translateY: buttonTranslate}],
+                  zIndex: 99
                }]}>
                   <MainButton 
                   text={"Mark as Complete"}
@@ -708,7 +851,7 @@ const BookingDetails = () => {
    )
 }
 
-export default BookingDetails
+export default ClientBookingDetails
 
 const styles = StyleSheet.create({
    container: {

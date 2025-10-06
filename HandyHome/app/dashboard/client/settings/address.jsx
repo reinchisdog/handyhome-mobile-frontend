@@ -10,7 +10,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../../../context/AuthContext';
 import { useAppData } from '../../../../context/AppDataContext';
 // ---- Other Components
-import { KeyboardProvider } from 'react-native-keyboard-controller';
 import Header from '../../../../components/Header';
 import MainButton from '../../../../components/MainButton';
 import AddressContainer from '../../../../components/AddressContainer';
@@ -137,7 +136,7 @@ const ProfileAddress = () => {
    }, [selectedAddress, user?.address_id])
 
    return (
-      <KeyboardProvider>
+      <>
          <ErrorModal 
          visible={showError}
          setVisible={setShowError}
@@ -211,7 +210,7 @@ const ProfileAddress = () => {
                />
             </View>
          </View>
-      </KeyboardProvider>
+      </>
    )
 }
 

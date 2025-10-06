@@ -3,7 +3,9 @@
 // Imports
 // ---- React and Expo Components
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, useWindowDimensions, ImageBackground } from 'react-native';
-import React, { useEffect, useMemo, useCallback, useRef } from 'react';
+import React, { useEffect, useMemo, useCallback, useRef, useState } from 'react';
+// ---- ErrorModal
+import ErrorModal from '../components/ErrorModal';
 // ---- Contexts
 import { useMedia } from '../context/MediaContext';
 // ---- Styles and Icons
@@ -58,6 +60,9 @@ const MediaUpload = ({
       });
    }, [dataName, maxMedia, setData]);
 
+   const [errorModal, setErrorModal] = useState(false);
+   const [errorMessage, setErrorMessage] = useState("");
+
    // Effects
    useEffect(() => {
       if (!returnedImage) {
@@ -66,6 +71,13 @@ const MediaUpload = ({
       }
 
       if (hasProcessedImage.current) return;
+
+      if (!returnedImage.endsWith('jpg') && !returnedImage.endsWith('jpeg')) { 
+         setErrorMessage("Only images in the jpg/jpeg are allowed. Please try again.");
+         setErrorModal(true);
+         clearImage();
+         return;
+      }
 
       setData(prev => {
          const current = prev[dataName];
@@ -100,6 +112,14 @@ const MediaUpload = ({
    const canAddMore = normalizedData.length < maxMedia;
 
    return (
+      <>
+      <ErrorModal 
+      visible={errorModal}
+      setVisible={setErrorModal}
+      title={'Something went wrong!'}
+      message={errorMessage}
+      />
+
       <View 
       style={{
          flexDirection: 'row',
@@ -136,6 +156,7 @@ const MediaUpload = ({
             </ImageBackground>
          ))}
       </View>
+      </>
    )
 }
 

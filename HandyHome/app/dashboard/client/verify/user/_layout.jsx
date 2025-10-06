@@ -4,14 +4,12 @@
 // React and Expo Components
 import { Stack } from "expo-router"
 // Contexts
-import { KeyboardProvider } from "react-native-keyboard-controller"
 import { MediaProvider } from "../../../../../context/MediaContext"
 import { ClientVerificationProvider } from "../../../../../context/ClientVerificationContext"
 
 const AppointmentLayout = () => {
    return (
       <MediaProvider>
-      <KeyboardProvider>
       <ClientVerificationProvider>
          <Stack 
          screenOptions={{
@@ -20,7 +18,6 @@ const AppointmentLayout = () => {
          }}
          />
       </ClientVerificationProvider>
-      </KeyboardProvider>
       </MediaProvider>
    )
 }

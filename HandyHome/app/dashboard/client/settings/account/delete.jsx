@@ -6,7 +6,7 @@ import { ScrollView, StyleSheet, Text, View, Modal, Pressable, Platform } from '
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { KeyboardProvider, KeyboardAvoidingView } from 'react-native-keyboard-controller';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 // ---- Other Components
 import Header from '../../../../../components/Header';
 import MainButton from '../../../../../components/MainButton';

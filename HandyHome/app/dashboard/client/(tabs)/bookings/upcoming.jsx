@@ -127,6 +127,18 @@ const UpcomingBooking = () => {
       </View>
    )
 
+   const canCancelBooking = (bookingDate) => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const booking = new Date(bookingDate + 'T00:00:00');
+
+      const timeDiff = booking - today;
+      const daysDiff = timeDiff / (1000 * 60 * 60 * 24);
+
+      return daysDiff > 1;
+   };
+
    return (
       <View style={[global.screenContainer, {backgroundColor: COLORS.screenbg}]}>
          <FlatList 
@@ -134,18 +146,18 @@ const UpcomingBooking = () => {
          renderItem={({item}) => (
             <UserBookingItem 
             data={item}
-            left={{
+            left={canCancelBooking(item.date) ? {
                text: "Cancel",
                function: () => {router.push({
                   pathname: '/dashboard/client/booking/[id]/cancel',
                   params: {id: item.id}
                })},
-            }}
+            } : null}
             right={{
                text: "Details",
                function: () => {router.push({
                   pathname: '/dashboard/client/booking/[id]/details',
-                  params: {id: item.id, status: 'upcoming'}
+                  params: {id: item.id}
                })},
             }}
             />
@@ -164,6 +176,7 @@ const UpcomingBooking = () => {
             <RefreshControl 
             refreshing={refreshing}
             colors={[COLORS.lightblue, COLORS.primary]}
+            onRefresh={fetchRefresh}
             />
          }
          showsVerticalScrollIndicator={false}

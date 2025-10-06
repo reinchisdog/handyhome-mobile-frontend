@@ -2,7 +2,7 @@
 
 // Imports
 // ---- React and Expo Components
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, Pressable, ImageBackground, Animated, useWindowDimensions, Modal, StatusBar, Linking } from 'react-native'
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, Pressable, ImageBackground, Animated, useWindowDimensions, Modal, StatusBar, Linking, FlatList } from 'react-native'
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -26,16 +26,21 @@ import { useAuth } from '../../../../../../context/AuthContext';
 // import { useAuth } from '../../../../../../context/AuthContext';
 import { useBookingDetails } from '../../../../../../context/BookingDetailsContext';
 
-const BookingDetails = () => {
+const WorkerBookingDetails = () => {
    // Hooks and States
    const insets = useSafeAreaInsets();
    const router = useRouter();
    const { width, height } = useWindowDimensions();
    const { token } = useAuth();
-   const { id, status } = useLocalSearchParams();
-   const { details, detailsLoading, fetchDetails, onQrScanned, qrLoading, cameraModal, setCameraModal } = useBookingDetails();
+   const { id } = useLocalSearchParams();
+   const { details, detailsLoading, fetchDetails, fetchChatSession, onQrScanned, qrLoading, cameraModal, setCameraModal, materials } = useBookingDetails();
 
    const [descriptionModal, setDescriptionModal] = useState(false);
+
+   const [addonExpanded, setAddonExpanded] = useState(false);
+   const PREVIEW_COUNT = 3;
+
+   const [addonPrice, setAddonPrice] = useState(0);
 
    const [permission, requestPermission] = useCameraPermissions();
 
@@ -57,19 +62,24 @@ const BookingDetails = () => {
 
    // Renders
    const renderHeaderText = () => {
+      const status = details?.status?.toLowerCase();
       switch (status) {
          case 'upcoming': return "You have an upcoming appointment.";
          case 'ongoing': return "Work is currently in progress.";
+         case 'pending': return "Work is currently in progress.";
          case 'completed': return "Job has been completed successfully.";
          default: return null
       }
    }
    
    const renderSubHeaderText = () => {
+      const status = details?.status?.toLowerCase();
       switch (status) {
          case 'upcoming':
             return `You're scheduled to work on ${details?.date} at ${details?.time}.`;
          case 'ongoing':
+            return `Currently working. Contact support if you need assistance.`;
+         case 'pending':
             return `Currently working. Contact support if you need assistance.`;
          case 'completed':
             return `You are now able to preview the feedback of your work.`;
@@ -121,7 +131,13 @@ const BookingDetails = () => {
       fetchDetails(id, 'worker');
    }, [id])
 
-
+   useEffect(() => {
+      const total = materials
+         .filter(material => material.selected)
+         .reduce((sum, material) => sum + (material.price * material.quantity), 0);
+      
+      setAddonPrice(total);
+   }, [materials])
 
    return (
       <>
@@ -287,8 +303,10 @@ const BookingDetails = () => {
                barcodeScannerSettings={{
                   barcodeTypes: ["qr"]
                }}
-               onBarcodeScanned={({data}) => onQrScanned(id, data)}
-               />
+               onBarcodeScanned={({data}) => {
+                  if (qrLoading) return;
+                  onQrScanned(id, data)
+               }}/>
             </View>
          </Modal>
 
@@ -298,6 +316,22 @@ const BookingDetails = () => {
             backgroundColor: COLORS.screenbg, 
             position: 'relative'
          }]}>
+            {detailsLoading &&
+               <View style={{
+                  position: 'absolute',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  top: 0,
+                  left: 0,
+                  width: width,
+                  height: height,
+                  backgroundColor: '#fff',
+                  zIndex: 999999
+               }}>
+                  <LoadingDots slide={false}/>
+               </View>
+            }
+
             <Header 
             hasBack
             title='Booking Details'
@@ -427,7 +461,7 @@ const BookingDetails = () => {
                            fontFamily: FONTS.roboto400,
                            fontSize: FONT_SIZES.sm,
                            color: COLORS.lettersicons,
-                           flexShrink: 1,
+                           flex: 1,
                            textAlign: 'justify'
                         }}>   
                            {details?.description}
@@ -437,16 +471,143 @@ const BookingDetails = () => {
                      
                   </View>
                   
+                  {/* ---- Add-ons */}
+                  <View style={{
+                     flexDirection: 'row',
+                     justifyContent: 'space-between',
+                     alignItems: 'center',
+                     paddingHorizontal: 12, 
+                     paddingBottom: 6
+                  }}>
+                     <Text style={[styles.sectionTitle]}>
+                        Add-ons
+                     </Text>
+                     {details?.status === 'Ongoing' &&
+                        <TouchableOpacity
+                        onPress={() => router.push('/dashboard/worker/booking/[id]/details/materials')}
+                        style={{
+                           flexDirection: 'row',
+                           alignItems: 'center',
+                           gap: 4
+                        }}>
+                           <Text style={[styles.sectionTitle, {color: COLORS.accent}]}>
+                              Edit
+                           </Text>
+                           <Arrows name='chevron-right' size={24} color={COLORS.accent}/>
+                        </TouchableOpacity>
+                        }
+                  </View>
+                  
+                  <FlatList 
+                  data={addonExpanded ? materials : materials.slice(0, PREVIEW_COUNT)}
+                  scrollEnabled={false}
+                  renderItem={({item}) => (
+                        <View style={{
+                        paddingHorizontal: 12,
+                        paddingVertical: 4,
+                        flexDirection: 'row', 
+                        alignItems: 'center', 
+                        gap: 8, 
+                        justifyContent: 'space-between'
+                     }}>
+                        <Text 
+                        numberOfLines={1}
+                        style={{
+                           fontFamily: FONTS.roboto600,
+                           fontSize: FONT_SIZES.md,
+                           color: COLORS.lettersicons,
+                           flexShrink: 1,
+                        }}>
+                           {item.name}
+                        </Text>
+
+                        <Text 
+                        style={{
+                           fontFamily: FONTS.roboto400,
+                           fontSize: FONT_SIZES.md,
+                           color: COLORS.lettersicons,
+                        }}>
+                           x {item.quantity}
+                        </Text>
+
+                     </View>
+                  )}
+                  ListFooterComponent={
+                     materials.length > PREVIEW_COUNT &&
+                     <TouchableOpacity
+                     onPress={() => setAddonExpanded(!addonExpanded)}style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 4,
+                        paddingTop: 4,
+                        paddingBottom: 12,
+                        paddingHorizontal: 12,
+                     }}>
+                        <Text style={[styles.sectionTitle, {color: COLORS.accent}]}>
+                           {addonExpanded ? 'Show Less' : 'Show More'}
+                        </Text>
+                        <Arrows name={addonExpanded ? 'chevron-up' : 'chevron-down'} size={24} color={COLORS.accent}/>
+                     </TouchableOpacity>
+                  }
+                  contentContainerStyle={{
+                     paddingBottom: materials.length > PREVIEW_COUNT ? 0 : 12
+                  }}/>
+
                   <View style={[{paddingHorizontal: 12}]}>
                      <View style={[global.divider]}/>
                   </View>
                   
                   {/* ---- Price */}
-                  <Text style={[styles.sectionView, styles.sectionTitle, {textAlign: 'right'}]}>
-                     Total: <Text style={{color: COLORS.lettersicons}}>
-                        {`\u20B1 ${details?.price}`}
+                  <View style={{
+                     gap: 8, 
+                     marginHorizontal: 12, 
+                     paddingVertical: 16,
+                     borderBottomWidth: 1,
+                     borderColor: COLORS.strokes
+                  }}>
+                     <View style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 8
+                     }}>
+                        <Text style={[styles.sectionTitle]}>
+                           Base Labor Fee:
+                        </Text>
+                        <Text style={[styles.sectionTitle, {color: COLORS.lettersicons}]}>
+                           {`\u20B1 ${details?.price}`}
+                        </Text>
+                     </View>
+                     <View style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 8
+                     }}>
+                        <Text style={[styles.sectionTitle]}>
+                           Add-ons Fee:
+                        </Text>
+                        <Text style={[styles.sectionTitle, {color: COLORS.lettersicons}]}>
+                           {`\u20B1 ${addonPrice}`}
+                        </Text>
+                     </View>
+                  </View>
+
+                  <View style={{
+                     flexDirection: 'row',
+                     justifyContent: 'space-between',
+                     alignItems: 'center',
+                     gap: 8,
+                     padding : 12
+                  }}>
+                     <Text style={[styles.sectionTitle]}>
+                        Estimated Total:
                      </Text>
-                  </Text>
+                     <Text style={[styles.sectionTitle, {color: COLORS.lettersicons}]}>
+                        {`\u20B1 ${addonPrice + details?.price}`}
+                     </Text>
+                  </View>
                   
                </View>
 
@@ -457,30 +618,32 @@ const BookingDetails = () => {
                   </Text>
                   <View style={styles.sectionPressable}>
                      {/* ---- Chat Message */}
-                     <Pressable 
-                     onPress={() => {}}
-                     style={({pressed}) => [
-                        styles.sectionPressable, {
-                           flexDirection: 'row', 
-                           justifyContent: 'space-between',
-                           alignItems: 'center',
-                           gap: 12,
-                           backgroundColor: pressed ? COLORS.summaryPress : 'transparent'
-                     }]}>
-                        <Icons2 name='chat' size={24} color={COLORS.primary}/>
-                        <Text style={{
-                           fontFamily: FONTS.roboto400,
-                           fontSize: FONT_SIZES.md,
-                           color: COLORS.lettersicons,
-                           flex: 1
-                        }}>
-                           Message Your Client
-                        </Text>
-                        <Arrows name='chevron-right' size={24} color={COLORS.accent}/>
-                     </Pressable>
+                     {details?.status !== "Completed" &&
+                        <Pressable 
+                        onPress={() => {fetchChatSession(details?.session)}}
+                        style={({pressed}) => [
+                           styles.sectionPressable, {
+                              flexDirection: 'row', 
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              gap: 12,
+                              backgroundColor: pressed ? COLORS.summaryPress : 'transparent'
+                        }]}>
+                           <Icons2 name='chat' size={24} color={COLORS.primary}/>
+                           <Text style={{
+                              fontFamily: FONTS.roboto400,
+                              fontSize: FONT_SIZES.md,
+                              color: COLORS.lettersicons,
+                              flex: 1
+                           }}>
+                              Message Your Client
+                           </Text>
+                           <Arrows name='chevron-right' size={24} color={COLORS.accent}/>
+                        </Pressable>
+                     }  
                      {/* ---- FAQs */}
                      <Pressable 
-                     onPress={() => {}}
+                     onPress={() => {router.push('/dashboard/worker/settings/faqs')}}
                      style={({pressed}) => [
                         styles.sectionPressable, {
                            flexDirection: 'row', 
@@ -571,7 +734,7 @@ const BookingDetails = () => {
    )
 }
 
-export default BookingDetails
+export default WorkerBookingDetails
 
 const styles = StyleSheet.create({
    container: {

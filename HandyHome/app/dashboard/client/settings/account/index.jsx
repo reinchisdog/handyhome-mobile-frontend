@@ -6,7 +6,7 @@ import { StyleSheet, Text, View, useWindowDimensions, Pressable, Modal } from 'r
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { KeyboardAvoidingView, KeyboardProvider } from 'react-native-keyboard-controller';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 // ---- Other Components
 import Header from '../../../../../components/Header';
 import InputBasic from '../../../../../components/InputBasic';

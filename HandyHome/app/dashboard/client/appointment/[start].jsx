@@ -33,7 +33,7 @@ const AppointmentStartScreen = () => {
    
    const { categoryId, categoryName, serviceId, serviceName } = useLocalSearchParams();
    const { user } = useAuth();
-   const { appointment, setAppointment, appointmentLoading, createAppointment } = useAppointment();
+   const { appointment, setAppointment, createLoading, createAppointment } = useAppointment();
    
    const [datePickerOpen, setDatePickerOpen] = useState(false);
    const [datePickerMode, setDatePickerMode] = useState(false);
@@ -327,7 +327,7 @@ const AppointmentStartScreen = () => {
                   type='secondary'
                   text={"Proceed"}
                   disabled={buttonDisabled}
-                  loading={appointmentLoading}
+                  loading={createLoading}
                   onPress={createAppointment}
                   />
                </View>

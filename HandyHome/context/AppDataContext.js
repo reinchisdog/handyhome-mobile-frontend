@@ -6,12 +6,14 @@ import React, {
    useContext, 
    useEffect, 
    useState,
-   useCallback 
+   useCallback,
+   useRef
 } from 'react';
 import { useAuth } from './AuthContext';
 import { useCustomFonts } from '../assets/fonts';
 import ErrorModal from '../components/ErrorModal';
 import api from '../lib/api';
+import supabase from '../lib/supabase';
 
 const AppDataContext = createContext();
 
@@ -19,21 +21,24 @@ export const AppDataProvider = ({children}) => {
    // States and Hook Calls
    const {user, token, isTokenValid, isAuthReady} = useAuth();
    const [fontsLoaded] = useCustomFonts();
-   
+   const subscriptionRef = useRef(null);
+
    // App state
    const [isAppDataReady, setIsAppDataReady] = useState(false);
-   const [isInitializing, setIsInitializing] = useState(false);
+   // const [isInitializing, setIsInitializing] = useState(false);
    
    // Data states
    const [services, setServices] = useState([]);
+   const [notifications, setNotifications] = useState([]);
    const [addresses, setAddresses] = useState([]);
    const [worker, setWorker] = useState(null);
    const [earnings, setEarnings] = useState(null);
    const [customers, setCustomers] = useState(null);
    const [sentiment, setSentiment] = useState(null);
-   
+
    // Loading states
    const [addressLoading, setAddressLoading] = useState(false);
+   const [notificationsLoading, setNotificationsLoading] = useState(false);
    const [workerLoading, setWorkerLoading] = useState(false);
    const [analyticsLoading, setAnalyticsLoading] = useState(false);
    const [earningsLoading, setEarningsLoading] = useState(false);
@@ -49,7 +54,8 @@ export const AppDataProvider = ({children}) => {
    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
    // Memoized fetch functions
-   const fetchServices = useCallback(async () => { 
+   // Services
+   const fetchServices = async () => { 
       try {
          console.log('[AppDataContext] Fetching services...');
          const res = await api.get(`/general/services`);
@@ -65,21 +71,22 @@ export const AppDataProvider = ({children}) => {
          setShowError(true);
          throw err;
       }
-   }, []);
+   };
 
+   // Addresses
    const fetchAddresses = async () => {
       try {
-         console.log('[AppDataContext] Fetching addresses...');
+         // console.log('[AppDataContext] Fetching addresses...');
          setAddressLoading(true);
          
          const addressResult = await api.get(`/user/addresses`, {
             headers: {'Authorization': `Bearer ${token}`}
          });
 
-         console.log('[AppDataContext] Addresses fetched successfully');
+         // console.log('[AppDataContext] Addresses fetched successfully');
          setAddresses(addressResult?.data?.data || []);
       } catch (err) {
-         console.error('[AppDataContext] Failed to fetch addresses:', err);
+         // console.error('[AppDataContext] Failed to fetch addresses:', err);
          const message = err?.response?.data?.message || err?.message || 
             "Failed to load your addresses. Please try again.";
          setErrorTitle("Addresses Fetch Error");
@@ -92,6 +99,46 @@ export const AppDataProvider = ({children}) => {
       }
    }
 
+   // Notifications
+   const fetchNotifications = async () => {
+      try {
+         setNotificationsLoading(true);
+
+         console.log('[AppDataContext] Fetching notifications...');
+         const route = user?.role === "User" ? '/user/notifications' : user?.role === "Worker" ? '/worker/notifications' : null;
+         console.log(route);
+         const res = await api.get(route, {
+            headers: {'Authorization': `Bearer ${token}`}
+         });
+
+         if (user?.role === "User") { 
+            const notifs = res.data.data.notifications;
+            const promos = res.data.data.promos.map(promo => ({
+               ...promo,
+               announcement_type: 'promo',
+            }));
+            setNotifications([...notifs, ...promos]);
+         } else {
+            setNotifications(res.data.data);
+         }
+
+         console.log('[AppDataContext] Services fetched successfully');
+      } catch (err) {
+         console.error('[AppDataContext] Failed to fetch notifications:', err);
+         const message = err?.response?.data?.message || err?.message || 
+            "Failed to load notifications. Please try again.";
+         console.log(message);
+         // setErrorTitle("Services Load Error");
+         // setErrorMessage(message);
+         // setErrorMode("services");
+         // setShowError(true);
+         throw err;
+      } finally {
+         setNotificationsLoading(false);
+      }
+   }
+
+   // Worker Info
    const fetchWorker = async () => {
       try {
          console.log('[AppDataContext] Fetching worker profile...');
@@ -190,6 +237,7 @@ export const AppDataProvider = ({children}) => {
          });
 
          console.log('[AppDataContext] Worker reviews fetched successfully');
+         console.log(reviewsResult?.data?.data);
          setSentiment(reviewsResult?.data?.data);
       } catch (err) {
          console.error('[AppDataContext] Failed to fetch worker reviews:', err);
@@ -222,8 +270,9 @@ export const AppDataProvider = ({children}) => {
 
    // Initialize app data
    useEffect(() => {
-      if (!fontsLoaded || isAppDataReady || isInitializing) return;
-      setIsInitializing(true);
+      if (!fontsLoaded || isAppDataReady) return;
+      // if (!fontsLoaded || isAppDataReady || isInitializing) return;
+      // setIsInitializing(true);
 
       const init = async () => {
          try {
@@ -235,12 +284,13 @@ export const AppDataProvider = ({children}) => {
          } catch (err) {
             console.error('[AppDataContext] App data initialization failed:', err);
          } finally {
-            setIsInitializing(false);
+            // setIsInitializing(false);
          }
       };
 
       init();
-   }, [fontsLoaded, isAppDataReady, isInitializing]);
+   // }, [fontsLoaded, isAppDataReady, isInitializing]);
+   }, [fontsLoaded, isAppDataReady]);
 
    // Reset app data when user changes
    useEffect(() => {
@@ -250,6 +300,7 @@ export const AppDataProvider = ({children}) => {
          try {
             console.log('[AppDataContext] Initializing user data...');
             fetchAddresses();
+            fetchNotifications();
 
             if (user?.role === "Worker") {
                console.log('[AppDataContext] User is worker - fetching worker data...');
@@ -272,6 +323,9 @@ export const AppDataProvider = ({children}) => {
             fetchServices();
             break;
          case "addresses":
+            fetchAddresses();
+            break;
+         case "inbox":
             fetchAddresses();
             break;
          case "worker":
@@ -300,7 +354,9 @@ export const AppDataProvider = ({children}) => {
    return (
       <AppDataContext.Provider
       value={{
+         // Data
          services,
+         notifications,
          addresses,
          worker,
          earnings,
@@ -309,7 +365,8 @@ export const AppDataProvider = ({children}) => {
          
          // States
          isAppDataReady,
-         isInitializing,
+         // isInitializing,
+         notificationsLoading,
          addressLoading,
          workerLoading,
          analyticsLoading,
@@ -319,6 +376,7 @@ export const AppDataProvider = ({children}) => {
          
          // Actions
          fetchAddresses,
+         fetchNotifications,
          fetchWorker,
          fetchServices,
          fetchEarnings,
@@ -335,6 +393,7 @@ export const AppDataProvider = ({children}) => {
          buttonText={errorMode ? "Try Again" : undefined}
          buttonLoad={
             errorMode === "addresses" ? addressLoading :
+            errorMode === "inbox" ? inboxLoading :
             errorMode === "worker" ? workerLoading :
             errorMode === "analytics" ? analyticsLoading :
             errorMode === "earnings" ? (earningsLoading || analyticsLoading) :

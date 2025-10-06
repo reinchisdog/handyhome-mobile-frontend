@@ -19,7 +19,7 @@ import { COLORS, FONTS, FONT_SIZES } from '../../../../styles/constants';
 
 const AppointmentQueueScreen = () => {
    // Hooks and States
-   const { currentAppointment, appointmentLoading, setAppointmentLoading, rejectAppointment, summary } = useAppointment();
+   const { currentAppointment, queueLoading, rejectAppointment, summary } = useAppointment();
    const router = useRouter();
    const insets = useSafeAreaInsets();
    const {width} = useWindowDimensions();
@@ -27,10 +27,9 @@ const AppointmentQueueScreen = () => {
    const [cancelModal, setCancelModal] = useState(false);
    const [cancelLoading, setCancelLoading] = useState(false);
 
-   // Animation refs - add animation guard
+   // Animation refs
    const successLoading = useRef(new Animated.Value(0)).current;
-   const animationStarted = useRef(false);
-   const animationRef = useRef(null);
+   const hasAnimationStarted = useRef(false);
 
    // Functions
    const handleRejectAppointment = async () => {
@@ -43,101 +42,67 @@ const AppointmentQueueScreen = () => {
       setCancelLoading(false);
    }
 
+   // Animation function with proper guards
+   const successAnimation = useCallback(() => {
+      // Prevent multiple animations from starting
+      if (hasAnimationStarted.current) return;
+      
+      console.log('Starting success animation');
+      hasAnimationStarted.current = true;
+
+      Animated.timing(successLoading, {
+         toValue: 1,
+         duration: 5000,
+         useNativeDriver: false, // width interpolation requires false
+      }).start(() => {
+         console.log('Animation completed, navigating...');
+         router.replace({
+            pathname: '/dashboard/client/appointment/addons/',
+         });
+      });
+   }, [successLoading, router, currentAppointment?.id]);
+
    // Effects
    useFocusEffect(
       useCallback(() => {
          const onBackPress = () => {
-            // Only prevent back navigation if we're actively waiting for a worker
-            if (appointmentLoading && currentAppointment?.id && !currentAppointment?.accepted_by) {
+            if (queueLoading && currentAppointment?.id && !currentAppointment?.accepted_by) {
                setCancelModal(true);
                return true;
             }
-
             return false;
          };
 
          const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
-
          return () => subscription?.remove();
-      }, [appointmentLoading, currentAppointment?.id, currentAppointment?.accepted_by])
+      }, [queueLoading, currentAppointment?.id, currentAppointment?.accepted_by])
    );
 
-   // Reset animation state when screen focuses
-   useFocusEffect(
-      useCallback(() => {
-         // Reset animation state when component focuses
-         animationStarted.current = false;
-         successLoading.setValue(0);
-         
-         // Cleanup any running animation
-         if (animationRef.current) {
-            animationRef.current.stop();
-            animationRef.current = null;
-         }
-      }, [])
-   );
-
+   // Fixed animation trigger logic
    useEffect(() => {
-      console.log('current appointment worker:', currentAppointment?.accepted_by);
-      console.log('appointment loading:', appointmentLoading);
-      console.log('animation started:', animationStarted.current);
-      
-      if (!appointmentLoading && 
-          currentAppointment?.accepted_by && 
-          !animationStarted.current) {
+      // Only start animation when:
+      // 1. We have an accepted appointment (someone accepted the job)
+      // 2. Queue loading is false (real-time update received)
+      // 3. Animation hasn't started yet
+      if (currentAppointment?.accepted_by && !queueLoading && !hasAnimationStarted.current) {
          successAnimation();
       }
-   }, [appointmentLoading, currentAppointment?.accepted_by]);
+   }, [currentAppointment?.accepted_by, queueLoading, successAnimation]);
 
-   // Animation
-   // Animation with guards
+   // Reset animation state every time screen mounts
+   useFocusEffect(
+      useCallback(() => {
+         successLoading.setValue(0);
+         hasAnimationStarted.current = false;
+      }, [successLoading])
+   );
+
+   // Animation interpolation
    const loadingWidth = successLoading.interpolate({
       inputRange: [0, 1],
       outputRange: ['0%', '100%'],
       extrapolate: 'clamp'
    })
-
-   const successAnimation = useCallback(() => {
-      if (animationStarted.current) {
-         console.log('Animation already started, skipping');
-         return;
-      }
-
-      if (!currentAppointment?.id) {
-         console.log('No appointment ID, skipping animation');
-         return;
-      }
-
-      animationStarted.current = true;
-      console.log('Starting success animation');
-      
-      animationRef.current = Animated.timing(successLoading, {
-         toValue: 1,
-         duration: 5000,
-         useNativeDriver: false
-      });
-
-      animationRef.current.start((finished) => {
-         if (finished) {
-            console.log('Animation completed, navigating...');
-            router.replace({
-               pathname: '/dashboard/client/appointment/summary/[id]',
-               params: {id: currentAppointment?.id}
-            });
-         }
-         animationRef.current = null;
-      });
-   }, [successLoading, router, currentAppointment?.id]);
-
-   // Cleanup on unmount
-   useEffect(() => {
-      return () => {
-         if (animationRef.current) {
-            animationRef.current.stop();
-         }
-      };
-   }, []);
-
 
    return (
       <>
@@ -160,7 +125,7 @@ const AppointmentQueueScreen = () => {
             backgroundColor: '#fff', 
             position: 'relative'
          }]}>
-            {appointmentLoading ? (
+            {queueLoading ? (
                <>
                   <View style={{gap: 48, alignItems: 'center'}}>
                      <LoadingDots size={16}/>

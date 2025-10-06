@@ -2,10 +2,11 @@
 
 // Imports
 // ---- React Components
-import { StyleSheet, Text, View, Pressable, Modal, TouchableHighlight, ActivityIndicator } from 'react-native'
+import { StyleSheet, Text, View, Pressable, Modal, TouchableHighlight, ActivityIndicator, Image } from 'react-native'
 import React, { useState, useEffect } from 'react'
 // ---- Other Components
 import { ScrollView, Tabs } from 'react-native-collapsible-tab-view'
+import Header from './Header'
 import ReviewContainer from './ReviewContainer';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 // ---- Styles and Icons
@@ -17,6 +18,7 @@ import Star from '@expo/vector-icons/Octicons';
 
 const WorkerReviewTab = ({
    reviews,
+   reviewCount,
    reviewsLoading, 
    loadingMore,
    fetchReviews, 
@@ -29,7 +31,10 @@ const WorkerReviewTab = ({
    const ratings = [0, 1, 2, 3, 4, 5];
    const [isFilterMedia, setIsFilterMedia] = useState(false);
    const [filterRating, setFilterRating] = useState(0);
-   const [showRating, setShowRating] = useState(false);  
+
+   const [showRating, setShowRating] = useState(false);
+   const [currentImage, setCurrentImage] = useState(null);  
+   const [showImage, setShowImage] = useState(false);
 
    // Functions
    const handleFilter = async (filter) => {
@@ -44,7 +49,7 @@ const WorkerReviewTab = ({
          case 'media': {
             setIsFilterMedia(true);
 
-            await fetchReviews(1);
+            await fetchReviews(1, true);
             return;
          }
          case 'rating': {
@@ -61,8 +66,20 @@ const WorkerReviewTab = ({
       setFilterRating(rating);
       setShowRating(false);
 
-      await fetchReviews(1);
+      const filter = rating == 0 ? 'all' : rating.toString();
+      console.log(filter);
+
+      if (isFilterMedia) {
+         await fetchReviews(1, true, filter);
+      } else {
+         await fetchReviews(1, false, filter);
+      }
    };
+
+   const handleImageModal = (attachment) => {
+      setCurrentImage(attachment);
+      setShowImage(true);
+   }
 
    // Renders
    const renderEmpty = () => (
@@ -110,6 +127,41 @@ const WorkerReviewTab = ({
 
    return (
       <>
+         {/* Image Modal */}
+         <Modal
+         visible={showImage}
+         statusBarTranslucent={true}
+         animationType='fade'
+         backdropColor={'#00000080'}
+         onRequestClose={() => setShowImage(false)}
+         >  
+            <View style={{flex: 1}}>
+               <Header 
+               hasBack
+               onBack={() => {
+                  setShowImage(false);
+                  setCurrentImage(null)
+               }}
+               backColor='#fff'
+               backgroundColor='transparent'
+               />
+
+               <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', width: '100%'}}>
+                  <Image 
+                  source={{uri: currentImage }}
+                  style={{
+                     marginTop: -64,
+                     height: '100%',
+                     width: '100%',
+                     resizeMode: 'contain',
+                     objectFit: 'contain'
+                  }}
+                  />
+               </View>
+            </View>
+         </Modal>
+
+         {/* Rating Modal */}
          <Modal
          visible={showRating}
          statusBarTranslucent={true}
@@ -201,7 +253,7 @@ const WorkerReviewTab = ({
                            styles.filterDetail, {
                            color: filterRating === 0 && !isFilterMedia ? '#fff' : COLORS.lettersicons
                         }]}>
-                           {'——'}
+                           {reviewCount.total || '——'}
                         </Text>
                      </Pressable>
 
@@ -226,7 +278,7 @@ const WorkerReviewTab = ({
                            styles.filterDetail, {
                            color: isFilterMedia ? '#fff' : COLORS.lettersicons
                         }]}>
-                           {'——'}
+                           {reviewCount.attachment || '——'}
                         </Text>
                      </Pressable>
 
@@ -270,10 +322,11 @@ const WorkerReviewTab = ({
          renderItem={({item}) => (
             <ReviewContainer
             review={item}
+            handleImageModal={handleImageModal}
             />
          )}
          keyExtractor={(item, index) => item?.id?.toString() ?? `review-${index}`}
-         onEndReached={fetchMore}
+         onEndReached={() => fetchMore(isFilterMedia, filterRating === 0 ? 'all' : filterRating.toString())}
          onEndReachedThreshold={0.1}
          ListEmptyComponent={renderEmpty}
          ListFooterComponent={renderFooter} 

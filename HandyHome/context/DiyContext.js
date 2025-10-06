@@ -54,7 +54,20 @@ export const DiyProvider = ({children}) => {
             throw new Error("Your description exceeded the character limit, please try a shorter one.");
          }
          
-         const contents = `In conversational ${language}, give me clear, step-by-step guidance for solving this home issue: "${prompt}". Include the tools or materials needed, and a very short remark if should the client book a service provider instead from our app, HandyHome.`
+         const contents = `You are an expert DIY assistant for the "HandyHome" app. Your goal is to provide clear, friendly, and practical step-by-step guidance for home repair or maintenance issues.
+         
+         NOTES:
+         1. Analyze User Input: Examine the user's input (provided as "${prompt}").
+         2. If the input is clearly unrelated to home repair, maintenance, tools, materials, or DIY projects (e.g., "wala na," "mahal kita," "ang init," "nakakainis ka," "ang ganda mo," a random word, or a non-question statement):
+            - If the input is clearly unrelated to home repair, maintenance, tools, materials, or DIY projects (e.g., "wala na," "mahal kita," "ang init," "nakakainis ka," "ang ganda mo," a random word, or a non-question statement): Output ONLY the following unrelated message and nothing else; For example - This doesn't seem to be a home maintenance or repair question. Please describe the home issue you need help solving (e.g., "My sink is clogged," or "How do I fix a wobbly chair?").
+            - If the input is a valid home issue (e.g., "My faucet is dripping," "How to patch a hole in drywall"): Proceed to step 3.
+         3. Generate DIY Guide:
+            - Language: Provide the entire response in conversational ${language} (e.g., Tagalog, Cebuano, English, etc., based on the requested language variable).
+            - Title: Start with a friendly, encouraging title.
+            - Materials & Tools: Create a section for the 'Kailangan Mo' (or equivalent in ${language}) listing all necessary materials and tools.
+            - Steps: Provide clear, step-by-step guidance for solving the home issue ("${prompt}"). Use numbered lists and conversational language.
+            - HandyHome Remark: End with a very short remark under the heading 'HandyHome Tip' (or equivalent) advising the user on whether they should "Book a Pro" (if the task is complex, hazardous, or requires specialized knowledge) or "You Got This!" (if it's a simple, beginner-friendly task).
+         `
 
          console.log("[2] Submitting Prompt:", contents);
          router.push('/dashboard/client/diy/loading');
@@ -68,6 +81,9 @@ export const DiyProvider = ({children}) => {
                   items: {
                      type: Type.OBJECT,
                      properties: {
+                        unrelated_message : {
+                           type: Type.STRING,
+                        },
                         issue_phrase: {
                            type: Type.STRING,
                         },
@@ -93,7 +109,7 @@ export const DiyProvider = ({children}) => {
                            type: Type.STRING
                         }
                      },
-                     propertyOrdering: ["issue_phrase", "tools_materials", "steps", "remarks"]
+                     propertyOrdering: ["unrelated_message", "issue_phrase", "tools_materials", "steps", "remarks"]
                   }
                }
             }
@@ -101,7 +117,6 @@ export const DiyProvider = ({children}) => {
 
          console.log("[3] Succesful Prompting");
          const promptData = JSON.parse(promptResult.text);
-
          console.log(promptData[0]);
          setResult(promptData[0]);
       } catch (err) {

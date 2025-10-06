@@ -137,7 +137,7 @@ const CompletedBooking = () => {
                text: "Details",
                function: () => {router.push({
                   pathname: '/dashboard/client/booking/[id]/details',
-                  params: {id: item.id, status: 'completed'}
+                  params: {id: item.id}
                })},
             }}
             right={
@@ -167,6 +167,7 @@ const CompletedBooking = () => {
             <RefreshControl 
             refreshing={refreshing}
             colors={[COLORS.lightblue, COLORS.primary]}
+            onRefresh={fetchRefresh}
             />
          }
          showsVerticalScrollIndicator={false}

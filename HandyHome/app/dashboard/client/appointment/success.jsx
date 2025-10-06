@@ -47,7 +47,7 @@ const AppointmentSuccess = () => {
             type='secondary'
             text={"View My Bookings"}
             // onPress={() => router.replace('/dashboard/client/bookings')}
-            onPress={() => router.replace('/dashboard/client')}
+            onPress={() => router.replace('/dashboard/client/bookings/upcoming')}
             />
          </View>
       </View>

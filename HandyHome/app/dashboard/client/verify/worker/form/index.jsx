@@ -77,10 +77,6 @@ const ApplicationForm = () => {
             throw new Error("Two (2) Primary IDs are required");
          } 
 
-         if (!application.nbi) {
-            throw new Error("NBI Clearance is required");
-         }
-
          if (!application.barangay) {
             throw new Error("Barangay Clearance is required");
          }

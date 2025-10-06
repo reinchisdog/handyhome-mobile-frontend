@@ -2,7 +2,7 @@
 
 // Imports
 // ---- React and Expo Components
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, FlatList, RefreshControl, Pressable} from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, FlatList, RefreshControl, Pressable, Modal, StatusBar} from 'react-native';
 import React, {useState, useEffect, useRef, useCallback} from 'react';
 import { useRouter, useFocusEffect } from 'expo-router';
 // ---- Contexts
@@ -25,11 +25,14 @@ import Icons from '@expo/vector-icons/MaterialCommunityIcons';
 import Arrows from '@expo/vector-icons/Entypo';
 import { ServiceIconMap } from '../../../../../components/ServiceIconMap';
 import LoadingDots from '../../../../../components/LoadingDots';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import MainButton from '../../../../../components/MainButton';
 
 
 const HomeScreen = () => {
    // Hooks and States
    const router = useRouter();
+   const insets = useSafeAreaInsets();
    const { user, token } = useAuth();
    const {convertDateToFormattedDate} = useConvert();
 
@@ -63,6 +66,7 @@ const HomeScreen = () => {
 
          // console.log("[2] Succesfull Fetched");
          const requestData = requestResult?.data?.data;
+         console.log('REQUESTS:', requestData);
    
          // Deduplicate by ID
          const deduplicatedData = requestData.filter((newItem, index, self) => 
@@ -104,8 +108,9 @@ const HomeScreen = () => {
          });
 
          // console.log("[2] Succesfull Fetched");
-         const latestData = latestResult?.data?.data?.ongoing;
-         console.log(latestData);
+         const latestData = latestResult?.data?.data?.ongoing 
+               || (latestResult?.data?.data?.pending?.length ? latestResult.data.data.pending[0] : null);
+         console.log("LATEST DATA:", latestData);
          setLatest(latestData);
       } catch (err) {
          // console.log("[0] Fetching Error:", err);
@@ -173,50 +178,6 @@ const HomeScreen = () => {
       }, [])
    )
 
-   const handleConfirm = async (id) => {
-      try {
-         setButtonLoading(true);
-
-         console.log("---- [Home Screen] Confirm Attempt ----");
-         console.log('[1] Confirming Request:', id);
-         await api.put(`/worker/bookings/${id}/confirm_booking`, {}, {
-            headers: {'Authorization' : `Bearer ${token}`}
-         });
-
-         console.log('[2] Successful Confirmation, Fetching New List');
-         await fetchRequests(true);
-      } catch (err) {
-         console.log("[0] Confirmation Error:", err);
-         const message = err?.response?.data?.message || err?.message || "An unknown error has occurred when confirming the request.";
-         setErrorMessage(message);
-         setErrorModal(true);
-      } finally {
-         setButtonLoading(false);
-      }
-   }
-
-   const handleReject = async (id) => {
-      try {
-         setButtonLoading(true);
-
-         console.log("---- [Home Screen] Reject Attempt ----");
-         console.log('[1] Rejection Request:', id);
-         await api.put(`/worker/bookings/${id}/reject_booking`, {}, {
-            headers: {'Authorization' : `Bearer ${token}`}
-         });
-
-         console.log('[2] Successful Rejection, Fetching New List');
-         await fetchRequests(true);
-      } catch (err) {
-         console.log("[0] Rejection Error:", err);
-         const message = err?.response?.data?.message || err?.message || "An unknown error has occurred when rejecting the request.";
-         setErrorMessage(message);
-         setErrorModal(true);
-      } finally {
-         setButtonLoading(false);
-      }
-   }
-
    // Renders
    const renderDate = (date) => {
       const bookDate = new Date(date);
@@ -264,7 +225,7 @@ const HomeScreen = () => {
             rightIcon={
                <TouchableOpacity 
                // onPress={() => {console.log("[Routing] to Notification")}}
-               onPress={() => router.push('/dashboard/worker/')}
+               onPress={() => router.push('/dashboard/worker/home/notifications')}
                style={{position: 'relative', height: 24, width: 24}}
                >
                   {false && (
@@ -349,7 +310,7 @@ const HomeScreen = () => {
                            <Pressable
                            onPress={() => router.push({
                               pathname: '/dashboard/worker/booking/[id]/details',
-                              params: {id: latest?.id, status: 'ongoing'}
+                              params: {id: latest?.id}
                            })}
                            style={({pressed}) =>[{
                               width: 32,
@@ -451,15 +412,13 @@ const HomeScreen = () => {
                   renderItem={({item}) => (
                      <WorkerBookingItem 
                      request={item}
-                     left={{
-                        text: "Reject",
-                        laoding: buttonLoading,
-                        function: () => {handleReject(item?.id)},
-                     }}
                      right={{
-                        text: "Confirm",
+                        text: "Details",
                         laoding: buttonLoading,
-                        function: () => {handleConfirm(item?.id)},
+                        function: () => {router.push({
+                           pathname: '/dashboard/worker/request/[id]',
+                           params: {id: item.id}
+                        })},
                      }}
                      />
                   )}
