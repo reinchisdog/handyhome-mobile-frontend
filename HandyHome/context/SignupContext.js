@@ -87,7 +87,10 @@ export const SignupProvider = ({children}) => {
       if (step === 1) {
          errorMessage = validatePersonal();
       } else if (step === 3) {
-         errorMessage = null;
+         const addressError = validateAddress();
+         if (addressError) {
+            errorMessage = addressError;
+         }
       } else if (step === 4) {
          const accountError = validateAccount();
          const passwordError = validatePassword();
@@ -128,6 +131,15 @@ export const SignupProvider = ({children}) => {
       return null;
    };
 
+   const validateAddress = () => {
+      const province = signupData.home_address?.province?.trim() || "";
+      const municipal = signupData.home_address?.municipal?.trim() || "";
+
+      if (province !== "Second District" || municipal === "Marikina City") {
+         return "Service is only available in Marikina City, Second District.";
+      }
+   }
+
    const validateAccount = () => {
       console.log("[Signup Context]: Validating Email and Phone");
       const email = signupData.email?.trim() || "";
@@ -135,6 +147,10 @@ export const SignupProvider = ({children}) => {
 
       if (email === "" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
          return "Please enter a valid email address.";
+      }
+
+      if (!email.endsWith("@gmail.com")) {
+         return "Email must be a Gmail address (e.g., handyh@gmail.com)";
       }
 
       if (phone.length !== 11) {
@@ -336,7 +352,11 @@ export const SignupProvider = ({children}) => {
       signupDisabled,
       areFormatsCorrect,
       passErrors,
-      clearSignUp
+      clearSignUp,
+
+      setErrorModal,
+      setErrorModalMessage,
+      setExitCondition,
       }}>
          <ErrorModal 
          visible={errorModal} 

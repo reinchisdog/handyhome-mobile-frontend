@@ -70,7 +70,7 @@ export const BookingDetailsProvider = ({children}) => {
          }))
 
          // console.log("[2] Fetching Succesful");
-         // console.log(detailsResult?.data?.data);
+         console.log(detailsResult?.data?.data);
          setDetails(detailsResult?.data?.data);
          setMaterials(formattedMaterials);
          setTimeout(() => {

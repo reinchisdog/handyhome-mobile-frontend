@@ -105,7 +105,7 @@ export const AppDataProvider = ({children}) => {
          setNotificationsLoading(true);
 
          console.log('[AppDataContext] Fetching notifications...');
-         const route = user?.role === "User" ? '/user/notifications' : user?.role === "Worker" ? '/worker/notifications' : null;
+         const route = user?.role === "User" || user?.role === "Guest" ? '/user/notifications' : user?.role === "Worker" ? '/worker/notifications' : null;
          console.log(route);
          const res = await api.get(route, {
             headers: {'Authorization': `Bearer ${token}`}

@@ -15,7 +15,7 @@ import * as Location from 'expo-location';
 
 const LocationPrompt = () => {
    // States and Hooks
-   const { setStep, updateHomeData } = useSignup();
+   const { setStep, updateHomeData, setErrorModal, setErrorModalMessage, setExitCondition, } = useSignup();
    const [locationServicesEnabled, setLocationServicesEnabled] = useState(false);
 
    const handleLocationAccess = () => {
@@ -43,34 +43,53 @@ const LocationPrompt = () => {
    }
 
    const getCurrentLocation = async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-         Alert.alert('Permission Denied', 'Please allow location access to continue.', [
-         {
-            text: 'Cancel',
-            onPress: () => console.log("Cancel Pressed"),
-            style: 'cancel',
-         }, {
-            text: 'OK',
-            onPress: () => console.log('OK Pressed'),
+      try {
+         let { status } = await Location.requestForegroundPermissionsAsync();
+         if (status !== 'granted') {
+            Alert.alert('Permission Denied', 'Please allow location access to continue.', [
+            {
+               text: 'Cancel',
+               onPress: () => console.log("Cancel Pressed"),
+               style: 'cancel',
+            }, {
+               text: 'OK',
+               onPress: () => console.log('OK Pressed'),
+            }
+            ]);
          }
-         ]);
-      }
 
-      const {coords} = await Location.getCurrentPositionAsync();
-      if (coords) {
-         const {latitude, longitude} = coords;
+         const {coords} = await Location.getCurrentPositionAsync();
+         if (coords) {
+            const {latitude, longitude} = coords;
 
-         let responce = await Location.reverseGeocodeAsync({
-            latitude,
-            longitude
-         });
+            let response = await Location.reverseGeocodeAsync({
+               latitude,
+               longitude
+            });
 
-         console.log(`${responce[0].street}, ${responce[0].subregion}, ${responce[0].city}`);
-         updateHomeData('block', responce[0].street);
-         updateHomeData('province', responce[0].subregion);
-         updateHomeData('municipal', responce[0].city);
-         setStep(3); 
+            console.log(response);
+            
+            if (response.length <= 0) {
+               throw new Error("Unable to retrieve address from location.");
+            }
+
+            if (!response[0].formattedAddress.includes("Marikina")) {
+               throw new Error("Service is only currently available in Marikina City.");
+            }
+            
+            updateHomeData('block', response[0].street);
+            updateHomeData('province', 'Second District');
+            updateHomeData('municipal', 'Marikina City');
+            setStep(3); 
+         }
+      } catch (error) {
+         const message = error.message || "An error occurred while fetching location.";
+         setErrorModalMessage(`${message} Please enter your location manually instead.`);
+         setExitCondition(null);
+         setErrorModal(true);
+         
+         setTimeout(() => { setStep(3); }, 500);
+         // console.log("[Location Prompt] Error getting location:", error);
       }
    }
 

@@ -34,6 +34,7 @@ export const AppointmentProvider = ({ children }) => {
    });
    const [currentAppointment, setCurrentAppointment] = useState(null);
    const [materials, setMaterials] = useState([]);
+   const [materialsSelected, setMaterialsSelected] = useState(false);
    const [summary, setSummary] = useState(null);
    const [worker, setWorker] = useState(null);
 
@@ -133,8 +134,11 @@ export const AppointmentProvider = ({ children }) => {
                headers: {'Authorization': `Bearer ${token}`}
             });
 
+            const selected = await AsyncStorage.getItem('materialsSelected');
+            console.log("SELECTED?", selected);
+            setMaterialsSelected(selected === 'true');
             // console.log(response?.data?.data);
-            setCurrentAppointment(response?.data?.data);
+            setCurrentAppointment(response?.data?.data); 
          }
       } catch (err) {
          console.err(err?.reponse?.data?.message || err?.message);
@@ -268,7 +272,7 @@ export const AppointmentProvider = ({ children }) => {
 
          const summaryData = summaryResult?.data?.data;
          // console.log("[2] Successful Fetching:");
-         // console.log(summaryData);
+         console.log(summaryData);
          setSummary(summaryData);
          setSummaryLoading(false);
 
@@ -311,6 +315,11 @@ export const AppointmentProvider = ({ children }) => {
             quantity: material.quantity,
             selected: false
          }))
+         if (formattedData.length === 0) {
+            setMaterialsSelected(true);
+            AsyncStorage.setItem('materialsSelected', 'true');
+            router.replace('/dashboard/client/appointment/summary');
+         }
          setMaterials(formattedData);
          setMaterialsLoading(false);
       } catch (err) {
@@ -374,6 +383,8 @@ export const AppointmentProvider = ({ children }) => {
          // console.log(workerResult?.data?.data?.booking);
          setCurrentAppointment(workerResult?.data?.data?.booking);
          setRetryCount(0);
+         await AsyncStorage.removeItem('materialsSelected');
+         setMaterialsSelected(false);
 
       } catch (err) {
          // console.log("[0] New Worker Fetch Failed");
@@ -401,9 +412,6 @@ export const AppointmentProvider = ({ children }) => {
          setErrorModal(true);
       }
    }
-
-   
-
 
    // Renders
    const getErrorHandler = () => {
@@ -460,11 +468,14 @@ export const AppointmentProvider = ({ children }) => {
          rejectAppointment,
 
          summary,
+         setSummary,
          summaryLoading,
          fetchSummary,
 
          materials,
          setMaterials,
+         materialsSelected,
+         setMaterialsSelected,
          materialsLoading,
          fetchMaterials,
 

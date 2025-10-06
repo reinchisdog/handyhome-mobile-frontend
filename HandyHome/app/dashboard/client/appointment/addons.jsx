@@ -6,6 +6,7 @@ import { FlatList, Image, ScrollView, StyleSheet, Text, View } from 'react-nativ
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 // ---- Other Components
 import Header from '../../../../components/Header';
 import MaterialCheckItem from '../../../../components/MaterialCheckItem';
@@ -25,7 +26,7 @@ const AppointmentAddonsScreen = () => {
    const router = useRouter();
    const insets = useSafeAreaInsets();
    const {token} = useAuth();
-   const {currentAppointment, materials, setMaterials, materialsLoading, fetchMaterials, setErrorMessage, setErrorType, setErrorModal,} = useAppointment();
+   const {currentAppointment, materials, setMaterials, materialsLoading, fetchMaterials, setErrorMessage, setErrorType, setErrorModal, setMaterialsSelected} = useAppointment();
 
    const [total, setTotal] = useState(0);
 
@@ -53,6 +54,8 @@ const AppointmentAddonsScreen = () => {
          await api.put(`/user/book/${currentAppointment?.id}/materials`, formattedArray, {
             headers: {'Authorization' : `Bearer ${token}`}
          })
+         await AsyncStorage.setItem('materialsSelected', 'true');
+         setMaterialsSelected(true);
 
          router.replace('/dashboard/client/appointment/summary/');
          setMaterials([]);
@@ -64,6 +67,13 @@ const AppointmentAddonsScreen = () => {
       } finally {
          setButtonLoading(false);
       }
+   }
+
+   const handleSkip = async () => {
+      await AsyncStorage.setItem('materialsSelected', 'true');
+      router.replace('/dashboard/client/appointment/summary/');
+      setMaterials([]);
+      setMaterialsSelected(true);
    }
 
    // Effects
@@ -92,8 +102,7 @@ const AppointmentAddonsScreen = () => {
          primaryText='Go Back'
          secondaryText='Yes, Skip'
          primaryFunction={() => setSkipModal(false)}
-         secondaryFunction={() => router.replace('/dashboard/client/appointment/summary/')}
-         />
+         secondaryFunction={handleSkip}/>
 
          <Header 
          hasBack={false}

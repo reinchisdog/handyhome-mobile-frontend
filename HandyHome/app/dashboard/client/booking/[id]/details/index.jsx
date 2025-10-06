@@ -559,9 +559,24 @@ const ClientBookingDetails = () => {
                            Base Labor Fee:
                         </Text>
                         <Text style={[styles.sectionTitle, {color: COLORS.lettersicons}]}>
-                           {`\u20B1 ${details?.price}`}
+                           {`\u20B1 ${details?.initialPrice}`}
                         </Text>
                      </View>
+                     {details?.voucher &&
+                        <View style={{
+                           flexDirection: 'row',
+                           justifyContent: 'space-between',
+                           alignItems: 'center',
+                           gap: 8
+                        }}>
+                           <Text style={[styles.sectionTitle]}>
+                              Voucher Discount:
+                           </Text>
+                           <Text style={[styles.sectionTitle, {color: COLORS.lettersicons}]}>
+                              {`-\u20B1 ${details?.initialPrice - details?.price}`}
+                           </Text>
+                        </View>
+                     }
                      <View style={{
                         flexDirection: 'row',
                         justifyContent: 'space-between',

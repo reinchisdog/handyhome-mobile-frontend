@@ -31,7 +31,7 @@ const HomeScreen = () => {
    const insets = useSafeAreaInsets();
    const { user } = useAuth();
    const { services } = useAppData();
-   const { currentAppointment } = useAppointment();
+   const { currentAppointment, materialsSelected } = useAppointment();
    const [showVerify, setShowVerify] = useState(true);
 
    // Animation
@@ -217,6 +217,10 @@ const HomeScreen = () => {
                onPress={() => {
                   !currentAppointment.accepted_by ? 
                      router.push('/dashboard/client/appointment/queue') : 
+                  materialsSelected ?
+                     router.push({
+                        pathname: `/dashboard/client/appointment/summary/`,
+                     }) :
                      router.push({
                         pathname: `/dashboard/client/appointment/addons`,
                      });
@@ -256,12 +260,12 @@ const HomeScreen = () => {
                         <Animated.Text 
                         style={{
                            fontFamily: FONTS.roboto400,
-                           fontSize: FONT_SIZES.md,
+                           fontSize: FONT_SIZES.sm,
                            color: COLORS.labels,
                            opacity: currentAppointment.accepted_by ? 1 : workerSearchAnimation
                         }}>
                            {currentAppointment.accepted_by ?
-                              'Worker Found!' :
+                              `Worker Found: ${materialsSelected ? 'Tap to view summary' : 'Tap to add materials'}` :
                               'Looking for Worker...'
                            }
                         </Animated.Text>

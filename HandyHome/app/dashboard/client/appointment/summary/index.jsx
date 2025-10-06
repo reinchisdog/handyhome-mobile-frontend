@@ -6,6 +6,8 @@ import { StyleSheet, Text, View, ScrollView, useWindowDimensions, Pressable, Ima
 import React, { useEffect, useState } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 // ---- Contexts
 import { useAuth } from '../../../../../context/AuthContext';
 import { useAppointment } from '../../../../../context/AppointmentContext';
@@ -14,6 +16,7 @@ import api from '../../../../../lib/api';
 import Header from '../../../../../components/Header';
 import MainButton from '../../../../../components/MainButton';
 import GeneralModal from '../../../../../components/GeneralModal';
+import InputBasic from '../../../../../components/InputBasic'
 // ---- Styles and Icons
 import Arrows from '@expo/vector-icons/Entypo';
 import Icons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -27,18 +30,22 @@ const AppointmentSummaryScreen = () => {
    const insets = useSafeAreaInsets();
    const {height, width} = useWindowDimensions();
    const {token} = useAuth();
-   const { currentAppointment, clearAppointment, summary, summaryLoading, fetchSummary, rejectAppointment, fetchNewWorker, confirmLoading, setErrorMessage, setErrorType, setErrorModal} = useAppointment();
+   const { currentAppointment, clearAppointment, summary, setSummary, summaryLoading, fetchSummary, rejectAppointment, fetchNewWorker, confirmLoading, setErrorMessage, setErrorType, setErrorModal, setMaterialsSelected} = useAppointment();
    const { id } = useLocalSearchParams();
 
    const [addonExpanded, setAddonExpanded] = useState(false);
    const PREVIEW_COUNT = 3;
    const [addonPrice, setAddonPrice] = useState(0);
 
+   const [voucherCode, setVoucherCode] = useState("");
+   const [voucherLoading, setVoucherLoading] = useState(false);
+
    const [buttonLoading, setButtonLoading] = useState(false);
    const [cancelModal, setCancelModal] = useState(false);
    const [cancelLoading, setCancelLoading] = useState(false);
 
    const [descriptionModal, setDescriptionModal] = useState(false);
+   const [voucherModal, setVoucherModal] = useState(false);
    
    // Functions
    const formatBookingDate = (date, time) => {
@@ -86,6 +93,8 @@ const AppointmentSummaryScreen = () => {
 
          console.log("[2] Confirmed Succesfully, Routing to Success Screen");
          router.replace('/dashboard/client/appointment/success');
+         await AsyncStorage.removeItem('materialsSelected');
+         setMaterialsSelected(false);
          await clearAppointment();
       } catch (err) {
          console.log("[0] Confirming Failed");
@@ -104,6 +113,8 @@ const AppointmentSummaryScreen = () => {
       const appointmentId = id || summary?.booking?.id;
 
       await rejectAppointment(appointmentId);
+      await AsyncStorage.removeItem('materialsSelected');
+      setMaterialsSelected(false);
 
       setCancelLoading(false);
    }
@@ -111,6 +122,35 @@ const AppointmentSummaryScreen = () => {
    const handleFetchNewWorker = () => {
       setCancelModal(false);
       fetchNewWorker(currentAppointment?.id);
+   }
+
+   const handleVoucher = async () => {
+      try {
+         setVoucherLoading(true);
+
+         if (voucherCode.trim() === "") {
+            throw new Error("Please enter a voucher code.");
+         }
+         const body = { voucher_code: voucherCode.trim() }
+
+         const voucherResponse = await api.put(`/user/book/${currentAppointment?.id}/voucher`, body, {
+            headers: {'Authorization': `Bearer ${token}`},
+         });
+
+         console.log(voucherResponse?.data?.data);
+         setVoucherModal(false);
+         setSummary(prev => ({
+            ...prev,
+            booking: voucherResponse?.data?.data?.updated_initial_booking[0],
+         }))
+      } catch (err) {
+         const message = err?.response?.data?.message || err?.message || "An unknown error has occurred while applying the voucher. Please try again.";
+         setErrorMessage(message);
+         setErrorType(null);
+         setErrorModal(true);
+      } finally {
+         setVoucherLoading(false);
+      }
    }
 
    useEffect(() => {
@@ -142,7 +182,8 @@ const AppointmentSummaryScreen = () => {
       primaryFunction={handleRejectAppointment}
       primaryLoading={cancelLoading}
       />
-
+      
+      {/* Description Modal */}
       <Modal
       visible={descriptionModal}
       statusBarTranslucent={true}
@@ -231,6 +272,71 @@ const AppointmentSummaryScreen = () => {
          style={{width: width, height: height, position: 'absolute', zIndex: 1}}
          onPress={() => {setDescriptionModal(false)}}
          />
+      </Modal>
+
+      {/* Voucher Modal */}
+      <Modal
+      visible={voucherModal}
+      statusBarTranslucent={true}
+      animationType='slide'
+      backdropColor={COLORS.modalbg}
+      onRequestClose={() => {voucherLoading ? () => {} : setVoucherModal(false)}}
+      style={{flex: 1}}
+      >  
+         <KeyboardAvoidingView
+         behavior='height'
+         style={{flex: 1}}
+         keyboardVerticalOffset={-insets.bottom - 24 - 44}
+         >
+            <Pressable 
+            style={{flex: 1}}
+            onPress={() => {voucherLoading ? () => {} : setVoucherModal(false)}}
+            />
+
+            <View 
+            style={{
+               paddingBottom: insets.bottom + 24,
+               paddingHorizontal: 24,
+               maxHeight: height - StatusBar.currentHeight - 24,
+               width: width,
+               borderTopLeftRadius: 20,
+               borderTopRightRadius: 20,
+               backgroundColor: '#fff',
+            }}>
+               <Text
+               style={{
+                  padding: 24,
+                  textAlign: 'center',
+                  fontFamily: FONTS.roboto700,
+                  fontSize: FONT_SIZES.md,
+                  color: COLORS.primary
+               }}>
+                  Enter Voucher
+               </Text>
+
+               <View style={global.divider}/>
+
+               <View 
+               style={{flexShrink: 1, width: '100%', flexGrow: 1, paddingVertical: 24, gap: 12}}
+               >
+                  <InputBasic 
+                  value={voucherCode}
+                  onChangeText={(text) => setVoucherCode(text)}
+                  placeholder='Enter your voucher code'
+                  floatLabel={false}
+                  />
+                  
+               </View>
+               
+               <MainButton 
+               text={'Apply Voucher'}
+               type='primary'
+               onPress={handleVoucher}
+               loading={voucherLoading}
+               />
+            </View>
+         </KeyboardAvoidingView>
+      
       </Modal>
 
       <View style={{flex: 1, position: 'relative'}}>
@@ -554,6 +660,37 @@ const AppointmentSummaryScreen = () => {
                   </Pressable>
 
                   <View style={{padding: 6}}><View style={global.divider}/></View>
+                  
+                  <Pressable
+                  style={({pressed}) => [
+                     global.summaryBoxPressable, {
+                     backgroundColor: pressed ? COLORS.summaryPress : '#fff',
+                     alignItems: 'center',
+                  }]}
+                  onPress={() => {setVoucherModal(true)}}
+                  >
+                     <Text style={[global.leftText]}>
+                        Voucher
+                     </Text>
+                     
+                     <View style={[global.right, {alignItems: 'center', flexDirection: 'row', gap: 6}]}>
+                        <Text style={{
+                           paddingVertical: 2,
+                           paddingHorizontal: 6,
+                           fontFamily: FONTS.roboto500,
+                           fontSize: FONT_SIZES.sm,
+                           color: COLORS.lettersicons,
+                           backgroundColor: summary?.booking?.voucher ? COLORS.lightblue : COLORS.strokes,
+                           borderRadius: 4,
+
+                        }}>
+                           {summary?.booking?.voucher ? summary?.booking?.voucher : "Add Voucher"}
+                        </Text>
+                        <Arrows name="chevron-right" size={24} color={COLORS.accent} />
+                     </View>
+                  </Pressable>
+
+                  <View style={{padding: 6}}><View style={global.divider}/></View>
 
                   {/* ---- Price/s */}
                   <View
@@ -565,9 +702,23 @@ const AppointmentSummaryScreen = () => {
                         Base Labor Fee
                      </Text>
                      <Text style={global.righText}>
-                        {`\u20b1 ${summary?.booking?.price}` || ""}
+                        {`\u20b1 ${summary?.booking?.initial_price}`}
                      </Text>
                   </View>
+                  {summary?.booking?.voucher &&
+                     <View
+                     style={[
+                        global.summaryBoxView, {
+                        backgroundColor: '#fff',
+                     }]}>
+                        <Text style={global.leftText}>
+                           Voucher Discount
+                        </Text>
+                        <Text style={global.righText}>
+                           {`-\u20b1 ${summary?.booking?.initial_price - summary?.booking?.price}`}
+                        </Text>
+                     </View>
+                  }
                   <View
                   style={[
                      global.summaryBoxView, {
@@ -577,7 +728,7 @@ const AppointmentSummaryScreen = () => {
                         Add-ons Fee
                      </Text>
                      <Text style={global.righText}>
-                        {`\u20b1 ${addonPrice}` || ""}
+                        {`\u20b1 ${addonPrice}`}
                      </Text>
                   </View>
                </View>
