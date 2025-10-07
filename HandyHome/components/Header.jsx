@@ -11,10 +11,10 @@ import Arrows from '@expo/vector-icons/Entypo';
 
 const Header = ({
    backgroundColor = '#fff',
-   textColor = COLORS.primary,
+   textColor = COLORS.darkblue,
    hasBack = true,
    onBack,
-   backColor = COLORS.primary,
+   backColor = COLORS.darkblue,
    position = 'relative',
    title,
    customTitle,

@@ -21,7 +21,7 @@ import { useBookingDetails } from '../../../../../../context/BookingDetailsConte
 import { useAuth } from '../../../../../../context/AuthContext';
 import api from '../../../../../../lib/api';
 
-const ClientBookingReceipt = () => {
+const WorkerBookingReceipt = () => {
    // Hooks and States
    const {convertUriToFile} = useConvert();
    const {token} = useAuth();
@@ -34,8 +34,8 @@ const ClientBookingReceipt = () => {
    const [uploading, setUploading] = useState(false);
    const [deleting, setDeleting] = useState(false);
 
-   const [receipt, setReceipt] = useState({
-      image: null
+   const [receipts, setReceipts] = useState({
+      images: []
    });
    const [modalVisible, setModalVisible] = useState(false);
    const [imageModalVisible, setImageModalVisible] = useState(false);
@@ -47,7 +47,7 @@ const ClientBookingReceipt = () => {
    // Functions
    const fetchMaterials = async () => {
       try {
-         const response = await api.get(`user/book/${details?.id}/materials/receipt/view`, {
+         const response = await api.get(`worker/bookings/${details?.id}/materials/receipts/view`, {
             headers: {'Authorization': `Bearer ${token}`},
          });
 
@@ -61,7 +61,7 @@ const ClientBookingReceipt = () => {
 
    const fetchGCash = async () => {
       try {
-         const response = await api.get(`user/book/${details?.id}/payment/receipt/view`, {
+         const response = await api.get(`worker/bookings/${details?.id}/payment/receipt/view`, {
             headers: {'Authorization': `Bearer ${token}`},
          });
 
@@ -73,42 +73,49 @@ const ClientBookingReceipt = () => {
       }
    }
 
-   const initializeReceipts = async () => {
+   const initializeReceipts = useCallback(async () => {
       try {
+         // console.log('Getting Receipts')
          setInitLoading(true);
-         await Promise.all([
-            fetchMaterials(),
-            fetchGCash()
-         ]);
-      } catch (error) {
+         await fetchMaterials();
 
+         if (details?.payment_method === "GCash") {
+            await fetchGCash();
+         }
+      } catch (error) {
+         // handle error
       } finally {
          setInitLoading(false);
       }
-   }
+   }, [])
 
-   const uploadGcashReceipt = async () => {
+   const uploadMaterialsReceipt = async () => {
       try {
          setUploading(true);
-         
-         console.log(receipt.image);
 
          const formData = new FormData();
-         const file = convertUriToFile(receipt.image);
-         formData.append('payment_receipt', file);
+
+         receipts.images.forEach((image, index) => {
+            const file = convertUriToFile(image);
+            console.log('File object:', file); // Should show {uri, name, type}
+            
+            if (file) {
+               formData.append('receipts', file);
+            }
+         });
 
          console.log('FormData entries:', formData);
 
-         const response = await api.post(`user/book/${details?.id}/payment/receipt/upload`, formData, {
+         const response = await api.post(`worker/bookings/${details?.id}/materials/receipts/upload`, formData, {
             headers: {
                'Authorization': `Bearer ${token}`,
                'Content-Type': 'multipart/form-data',
             },
          });
             
-         // console.log('GCASH RECEIPT RESPONSE', response?.data?.data);
-         setGcashReceipt(response?.data?.data?.updated_booking[0].payment_receipt || null);
-         setReceipt({image: null});
+         // console.log('MATERIALS RECEIPT RESPONSE', response?.data?.data?.updated_booking[0].receipts);
+         setMaterialsReceipt(response?.data?.data?.updated_booking[0].receipts || []);
+         setReceipts({images: []});
          setModalVisible(false);
       } catch (error) {
          const message = error?.response?.data?.message || error.message || 'An unknown error occurred while uploading receipt. Please try again.';
@@ -124,7 +131,9 @@ const ClientBookingReceipt = () => {
       try {
          setDeleting(true);
 
-         const response = await api.delete(`user/book/${details?.id}/payment/receipt/delete`, {
+         console.log(`Deleting Receipt: ${selectedImage} from booking ${details?.id}`);
+
+         const response = await api.delete(`worker/bookings/${details?.id}/materials/receipts/delete/${selectedImage.toString()}`, {
             headers: {'Authorization': `Bearer ${token}`}
          });
 
@@ -155,7 +164,6 @@ const ClientBookingReceipt = () => {
       }, [])
    )
 
-   
    return (
       <View style={[global.screenContainer, {backgroundColor: COLORS.primary, position: 'relative'}]}>
          {/* Modal Delete */}
@@ -163,7 +171,7 @@ const ClientBookingReceipt = () => {
          visible={deleteModal}
          setVisible={setDeleteModal}
          title={'Are you sure you want to delete this receipt?'}
-         message={'By deleting this receipt, the system is requiring you to upload one again. Please have another one ready.'}
+         message={'By deleting this receipt, the system is requiring you to upload one if there are no other receipts.'}
          isAlert={true}
          primaryText={'Yes, Delete'}
          secondaryText={'Cancel'}
@@ -189,7 +197,10 @@ const ClientBookingReceipt = () => {
                }}
                backColor='#fff'
                backgroundColor='#000'
-               rightIcon={allowDelete && !details?.status === 'Completed' &&
+               rightIcon={(allowDelete && 
+                  (details?.status === "Upcoming" ||
+                  details?.status === "Ongoing")
+               )&& 
                   <TouchableOpacity onPress={() => setDeleteModal(true)}>
                      <Icons name='delete' color={COLORS.red} size={24}/>   
                   </TouchableOpacity>
@@ -209,7 +220,7 @@ const ClientBookingReceipt = () => {
                </View>
             </View>
          </Modal>
-         
+
          {/* Modal Upload */}
          <Modal
          visible={modalVisible}
@@ -246,10 +257,10 @@ const ClientBookingReceipt = () => {
 
                <View style={{paddingVertical: 12, gap: 12}}>
                   <MediaUpload 
-                  maxMedia={1}
-                  data={receipt.image}
-                  dataName={'image'}
-                  setData={setReceipt}
+                  maxMedia={5}
+                  data={receipts.images}
+                  dataName={'images'}
+                  setData={setReceipts}
                   mode='both'
                   hasSwitch={true}
                   initialCameraType = 'back'
@@ -260,8 +271,8 @@ const ClientBookingReceipt = () => {
                text={'Upload Receipt'}
                type='primary'
                loading={uploading}
-               disabled={!receipt.image}
-               onPress={uploadGcashReceipt}
+               disabled={receipts.images.length === 0}
+               onPress={uploadMaterialsReceipt}
                />
             </View>
          </Modal>
@@ -272,11 +283,12 @@ const ClientBookingReceipt = () => {
          backgroundColor='#fff'
          />
          <ScrollView
-         contentContainerStyle={[{ padding: 12, gap: 12}]}
+         contentContainerStyle={[{padding: 12, gap: 12}]}
          >  
             <View style={[styles.box]}>
                <Text style={[styles.boxTitle]}>Materials Receipt</Text>
                <View style={global.divider}/>
+
                <FlatList 
                data={materialsReceipt}
                // scrollEnabled={false}
@@ -284,7 +296,7 @@ const ClientBookingReceipt = () => {
                horizontal={true}
                contentContainerStyle={{flexDirection: 'row', gap: 12, paddingVertical: 8, flexGrow: 1}}
                renderItem={({item}) => (
-                  <Pressable onPress={() => openImageModal(item, false)}>
+                  <Pressable onPress={() => openImageModal(item, true)}>
                      <ImageBackground
                      source={{uri: item}}
                      style={{
@@ -321,15 +333,22 @@ const ClientBookingReceipt = () => {
                      </Text>
                   </View>
                }/>
+
+               {(details?.status !== "Completed" && details?.status !== "Pending") &&
+                  <UploadButton 
+                  title={'Upload Material Receipt'}
+                  onPress={() => {setModalVisible(true)}}
+                  disabled={false}
+                  />
+               }
             </View>
 
             {details?.payment_method === "GCash" &&
                <View style={[styles.box]}>
                   <Text style={[styles.boxTitle]}>GCash Receipt</Text>
                   <View style={global.divider}/>
-                  
                   {gcashReceipt ?
-                     <Pressable onPress={() => openImageModal(gcashReceipt, true)}>
+                     <Pressable onPress={() => openImageModal(gcashReceipt, false)}>
                         <ImageBackground
                         source={{uri: gcashReceipt}}
                         style={{
@@ -363,15 +382,7 @@ const ClientBookingReceipt = () => {
                         </Text>
                      </View>
                   }
-
-                  {(details?.status !== "Completed" && !gcashReceipt) &&
-                     <UploadButton 
-                     title={'Upload GCash Receipt'}
-                     onPress={() => {setModalVisible(true)}}
-                     disabled={details?.status !== "Pending" || details?.status === "Ongoing"}
-                     disabledText={'Cannot upload receipt at the moment'}
-                     />
-                  }
+                  
                </View>
             }
          </ScrollView>
@@ -379,13 +390,13 @@ const ClientBookingReceipt = () => {
    )
 }
 
-export default ClientBookingReceipt
+export default WorkerBookingReceipt
 
 const UploadButton = ({title, onPress, disabled, disabledText}) => (
    <Pressable 
    onPress={disabled ? null : onPress} 
    style={({pressed}) => [
-      {
+       {
       opacity: disabled ? 0.8 : 1,
       borderRadius: 24,
       borderWidth: 1,

@@ -163,13 +163,13 @@ export const BookingDetailsProvider = ({children}) => {
             table: 'bookings',
             filter: `id=eq.${details.id}`
          }, async (payload) => {
-            console.log("REAL-TIME CHANGE STATUS")
+            // console.log("REAL-TIME CHANGE STATUS")
 
             if (user?.role === "User") {
-               console.log("Updated User Details");
+               // console.log("Updated User Details");
                await fetchDetails(details?.id, "user");
             } else if (user?.role === "Worker") {
-               console.log("Updated Worker Details");
+               // console.log("Updated Worker Details");
                await fetchDetails(details?.id, "worker");
             }
 

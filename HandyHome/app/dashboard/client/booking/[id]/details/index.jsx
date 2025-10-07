@@ -783,7 +783,7 @@ const ClientBookingDetails = () => {
                            {details?.payment_method}
                         </Text>
                      </View>
-                     {/* ---- E-Receipt */}
+                     {/* ---- Receipt */}
                      <Pressable 
                      onPress={() => {router.push(`/dashboard/client/booking/${id}/details/receipt`)}}
                      style={({pressed}) => [
@@ -801,7 +801,7 @@ const ClientBookingDetails = () => {
                            color: COLORS.lettersicons,
                            flex: 1
                         }}>
-                           E-Receipt
+                           Receipts
                         </Text>
                         <Arrows name='chevron-right' size={24} color={COLORS.accent}/>
                      </Pressable>

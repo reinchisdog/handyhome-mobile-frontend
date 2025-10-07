@@ -714,7 +714,30 @@ const WorkerBookingDetails = () => {
                            {details?.payment_method}
                         </Text>
                      </View>
+
+                     <Pressable 
+                     onPress={() => {router.push(`/dashboard/worker/booking/${id}/details/receipt`)}}
+                     style={({pressed}) => [
+                        styles.sectionPressable, {
+                        flexDirection: 'row', 
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 12,
+                        backgroundColor: pressed ? COLORS.summaryPress : 'transparent'
+                     }]}>
+                        <Icons1 name='file-document' size={24} color={COLORS.primary}/>
+                        <Text style={{
+                           fontFamily: FONTS.roboto400,
+                           fontSize: FONT_SIZES.md,
+                           color: COLORS.lettersicons,
+                           flex: 1
+                        }}>
+                           Receipts
+                        </Text>
+                        <Arrows name='chevron-right' size={24} color={COLORS.accent}/>
+                     </Pressable>
                   </View>
+                  
                </View>
 
             </ScrollView>

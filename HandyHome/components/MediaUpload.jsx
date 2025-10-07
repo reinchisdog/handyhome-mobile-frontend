@@ -52,9 +52,9 @@ const MediaUpload = ({
             if (Array.isArray(current) && index !== null && index < current.length) {
                const updated = [...current];
                updated.splice(index, 1);
-               return { ...prev, [dataName]: updated.length > 0 ? updated : null };
+               return { ...prev, [dataName]: updated }; // Just return the array, even if empty
             } else {
-               return { ...prev, [dataName]: null };
+               return { ...prev, [dataName]: [] }; // Return empty array instead of null
             }
          }
       });
