@@ -10,6 +10,7 @@ import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 // ---- Other Components
 import Header from '../../../../../../components/Header';
 import Multiline from '../../../../../../components/Multiline';
+import LoadingDots from '../../../../../../components/LoadingDots'
 import MainButton from '../../../../../../components/MainButton';
 import {ServiceCategoryImages} from '../../../../../../components/ServiceCategoryMap'
 // Styles and Icons

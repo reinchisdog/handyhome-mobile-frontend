@@ -57,7 +57,7 @@ const ProfileAddress = () => {
          })
 
          console.log("[2] Address Change Succesful, Fetching Updated User");
-         tryFetchUser(token);
+         tryFetchUser(token, false);
       } catch (err) {
          console.log("[0] Address Change Error");
          const message = err?.response?.data?.message || err?.message || "An unknown error has occurred when changing your booking address. Please try again.";

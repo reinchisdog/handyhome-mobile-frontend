@@ -364,11 +364,11 @@ const ClientBookingReceipt = () => {
                      </View>
                   }
 
-                  {(details?.status !== "Completed" && !gcashReceipt) &&
+                  {(details?.status !== "Completed" && !gcashReceipt && !initLoading) &&
                      <UploadButton 
                      title={'Upload GCash Receipt'}
                      onPress={() => {setModalVisible(true)}}
-                     disabled={details?.status !== "Pending" || details?.status === "Ongoing"}
+                     disabled={details?.status !== "Pending" && details?.status !== "Ongoing"}
                      disabledText={'Cannot upload receipt at the moment'}
                      />
                   }

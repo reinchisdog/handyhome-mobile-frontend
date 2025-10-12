@@ -103,11 +103,11 @@ const ServiceCategoryScreen = () => {
    // Functions
    const fetchCategories = async () => {
       try {
-         console.log("---- [Service Category Screen] Fetching List Attempt ----");
-         console.log("[1] Fetching Attempt");
+         // console.log("---- [Service Category Screen] Fetching List Attempt ----");
+         // console.log("[1] Fetching Attempt");
          const categoryResult = await api.get(`/general/sub-services/${id}`);
 
-         console.log("[2] Succesful Fetching Category");
+         // console.log("[2] Succesful Fetching Category");
          const categoryData = (
             Array.isArray(categoryResult.data.data) ?
             [...categoryResult.data.data] : []

@@ -89,7 +89,7 @@ export const ClientVerificationProvider = ({ children }) => {
          const confidence = response?.data?.data?.confidence;
 
          console.log("FETCHING USER INFO BEFORE ROUTING:");
-         await tryFetchUser(token);
+         await tryFetchUser(token, false);
          
          if (confidence >= 80) {
             console.log("[3] Succesful Submission of Verification. Routing to Success Screen");

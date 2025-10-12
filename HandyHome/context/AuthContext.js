@@ -53,11 +53,13 @@ export const AuthProvider = ({children}) => {
       }
    }
    // ---- Fetches user data using the token
-   const tryFetchUser = async (token) => {
+   const tryFetchUser = async (token, validateToken = true) => {
       try {
-         await api.get(`/auth/validate-token`, {
-            headers: { Authorization: `Bearer ${token}` },
-         });
+         if (validateToken) {
+            await api.get(`/auth/validate-token`, {
+               headers: { Authorization: `Bearer ${token}` },
+            });
+         }
 
          const userResult = await api.get(`/user`, {
             headers: { Authorization: `Bearer ${token}`},
@@ -70,7 +72,7 @@ export const AuthProvider = ({children}) => {
          setIsTokenValid(true);
          setIsLoading(false);
       } catch (err) {
-         // console.log('Fetch user failed:', err.response?.data || err.message);
+         console.error('Fetch user failed:', err?.response?.data?.message || err?.message);
          setIsTokenValid(false);
       }
    }

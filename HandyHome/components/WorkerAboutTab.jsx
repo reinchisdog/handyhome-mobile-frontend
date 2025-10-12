@@ -13,13 +13,14 @@ const WorkerAboutTab = ({data}) => {
    const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
    
    const availableSchedule = daysOfWeek
-      .filter(day => data?.availability?.[day]) 
+      .filter(day => data?.availability?.[day]?.is_available) 
       .map(day => ({
          day,
          start: data.availability[day].start,
          end: data.availability[day].end,
          timeRange: `${data.availability[day].start} - ${data.availability[day].end}`
-   }));
+      }))
+   ;
 
 
    return (

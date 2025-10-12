@@ -209,6 +209,7 @@ export const AppDataProvider = ({children}) => {
 
          console.log('[AppDataContext] Worker profile fetched successfully');
          setWorker(workerResult?.data?.data);
+         console.log('WORKER:', workerResult?.data?.data);
       } catch (err) {
          console.error('[AppDataContext] Failed to fetch worker profile:', err);
          const message = err?.response?.data?.message || err?.message || 

@@ -2,7 +2,7 @@
 
 // Imports
 // ---- React and Expo Components
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, Pressable, ImageBackground, Animated, useWindowDimensions, Modal, StatusBar, Linking, FlatList } from 'react-native'
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, TouchableWithoutFeedback, Image, Pressable, ImageBackground, Animated, useWindowDimensions, Modal, StatusBar, Linking, FlatList } from 'react-native'
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -10,6 +10,7 @@ import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 // ---- Other Components
 import Header from '../../../../../../components/Header';
+import Multiline from '../../../../../../components/Multiline';
 import LoadingDots from '../../../../../../components/LoadingDots'
 import MainButton from '../../../../../../components/MainButton';
 import {ServiceCategoryImages} from '../../../../../../components/ServiceCategoryMap'
@@ -33,9 +34,10 @@ const WorkerBookingDetails = () => {
    const { width, height } = useWindowDimensions();
    const { token } = useAuth();
    const { id } = useLocalSearchParams();
-   const { details, detailsLoading, fetchDetails, fetchChatSession, onQrScanned, qrLoading, cameraModal, setCameraModal, materials } = useBookingDetails();
+   const { details, detailsLoading, fetchDetails, fetchChatSession, onQrScanned, qrLoading, cameraModal, setCameraModal, materials, emergency, setEmergency, clearEmergency } = useBookingDetails();
 
    const [descriptionModal, setDescriptionModal] = useState(false);
+   const [emergencyModal, setEmergencyModal] = useState(false);
 
    const [addonExpanded, setAddonExpanded] = useState(false);
    const PREVIEW_COUNT = 3;
@@ -309,6 +311,91 @@ const WorkerBookingDetails = () => {
                }}/>
             </View>
          </Modal>
+         
+         {/* Emergency Modal */}
+         <Modal
+         visible={emergencyModal}
+         statusBarTranslucent={true}
+         animationType='slide'
+         backdropColor={COLORS.modalbg}
+         onRequestClose={() => setEmergencyModal(false)}
+         style={{flex: 1}}
+         >
+            <KeyboardAvoidingView
+            behavior='padding'
+            // keyboardVerticalOffset={12}
+            style={{
+               width: '100%',
+               height: '100%',
+               position: 'relative'
+            }}>
+               <TouchableWithoutFeedback
+               onPress={() => {
+                  clearEmergency();
+                  setEmergencyModal(false);
+               }}
+               style={{flex: 1}}>
+                  <View
+                  style={{
+                     paddingBottom: insets.bottom + 24,
+                     paddingHorizontal: 24,
+                     maxHeight: height - StatusBar.currentHeight - 24,
+                     width: width,
+                     borderTopRightRadius: 20,
+                     borderTopLeftRadius: 20,
+                     backgroundColor: '#fff',
+                     position: 'absolute',
+                     bottom: 0,
+                     zIndex: 2,
+                     gap: 24
+                  }}>
+                     <View 
+                     style={{
+                        flexDirection: 'row',
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        gap: 8,
+                        padding: 24,
+                        paddingBottom: 0
+                     }}>
+                        <Icons1 name="alarm-light" size={24} color={COLORS.red} /> 
+                        <Text style={{
+                           fontFamily: FONTS.roboto700,
+                           fontSize: FONT_SIZES.md,
+                           color: COLORS.red,
+                           textAlign: 'left',
+                        }}>
+                           Service Not Going Well?
+                        </Text>
+                     </View>
+
+                     <View style={global.divider}/>
+
+                     <Multiline 
+                     placeholder='I feel uncomfortable during service. Please send help immediately'
+                     value={emergency}
+                     onChangeText={(e) => {
+                        setEmergency(prev => ({
+                           ...prev,
+                           message: e
+                        }))
+                     }}
+                     numberOfLines={5}
+                     />
+
+                     <MainButton 
+                     text={"Report"}
+                     type="alert"
+                     onPress={() => {
+                        router.push(`/dashboard/client/booking/${id}/details/emergency`);
+                        setEmergencyModal(false);
+                     }}
+                     />
+                  </View>
+               </TouchableWithoutFeedback>
+
+            </KeyboardAvoidingView>
+         </Modal>
 
          <View 
          style={[
@@ -336,7 +423,11 @@ const WorkerBookingDetails = () => {
             hasBack
             title='Booking Details'
             backgroundColor='#fff'
-            />
+            rightIcon={(details?.status === 'Ongoing' || details?.status === 'Pending') && (
+               <TouchableOpacity onPress={() => {setEmergencyModal(true)}}>
+                  <Icons1 name='alarm-light' size={24} color={COLORS.red}/>
+               </TouchableOpacity>
+            )}/>
 
             <ScrollView
             ref={scrollViewRef}

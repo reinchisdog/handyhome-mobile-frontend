@@ -161,11 +161,11 @@ const ProfileScreen = () => {
                />
 
                {/* Emergency Contact */}
-               {/* <ProfileTab 
-               onPress={() => {router.push('/dashboard/client/settings/contacts')}}
+               <ProfileTab 
+               onPress={() => {router.push('/dashboard/worker/settings/contacts')}}
                icon={<Icons1 name="contact-emergency" size={24} color={COLORS.primary} />}
                title="Emergency Contact"
-               /> */}
+               />
 
                {/* FAQs */}
                <ProfileTab 

@@ -86,9 +86,9 @@ export const AppointmentProvider = ({ children }) => {
          setSummary(null);
          setWorker(null);
 
-         // console.log("---- [Appointment Context] Initial Appointment Attempt ----");
+         console.log("---- [Appointment Context] Initial Appointment Attempt ----");
          setCreateLoading(true);
-         // console.log("[1] Preparing Appointment Data");
+         console.log("[1] Preparing Appointment Data");
          const converted = {
             ...appointment,
             date: convertDateToFormattedDate(appointment.date),
@@ -100,7 +100,7 @@ export const AppointmentProvider = ({ children }) => {
          const formData = new FormData();
          appendFormData(formData, converted);
 
-         // console.log("[2] Submitting Initial Appointment");
+         console.log("[2] Submitting Initial Appointment");
          const appointmentResult = await api.post(`/user/book`, formData, {
             headers: {
                'Authorization' : `Bearer ${token}`,
@@ -112,7 +112,7 @@ export const AppointmentProvider = ({ children }) => {
          await AsyncStorage.setItem('pending_appointment', appointment_id);
          setQueueLoading(true);
 
-         // console.log(`[3] Successful Creation of Appointment ${appointmentResult?.data?.data?.id}. Routing to Worker Waiting`);
+         console.log(`[3] Successful Creation of Appointment ${appointmentResult?.data?.data?.id}. Routing to Worker Waiting`);
          router.push("/dashboard/client/appointment/queue");
 
       } catch (err) {
@@ -186,8 +186,8 @@ export const AppointmentProvider = ({ children }) => {
             const newData = payload.new;
             const oldData = currentAppointment;
 
-            // console.log("NEW DATA:", newData);
-            // console.log("OLD DATA:", oldData);
+            console.log("NEW DATA:", newData);
+            console.log("OLD DATA:", oldData);
 
             let queueLoad;
             if (oldData.accepted_by !== newData.accepted_by) {

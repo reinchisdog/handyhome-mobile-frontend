@@ -95,7 +95,7 @@ const ProfileEditScreen = () => {
 
          console.log('[3] Submitting Succesful, Routing Back');
          console.log(updateResult?.data?.data);
-         await tryFetchUser(token);
+         await tryFetchUser(token, false);
          router.back();
       } catch (err) {
          const message = err?.response?.data?.message || err?.message || "An unknown error has occured when updating your profile. Please try again";

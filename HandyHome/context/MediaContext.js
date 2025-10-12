@@ -8,6 +8,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
+import { SaveFormat, ImageManipulator} from 'expo-image-manipulator';
 // ---- Other Components
 import Header from '../components/Header';
 // ---- Styles and Icons
@@ -36,6 +37,46 @@ const formatFileSize = (bytes) => {
    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
    const i = Math.floor(Math.log(bytes) / Math.log(k));
    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
+
+const compressImage = async (uri) => {
+   try {
+      const fileSize = await getFileSize(uri);
+
+      if (fileSize && fileSize < 1 * 1024 * 1024) { // Less than 1MB
+         console.log('✅ Image already small enough, skipping compression');
+         return uri;
+      }
+
+      let quality = 0.7;
+      let maxWidth = 1920;
+
+      if (fileSize > 10 * 1024 * 1024) { // > 10MB
+         quality = 0.5;
+         maxWidth = 1280;
+      } else if (fileSize > 5 * 1024 * 1024) { // > 5MB
+         quality = 0.6;
+         maxWidth = 1600;
+      }
+
+      const manipulator = await ImageManipulator.manipulate(uri);
+      manipulator.resize({width: maxWidth});
+      const result = await manipulator.renderAsync();
+      const savedImage = await result.saveAsync({
+         format: SaveFormat.JPEG,
+         compress: quality
+      })
+
+      const compressedSize = await getFileSize(savedImage.uri);
+      console.log(`✅ Compressed: ${formatFileSize(fileSize)} → ${formatFileSize(compressedSize)}`);
+      console.log('COMPRESSED IMAGE:', savedImage.uri, quality, maxWidth);
+
+      return savedImage.uri;
+   } catch (err) {
+      console.error('Error compressing image:', err);
+      // Return original if compression fails
+      return uri;
+   }
 }
 
 export const useMedia = () => useContext(MediaContext);
@@ -103,7 +144,9 @@ export const MediaProvider = ({ children }) => {
                return;
             }
 
-            setReturnedImage(imageUri);
+            const compressedUri = await compressImage(imageUri);
+            setReturnedImage(compressedUri);
+
             if (cameraModal) {
                setCameraModal(false);
             }
@@ -207,7 +250,8 @@ const CameraScreen = ({
             return;
          }
 
-         setImage(photo?.uri);
+         const compressedUri = await compressImage(photo?.uri);
+         setImage(compressedUri);
          setVisible(false);
 
       } catch (err) {
