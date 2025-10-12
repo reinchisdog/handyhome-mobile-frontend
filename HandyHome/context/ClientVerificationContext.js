@@ -70,6 +70,8 @@ export const ClientVerificationProvider = ({ children }) => {
             selfie: convertUriToFile(clientVerification.selfie),
          }
 
+         console.log(converted);
+
          const formData = new FormData();
          appendFormData(formData, converted);
 
@@ -79,12 +81,14 @@ export const ClientVerificationProvider = ({ children }) => {
                'Authorization' : `Bearer ${token}`,
                'Content-Type': 'multipart/form-data',
             },
-            timeout: 60000,
+            timeout: 120000,
+            timeoutErrorMessage: "We're having trouble verifying your selfie. Please try again in a well-lit area with your face clearly visible."
          })
          
          console.log(response?.data?.data);
          const confidence = response?.data?.data?.confidence;
 
+         console.log("FETCHING USER INFO BEFORE ROUTING:");
          await tryFetchUser(token);
          
          if (confidence >= 80) {
@@ -92,7 +96,7 @@ export const ClientVerificationProvider = ({ children }) => {
             router.replace("/dashboard/client/verify/user/success");
          } else {
             console.log("[3] Failed Submission of Verification. Routing to Failed Screen");
-            router.replace("/dashboard/client/verify/user/success");
+            router.replace("/dashboard/client/verify/user/failed");
          }
          
 

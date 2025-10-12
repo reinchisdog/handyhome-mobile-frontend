@@ -134,12 +134,12 @@ export const AppDataProvider = ({children}) => {
             ? '/worker/notifications' 
             : null;
          
-         console.log(route);
+         // console.log(route);
          const res = await api.get(route, {
             headers: {'Authorization': `Bearer ${token}`},
             params: params,
          });
-         console.log(`PAGE NUMBER ${pageNum}`, res?.data?.data);
+         // console.log(`PAGE NUMBER ${pageNum}`, res?.data?.data);
 
          let allNotifs;
          if (user?.role === "User" || user?.role === "Guest") { 
@@ -155,7 +155,7 @@ export const AppDataProvider = ({children}) => {
             allNotifs = res?.data?.data?.notifications;
          }
 
-         console.log(allNotifs);
+         // console.log(allNotifs);
          if (isRefresh) {
             setNotifications(allNotifs);
          } else {
@@ -184,13 +184,13 @@ export const AppDataProvider = ({children}) => {
 
    const fetchMoreNotifications = async () => {
       if (!hasMoreNotifs || notificationsMore || notificationsLoading || notificationsRefreshing || notifications.length === 0) return;
-      console.log("---- FETCHING MORE NOTIFICATIONS:");
+      // console.log("---- FETCHING MORE NOTIFICATIONS:");
       await fetchNotifications(notificationsPage + 1, false);
    }
 
    const fetchRefreshNotifications = async () => {
       if (notificationsRefreshing) return;
-      console.log("---- REFRESHING NOTIFICATIONS:");
+      // console.log("---- REFRESHING NOTIFICATIONS:");
       setNotifications([]);
       setNotificationsPage(1);
       setHasMoreNotifs(true);

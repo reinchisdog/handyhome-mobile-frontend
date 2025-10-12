@@ -8,6 +8,7 @@ import React, {useEffect, useState, useRef} from 'react'
 import MainButton from '../../../components/MainButton';
 import SuccessCheck from '../../../assets/images/illustrations/SuccessCheck';
 import LoadingDots from '../../../components/LoadingDots';
+import SuccessMessage from '../../../components/SuccessMessage';
 // ---- Config and Other Libraries
 import {useRouter} from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -49,22 +50,11 @@ const SearchingSuccess = () => {
       gap: 24,
     }]}>
     
-      <Animated.View 
-        style={{
-          transform: [{rotate: imageRotation}]
-        }}
-      >
-        <SuccessCheck />
-      </Animated.View>
-
-      <View style={[{height: 96}]}>
-        <Text style={[launch.title]}>
-            Account Verified
-        </Text>
-        <Text style={launch.description}>
-            Your account has been successfully verified. You can now log in and start using the app.
-        </Text>
-      </View>
+      <SuccessMessage 
+      title={'Account Verified'}
+      body={'Your account has been successfully verified. You can now log in and start using the app.'}
+      type='check'
+      />
 
       <View style={[global.buttonsContainer, {position: 'absolute', bottom: insets.bottom + 24}]}>
          <MainButton 

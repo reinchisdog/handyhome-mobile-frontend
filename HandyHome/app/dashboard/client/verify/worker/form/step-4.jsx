@@ -18,7 +18,7 @@ const FormSummary = ({data}) => {
          desc: `${data.work_samples.length} file${data.work_samples.length === 1 ? "" : "s"} added`
       }, {
          title: 'Service',
-         desc: `${data.service.name}: ${data.sub_service.name}`
+         desc: `${data.service.name}`
       },
    ]
 

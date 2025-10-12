@@ -33,7 +33,12 @@ const ApplicationForm = () => {
    const [application, setApplication] = useState({
       nbi: null,
       barangay: null,
-
+      tesda: {  // ✅ Initialize as empty object instead of null
+         uri: null,
+         tesda_certificate_name: "",
+         tesda_certificate_number: "",
+         tesda_issue_date: null,
+      },
       certificates: [
          // uri: file,
          // name[]: text
@@ -42,7 +47,6 @@ const ApplicationForm = () => {
       ],
       primary_id: [
          // uri: file,
-         // number: text,
          // type: text
       ],
       experience: [
@@ -55,7 +59,6 @@ const ApplicationForm = () => {
       work_samples: [],
 
       service: null,
-      sub_service: null,
    })
    const [submitting, setSubmitting] = useState(false);
    
@@ -77,6 +80,10 @@ const ApplicationForm = () => {
             throw new Error("Two (2) Primary IDs are required");
          } 
 
+         if (!application.nbi) {
+            throw new Error("NBI Clearance is required");
+         }
+
          if (!application.barangay) {
             throw new Error("Barangay Clearance is required");
          }
@@ -84,18 +91,10 @@ const ApplicationForm = () => {
          if (!application.experience || application.experience.length === 0) {
             throw new Error("At least one (1) Work Experience is required");
          } 
-      } else if (step === 2) {
-         if (!application.work_samples || application.work_samples.length === 0) {
-            throw new Error("At least one (1) Work Sample is required");
-         } 
       } else if (step === 3) {
          if (!application.service) {
             throw new Error("A Service must be selected");
          } 
-
-         if (!application.sub_service) {
-            throw new Error("A Subservice must be selected");
-         }
       }
    }
 
@@ -126,20 +125,21 @@ const ApplicationForm = () => {
       const formData = new FormData;
       // Services
       formData.append("service_id", application.service.id);
-      formData.append("sub_service_id", application.sub_service.id);
       // Single Files
-      const nbiFile = await convertUriToFile(application.nbi.uri)
       formData.append("nbi", convertUriToFile(application.nbi.uri));
       formData.append("barangay", convertUriToFile(application.barangay.uri));
+
+      formData.append("tesda", convertUriToFile(application.tesda.uri));
+      formData.append("tesda_certificate_name", application.tesda.tesda_certificate_name);
+      formData.append("tesda_certificate_number", application.tesda.tesda_certificate_number);
+      formData.append("tesda_issue_date", convertDateToFormattedDate(application.tesda.tesda_issue_date, "-"));
       // Multiple Files
       // ---- Valid ID
       // ------ Primary ID 1
       formData.append("primary_id_1", convertUriToFile(application.primary_id[0].uri));
-      formData.append("primary_id_1_number", application.primary_id[0].number);
       formData.append("primary_id_1_type", application.primary_id[0].type);
       // ------ Primary ID 2
       formData.append("primary_id_2", convertUriToFile(application.primary_id[1].uri));
-      formData.append("primary_id_2_number", application.primary_id[1].number);
       formData.append("primary_id_2_type", application.primary_id[1].type);
       // ---- Certificates
       for (let i = 0; i < application.certificates.length; i++) {

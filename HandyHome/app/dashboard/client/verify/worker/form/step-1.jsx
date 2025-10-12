@@ -42,9 +42,9 @@ const FormCredentials = ({data, setData}) => {
       const file = await openDocumentPicker();
       const fileName = file.name;
 
-      if (variable === 'nbi') {
+      if (variable === 'nbi' || variable === 'barangay') {
          if (!fileName.endsWith('jpg') && !fileName.endsWith('jpeg')) {
-            setErrorMessage('NBI Clearance should be in the jpg/jpeg format. Please try again.');
+            setErrorMessage('File should be in the jpg/jpeg format. Please try again.');
             setErrorModal(true);
             return;
          }
@@ -91,10 +91,19 @@ const FormCredentials = ({data, setData}) => {
       try {
          verifyModalData(data);
 
-         setData(prev => ({
-            ...prev,
-            [variable]: [...prev[variable], data]
-         }))
+         if (variable === "tesda") {
+            // TESDA is a single object, not an array
+            setData(prev => ({
+               ...prev,
+               tesda: data  // ✅ Just set it directly
+            }))
+         } else {
+            // For arrays (primary_id, certificates, experience)
+            setData(prev => ({
+               ...prev,
+               [variable]: [...prev[variable], data]
+            }))
+         }
 
          setShowModal(false);
       } catch (err) {
@@ -136,6 +145,8 @@ const FormCredentials = ({data, setData}) => {
                   <CertificateModal handleModalData={handleModalData}/> :
                modalType === "work" ?
                   <ExperienceModal handleModalData={handleModalData}/> :
+               modalType === "tesda" ?
+                  <TesdaModal handleModalData={handleModalData}/>:
                null
             }
             
@@ -186,14 +197,6 @@ const FormCredentials = ({data, setData}) => {
                            numberOfLines={1}>
                               {item.type}
                            </Text>
-                           <Text 
-                           style={{
-                              fontFamily: FONTS.roboto400,
-                              fontSize: FONT_SIZES.xs,
-                              color: COLORS.lettersicons
-                           }}>
-                              {item.number}
-                           </Text>
                         </View>
                      </View>
                      <TouchableOpacity 
@@ -215,7 +218,7 @@ const FormCredentials = ({data, setData}) => {
             {/* NBI Clearance */}
             <ApplicationUpload 
             icon={<Icons2 name='file-document' size={24} color={COLORS.primary}/>}
-            title="NBI Clearance (Optional)"
+            title="NBI Clearance"
             label="Add File"
             data={data.nbi}
             renderData={
@@ -242,6 +245,76 @@ const FormCredentials = ({data, setData}) => {
                }))}/>
             }
             onPress={() => handleSingleData("barangay")}
+            />
+
+            {/* TESDA Certificate */}
+            <ApplicationUpload 
+            icon={<Icons1 name='domain-verification' size={24} color={COLORS.primary}/>}
+            title={"TESDA Certification (Optional)"}
+            label={"Add File"}
+            data={data.tesda?.uri ? data.tesda : null}
+            renderData={
+               data.tesda?.uri && (
+                  <View 
+                  style={{
+                     width: '100%',
+                     flexDirection: 'row',
+                     justifyContent: 'space-between',
+                     alignItems: 'center',
+                     paddingVertical: 8,
+                     gap: 8
+                  }}>
+                     <View style={{flexDirection: 'row', gap: 8, alignItems: 'center', flexShrink: 1}}>
+                        <Image 
+                        source={{uri: data.tesda.uri}}
+                        style={{
+                           height: 48,
+                           width: 72,
+                           objectFit: 'cover',
+                           resizeMode: 'cover',
+                           borderRadius: 12,
+                           borderWidth: 1.5,
+                           borderColor: COLORS.strokes,
+                        }}/>
+                        <View style={{gap: 4, flexShrink: 1}}>
+                           <Text 
+                              style={{
+                                 fontFamily: FONTS.roboto500,
+                                 fontSize: FONT_SIZES.sm,
+                                 color: COLORS.lettersicons,
+                                 flexShrink: 1
+                              }} 
+                              numberOfLines={1}>
+                                 {data.tesda.tesda_certificate_name}
+                              </Text>
+                              <Text 
+                              style={{
+                                 fontFamily: FONTS.roboto400,
+                                 fontSize: FONT_SIZES.xs,
+                                 color: COLORS.lettersicons
+                              }}>
+                                 {`${data.tesda.tesda_certificate_number} (${convertDateToFormattedDate(data.tesda.tesda_issue_date, '/')})`}
+                              </Text>
+                        </View>
+                     </View>
+                     <TouchableOpacity 
+                     onPress={() => {
+                        setData(prev => ({
+                           ...prev,
+                           tesda: {
+                              uri: null,
+                              tesda_certificate_name: "",
+                              tesda_certificate_number: "",
+                              tesda_issue_date: null,
+                           }
+                        }))
+                     }}>
+                        <Icons2 name='window-close' size={24} color={COLORS.lettersicons}/>
+                     </TouchableOpacity>
+                  </View>
+               )
+            }
+            onPress={() => openModal("tesda")}
             />
 
             {/* License/Certificates */}
@@ -447,11 +520,9 @@ const ValidIdModal = ({handleModalData}) => {
       {title: "Passport", value: "Passport"},
       {title: "SSS ID", value: "SSS ID"},
       {title: "National ID", value: "National ID"},
-      {title: "Other", value: "Other"},
    ]   
    const [data, setData] = useState({
       uri: null,
-      number: "",
       type: ""
    })
 
@@ -501,14 +572,109 @@ const ValidIdModal = ({handleModalData}) => {
             selectedItem={data.type}
             />
 
+            <MediaUpload 
+            maxMedia={1}
+            data={data.uri}
+            dataName={"uri"}
+            setData={setData}
+            mode = "both"
+            hasSwitch ={false}
+            initialCameraType={'back'}
+            />
+         </View>
+         
+         <MainButton 
+         type='primary'
+         text='Save'
+         onPress={handleSave}
+         />
+      </KeyboardAwareScrollView>
+   )
+}
+
+const TesdaModal = ({handleModalData}) => {
+   // Hooks and States
+   const insets = useSafeAreaInsets();
+   const {convertDateToFormattedDate} = useConvert();
+
+   const [data, setData] = useState({
+      uri: null,
+      tesda_certificate_name: "",
+      tesda_certificate_number: "",
+      tesda_issue_date: null,
+   })
+   const [showPicker, setShowPicker] = useState(false);
+   
+   // Functions
+   const handleSave = () => {
+      console.log(data);
+      handleModalData(data, "tesda")
+   }
+
+   return (
+      <KeyboardAwareScrollView
+      contentContainerStyle={{
+         flexGrow: 1,
+         paddingHorizontal: 24,
+         paddingBottom: insets.bottom + 24,
+         gap: 24,
+         justifyContent: 'space-between',
+      }}>
+         <DatePicker 
+         modal
+         open={showPicker}
+         date={data.tesda_issue_date || new Date()}
+         mode="date"
+         onConfirm={(result) => {
+            setData(prev => ({
+               ...prev,
+               tesda_issue_date: result
+            }))
+            setShowPicker(false);
+         }}
+         onCancel={() => {setShowPicker(false)}}
+         theme='light'
+         dividerColor={COLORS.accent}
+         maximumDate={new Date()}
+         />
+
+         <View style={{gap: 24, flex: 1,}}>
+            {/* ---- Title */}
+            <Text 
+            style={{
+               fontFamily: FONTS.roboto700,
+               fontSize: FONT_SIZES.xxl,
+               color: COLORS.darkblue,
+               textAlign: 'left',
+            }}>
+               Add Tesda Certification
+            </Text>
+            {/* ---- Content */}
             <InputBasic 
-            placeholder='ID Number'
+            placeholder='Name of Certificate'
             onChangeText={(e) => setData(prev => ({
                ...prev,
-               number: e
+               tesda_certificate_name: e
             }))}
-            value={data.number}
+            value={data.tesda_certificate_name}
             floatColor='#fff'
+            />
+
+            <InputBasic 
+            placeholder='Certificate Number'
+            onChangeText={(e) => setData(prev => ({
+               ...prev,
+               tesda_certificate_number: e
+            }))}
+            value={data.tesda_certificate_number}
+            floatColor='#fff'
+            />
+
+            <InputDateTime 
+            type={"date"}
+            placeholder={"Certificate Date"}
+            value={convertDateToFormattedDate(data.tesda_issue_date, "long")}
+            onPress={() => setShowPicker(true)}
             />
 
             <MediaUpload 

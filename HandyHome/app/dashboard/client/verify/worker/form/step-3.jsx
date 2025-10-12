@@ -19,8 +19,6 @@ const FormServices = ({data, setData}) => {
    const { services } = useAppData();
 
    const [subservices, setSubservices] = useState([]);
-   const [subLoading, setSubLoading] = useState(false);
-   const [switchView, setSwitchView] = useState(false);
 
    // Constants
    const numColumns = Math.max(1, Math.floor((width - 48) / 72));
@@ -37,19 +35,6 @@ const FormServices = ({data, setData}) => {
       }))
    }
 
-   const fetchSubservices = async (id) => {
-      try {
-         setSubLoading(true);
-         const res = await api.get(`/general/sub-services/${id}`);
-
-         setSubservices(res?.data?.data);
-      } catch (err) {
-         console.log(err);
-      } finally {
-         setSubLoading(false);
-      }
-   }
-
    return (
       <View style={{gap: 24}}>
          <View style={{gap: 8}}>
@@ -62,88 +47,34 @@ const FormServices = ({data, setData}) => {
                   {data?.service?.name || "Not Selected"}
                </Text>
             </Text>
-
-            <Text style={{
-               fontFamily: FONTS.roboto600,
-               fontSize: FONT_SIZES.md,
-               color: COLORS.lettersicons
-            }}>
-               Sub-service: <Text style={{fontFamily: FONTS.roboto400, color: COLORS.labels}}>
-                  {data?.sub_service?.name || "Not Selected"}
-               </Text>
-            </Text>
          </View>
          
-         {!switchView ?
-            <FlatList 
-            key={`services-${numColumns}`}
-            scrollEnabled={false}
-            data={services}
-            renderItem={({item}) => (
-               <ServiceItem 
-               item={item}
-               onPress={() => {
-                  if (data?.service?.id !== item.id) {
-                     setData(prev => ({
-                        ...prev,
-                        sub_service: null
-                     }))
-                  }
+         <FlatList 
+         key={`services-${numColumns}`}
+         scrollEnabled={false}
+         data={services}
+         renderItem={({item}) => (
+            <ServiceItem 
+            item={item}
+            onPress={() => {
+               if (data?.service?.id !== item.id) {
+                  setData(prev => ({
+                     ...prev,
+                     sub_service: null
+                  }))
+               }
 
-                  handleSelect("service", item?.name, item?.id)
-                  fetchSubservices(item?.id);
-                  setSwitchView(true);
-               }}
-               selectedItem={data?.service?.id}
-               color={COLORS.screenbg}
-               />
-            )}
-            initialNumToRender={10}
-            numColumns={numColumns}
-            columnWrapperStyle={{
-               columnGap: gap
-            }}/> :
-
-            <FlatList 
-            key="subservices" 
-            data={subservices}
-            scrollEnabled={false}
-            renderItem={({item}) => (
-               <ServiceOption 
-               label={item?.name}
-               selected={data?.sub_service?.id === item?.id}
-               onPress={() => {
-                  handleSelect("sub_service", item?.name, item?.id)
-                  setSubservices([]);
-                  setSwitchView(false);
-               }}/>
-            )}
-            contentContainerStyle={{gap: 4}}
-            ListHeaderComponent={
-               <Text
-               style={{
-                  fontFamily: FONTS.roboto600,
-                  fontSize: FONT_SIZES.md,
-                  color: COLORS.labels,
-                  marginBottom: 12
-               }}>
-                  {`Select ${data?.service?.name} Services you offer:`}
-               </Text>
-            }
-            ListFooterComponent={
-               (subLoading || subservices.length === 0) && (
-                  <View
-                  style={{
-                     marginTop: 24,
-                     alignItems: 'center',
-                     justifyContent: 'center'
-                  }}>
-                     <LoadingDots size={12}/>
-                  </View>
-
-               )
-            }/>
-         }
+               handleSelect("service", item?.name, item?.id)
+            }}
+            selectedItem={data?.service?.id}
+            color={COLORS.screenbg}
+            />
+         )}
+         initialNumToRender={10}
+         numColumns={numColumns}
+         columnWrapperStyle={{
+            columnGap: gap
+         }}/> 
          
       </View>
    )

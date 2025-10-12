@@ -7,6 +7,7 @@ import { Linking, Modal, View, useWindowDimensions, TouchableOpacity, Animated, 
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system';
 // ---- Other Components
 import Header from '../components/Header';
 // ---- Styles and Icons
@@ -15,6 +16,27 @@ import { globalStyles as global } from '../styles/globalStyles';
 import { COLORS } from '../styles/constants';
 
 const MediaContext = createContext();
+
+const MAX_FILE_SIZE = 20 * 1024 * 1024;
+
+const getFileSize = async (uri) => {
+   try {
+      const fileInfo = await FileSystem.getInfoAsync(uri);
+      console.log(formatFileSize(fileInfo.size));
+      return fileInfo.size;
+   } catch (err) {
+      console.error('Error getting file size:', err);
+      return null;
+   }
+}
+
+const formatFileSize = (bytes) => {
+   if (bytes === 0) return '0 Bytes';
+   const k = 1024;
+   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+   const i = Math.floor(Math.log(bytes) / Math.log(k));
+   return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
 
 export const useMedia = () => useContext(MediaContext);
 
@@ -73,7 +95,15 @@ export const MediaProvider = ({ children }) => {
          });
 
          if (!result.canceled && result.assets?.length > 0) {
-            setReturnedImage(result.assets[0].uri);
+            const imageUri = result.assets[0].uri;
+
+            const fileSize = await getFileSize(imageUri);
+            if (fileSize && fileSize > MAX_FILE_SIZE) {
+               alert(`Image is too large (${formatFileSize(fileSize)}). Maximum allowed size is ${formatFileSize(MAX_FILE_SIZE)}. Please select a smaller image.`);
+               return;
+            }
+
+            setReturnedImage(imageUri);
             if (cameraModal) {
                setCameraModal(false);
             }
@@ -103,9 +133,15 @@ export const MediaProvider = ({ children }) => {
                alert('Invalid File Type');
                return;
             }
-         }
 
-         return result.assets[0];
+            const fileSize = result.assets[0].size; // DocumentPicker provides size directly
+            if (fileSize && fileSize > MAX_FILE_SIZE) {
+               alert(`File is too large (${formatFileSize(fileSize)}). Maximum allowed size is ${formatFileSize(MAX_FILE_SIZE)}. Please select a smaller file.`);
+               return;
+            }
+
+            return result.assets[0];
+         }
       } catch (err) {
          console.error('File pick error: ', e);
       }
@@ -164,6 +200,13 @@ const CameraScreen = ({
          }
 
          const photo = await cameraRef.current?.takePictureAsync();
+
+         const fileSize = await getFileSize(photo?.uri);
+         if (fileSize && fileSize > MAX_FILE_SIZE) {
+            alert(`Image is too large (${formatFileSize(fileSize)}). Maximum allowed size is ${formatFileSize(MAX_FILE_SIZE)}. Please try again with better lighting or lower resolution.`);
+            return;
+         }
+
          setImage(photo?.uri);
          setVisible(false);
 
@@ -248,6 +291,7 @@ const CameraScreen = ({
          mode='photo'
          style={{flex: 1}}
          ref={cameraRef}
+         pic
          />
 
          <View

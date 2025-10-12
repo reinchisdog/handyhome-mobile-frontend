@@ -120,7 +120,7 @@ export const SignupProvider = ({children}) => {
          return "First name and last name must be longer than 2 characters.";
       }
 
-      if (!/^[A-Za-z]+$/.test(firstName) || !/^[A-Za-z]+$/.test(lastName)) {
+      if (!/^[A-Za-z\s-]+$/.test(firstName) || !/^[A-Za-z\s-]+$/.test(lastName)) {
          return "First name and last name must only contain letters.";
       }
       
