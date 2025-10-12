@@ -1,4 +1,4 @@
-// Screen: User Verification Success
+// Screen: User Verification Failed
 
 // Imports
 // ---- React and Expo Components
@@ -15,7 +15,7 @@ import SuccessMessage from '../../../../../components/SuccessMessage';
 // ---- Styles and Icons
 import { globalStyles as global } from '../../../../../styles/globalStyles';
 
-const VerificationSuccessScreen = () => {
+const VerificationFailedScreen = () => {
    // Hooks and States
    const router = useRouter();
    const insets = useSafeAreaInsets();
@@ -41,8 +41,9 @@ const VerificationSuccessScreen = () => {
       }]}>
          {finished ?
             <SuccessMessage 
-            title={"Account Verified Successfully!"}
-            body={"Your account has been verified! You now have full access to all features and can start using your account immediately."}/> :
+            title={"Verification Under Review"}
+            body={"Thank you for submitting your verification details. Our admin team is currently reviewing your account. You'll receive a notification once the review is complete."}
+            type='fail'/> :
             <LoadingDots />
          }
 
@@ -70,6 +71,6 @@ const VerificationSuccessScreen = () => {
   )
 }
 
-export default VerificationSuccessScreen
+export default VerificationFailedScreen
 
 const styles = StyleSheet.create({})

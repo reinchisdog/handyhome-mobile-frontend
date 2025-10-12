@@ -17,6 +17,7 @@ import Header from '../../../../../components/Header';
 import MainButton from '../../../../../components/MainButton';
 import GeneralModal from '../../../../../components/GeneralModal';
 import InputBasic from '../../../../../components/InputBasic'
+import LoadingDots from '../../../../../components/LoadingDots';
 // ---- Styles and Icons
 import Arrows from '@expo/vector-icons/Entypo';
 import Icons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -30,7 +31,7 @@ const AppointmentSummaryScreen = () => {
    const insets = useSafeAreaInsets();
    const {height, width} = useWindowDimensions();
    const {token} = useAuth();
-   const { currentAppointment, clearAppointment, summary, setSummary, summaryLoading, fetchSummary, rejectAppointment, fetchNewWorker, confirmLoading, setErrorMessage, setErrorType, setErrorModal, setMaterialsSelected} = useAppointment();
+   const { currentAppointment, clearAppointment, summary, setSummary, summaryLoading, fetchSummary, rejectAppointment, fetchNewWorker, setErrorMessage, setErrorType, setErrorModal, setMaterialsSelected, worker, fetchWorkerInfo, } = useAppointment();
    const { id } = useLocalSearchParams();
 
    const [addonExpanded, setAddonExpanded] = useState(false);
@@ -340,6 +341,22 @@ const AppointmentSummaryScreen = () => {
       </Modal>
 
       <View style={{flex: 1, position: 'relative'}}>
+         {summaryLoading &&
+            <View style={{
+               position: 'absolute',
+               justifyContent: 'center',
+               alignItems: 'center',
+               top: 0,
+               left: 0,
+               width: width,
+               height: height,
+               backgroundColor: '#fff',
+               zIndex: 999999
+            }}>
+               <LoadingDots slide={false}/>
+            </View>
+         }
+
          <ScrollView
          stickyHeaderIndices={[0]}
          style={global.screenContainer}
@@ -546,7 +563,6 @@ const AppointmentSummaryScreen = () => {
                </View>
                }
 
-
                {/* ----  Worker Information */}
                <View style={[global.summaryBox, {backgroundColor: '#fff'}]}>
                   <Text style={[global.leftText, {padding: 6}]}>Service Provider</Text>
@@ -555,7 +571,10 @@ const AppointmentSummaryScreen = () => {
                      global.summaryBoxPressable, {
                      backgroundColor: pressed ? COLORS.summaryPress : '#fff'
                   }]}
-                  onPress={() => {router.push('/dashboard/client/appointment/summary/worker')}}
+                  onPress={async () => {
+                     router.push('/dashboard/client/appointment/summary/worker');
+                     if (!worker) await fetchWorkerInfo(currentAppointment?.accepted_by);
+                  }}
                   >
                      <View style={[ global.left , { alignItems: 'center' }]}>
                         <ImageBackground
@@ -747,9 +766,12 @@ const AppointmentSummaryScreen = () => {
             paddingTop: 12,
             paddingBottom: insets.bottom + 24,
             paddingHorizontal: 24,
+            borderWidth: StyleSheet.hairlineWidth,
+            borderColor: COLORS.strokes,
             backgroundColor: '#fff',
             zIndex: 100,
-            borderRadius: 24,
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
             flexDirection: 'column',
             gap: 16,
             alignItems: 'stretch'

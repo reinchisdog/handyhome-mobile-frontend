@@ -33,7 +33,7 @@ const AppointmentStartScreen = () => {
    
    const { categoryId, categoryName, serviceId, serviceName } = useLocalSearchParams();
    const { user } = useAuth();
-   const { appointment, setAppointment, createLoading, createAppointment } = useAppointment();
+   const { appointment, setAppointment, createLoading, createAppointment, clearAppointment } = useAppointment();
    
    const [datePickerOpen, setDatePickerOpen] = useState(false);
    const [datePickerMode, setDatePickerMode] = useState(false);
@@ -129,6 +129,10 @@ const AppointmentStartScreen = () => {
          }]} >
             <Header 
             hasBack
+            onBack={() => {
+               router.back();
+               clearAppointment(); 
+            }}
             backgroundColor={COLORS.screenbg}
             />
 

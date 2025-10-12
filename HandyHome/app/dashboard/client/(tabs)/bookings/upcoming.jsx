@@ -2,7 +2,7 @@
 
 // Imports
 // ---- React and Expo Components
-import { StyleSheet, Text, View, FlatList, RefreshControl } from 'react-native';
+import { StyleSheet, Text, View, FlatList, RefreshControl, Modal, Pressable } from 'react-native';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
@@ -12,6 +12,8 @@ import { useAuth } from '../../../../../context/AuthContext'
 import UserBookingItem from '../../../../../components/UserBookingItem';
 import LoadingDots from '../../../../../components/LoadingDots';
 import BookingsEmpty from '../../../../../components/BookingsEmpty';
+import MainButton from '../../../../../components/MainButton';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 // ---- Styles and Icons
 import { globalStyles as global } from '../../../../../styles/globalStyles';
 import { COLORS, FONTS, FONT_SIZES } from '../../../../../styles/constants';
@@ -24,6 +26,7 @@ const UpcomingBooking = () => {
    // Hooks and States
    const {token} = useAuth();
    const router = useRouter();
+   const insets = useSafeAreaInsets();
 
    const [bookings, setBookings] = useState([]);
    const [page, setPage] = useState(1);
@@ -32,6 +35,8 @@ const UpcomingBooking = () => {
    const [refreshing, setRefreshing] =useState(false);
    const [hasMore, setHasMore] = useState(true);
 
+   const [manageModal, setManageModal] = useState(false);
+   const [managedId, setManagedId] = useState(null);
 
    const fetchBookings = async (pageNum = 1, isRefresh = false) => {
       if ((loading || loadingMore) && !isRefresh) return;
@@ -107,6 +112,11 @@ const UpcomingBooking = () => {
       }, [])
    );
 
+   const openManageModal = (id) => {
+      setManagedId(id);
+      setManageModal(true);
+   }
+
    // Renders
    const renderFooter = () => (
       <View style={{
@@ -127,7 +137,7 @@ const UpcomingBooking = () => {
       </View>
    )
 
-   const canCancelBooking = (bookingDate) => {
+   const canManageBooking = (bookingDate) => {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
@@ -141,17 +151,64 @@ const UpcomingBooking = () => {
 
    return (
       <View style={[global.screenContainer, {backgroundColor: COLORS.screenbg}]}>
+         <Modal
+         visible={manageModal}
+         onRequestClose={() => setManageModal(false)}
+         animationType='slide'
+         statusBarTranslucent={true}
+         backdropColor={COLORS.modalbg}
+         style={{flex: 1}}
+         >  
+            <Pressable style={{flex: 1}} onPress={() => setManageModal(false)}/>
+            <View
+            style={[
+               global.shadowBottom, {
+               paddingTop: 24,
+               paddingBottom: insets.bottom + 24,
+               paddingHorizontal: 24,
+               borderWidth: StyleSheet.hairlineWidth,
+               borderColor: COLORS.strokes,
+               backgroundColor: '#fff',
+               borderTopLeftRadius: 24,
+               borderTopRightRadius: 24,
+               flexDirection: 'column',
+               gap: 16,
+               alignItems: 'stretch'
+            }]}>
+               <MainButton 
+               type='primary'
+               text='Reschedule Booking'
+               onPress={() => {
+                  router.push({
+                     pathname: `/dashboard/client/booking/[id]/reschedule`,
+                     params: {id: managedId}
+                  });
+                  setManageModal(false);
+               }}
+               />
+
+               <MainButton 
+               type='secondary'
+               text='Cancel Booking'
+               onPress={() => {
+                  router.push({
+                     pathname: `/dashboard/client/booking/[id]/cancel`,
+                     params: {id: managedId}
+                  });
+                  setManageModal(false);
+               }}
+               />
+            </View>
+         </Modal>
+
          <FlatList 
          data={bookings}
          renderItem={({item}) => (
             <UserBookingItem 
             data={item}
-            left={canCancelBooking(item.date) ? {
-               text: "Cancel",
-               function: () => {router.push({
-                  pathname: '/dashboard/client/booking/[id]/cancel',
-                  params: {id: item.id}
-               })},
+            left={canManageBooking(item.date) ? {
+               text: "Manage",
+               function: () => {openManageModal(item.id)},
             } : null}
             right={{
                text: "Details",

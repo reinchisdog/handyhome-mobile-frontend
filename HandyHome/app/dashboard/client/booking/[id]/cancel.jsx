@@ -164,8 +164,7 @@ const BookingCancel = () => {
             >
                <View
                style={{
-                  padding: 12,
-                  paddingBottom: 36,
+                  padding: 24,
                   borderRadius: 20,
                   backgroundColor: '#fff',
                   gap: 12
@@ -173,7 +172,7 @@ const BookingCancel = () => {
                   <Text 
                   style={{
                      fontFamily: FONTS.roboto500,
-                     fontSize: FONT_SIZES.sm,
+                     fontSize: FONT_SIZES.md,
                      color: COLORS.labels
                   }}>
                      Please select the reason for cancellation.
@@ -211,8 +210,12 @@ const BookingCancel = () => {
                backgroundColor: '#fff',
                position: 'absolute',
                bottom: 0,
-               borderRadius: 20,
-               width: width
+               // borderRadius: 20,
+               borderTopLeftRadius: 20,
+               borderTopRightRadius: 20,
+               width: width,
+               borderWidth: StyleSheet.hairlineWidth,
+               borderColor: COLORS.strokes
             }]}>
                <MainButton 
                type='primary'

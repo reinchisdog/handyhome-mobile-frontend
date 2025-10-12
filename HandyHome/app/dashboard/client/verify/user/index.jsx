@@ -2,8 +2,8 @@
 
 // Imports
 // ---- React and Expo Components
-import { StyleSheet, Text, View, Animated, useWindowDimensions, Pressable, Image } from 'react-native'
-import React, { useState, useEffect, useRef } from 'react'
+import { StyleSheet, Text, View, Animated, useWindowDimensions, Pressable, Image, BackHandler } from 'react-native'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'expo-router'
 // ---- Contexts
 import { useClientVerification } from '../../../../../context/ClientVerificationContext';
@@ -39,9 +39,11 @@ const ClientVerificationScreen = () => {
 
    const [step, setStep] = useState(1);
    const [agree, setAgree] = useState(false);
+   const [isAnimating, setIsAnimating] = useState(false);
 
    // Functions
    const handleNext = () => {
+      if (isAnimating) return;
       console.log(clientVerification);
 
       if (step === 2 && isIdPageEmpty()) {
@@ -57,14 +59,23 @@ const ClientVerificationScreen = () => {
       }
    }
 
-   const handleBack = async () => {
+   const handleBack = useCallback(async () => {
+      // console.log("HANDLE BACK CALLED!")
+      if (isAnimating) return;
+
+      if (verificationLoading) {
+         setErrorMessage('Our system is still trying to process your information. Do not exit the app, this will only take a few seconds.');
+         setShowErrorModal(true);
+         return;
+      }
+
       if (step === 1) {
          clearClientVerification();
          router.back()
       } else {
          backAnimation();
       }
-   }
+   }, [isAnimating, verificationLoading, step, clearClientVerification, router]);
 
    const isIdPageEmpty = () => {
       const idType = typeof clientVerification?.id_type === "string" && clientVerification.id_type.trim() !== "";
@@ -90,6 +101,20 @@ const ClientVerificationScreen = () => {
 
    }, [agree, clientVerification])
 
+   useEffect(() => {
+      const backAction = () => {
+         // console.log('Clicked Back!');
+         handleBack();
+         return true;
+      }
+
+      const backHandler = BackHandler.addEventListener(
+         'hardwareBackPress', backAction
+      );
+
+      return () => backHandler.remove();
+   }, [handleBack]);
+
    // Refs
    const scrollRef = useRef();
    const progressBars = Array.from({ length: 2 }, () => useRef(new Animated.Value(0)).current)
@@ -103,6 +128,7 @@ const ClientVerificationScreen = () => {
 
    // Animation
    const nextAnimation = () => {
+      setIsAnimating(true);
       scrollRef.current?.scrollTo({ y: 0, animated: true });
 
       Animated.timing(pageAnimation, {
@@ -124,11 +150,12 @@ const ClientVerificationScreen = () => {
                duration: 500,
                useNativeDriver: false
             })
-         ]).start();
+         ]).start(() => setIsAnimating(false));
       });
    }
 
    const backAnimation = () => {
+      setIsAnimating(true);
       scrollRef.current?.scrollTo({ y: 0, animated: true });
 
       Animated.timing(pageAnimation, {
@@ -150,7 +177,7 @@ const ClientVerificationScreen = () => {
                duration: 500,
                useNativeDriver: false
             })
-         ]).start();
+         ]).start(() => setIsAnimating(false));
       });
    };
 
@@ -844,7 +871,9 @@ const ValidIdPage = () => {
             data={clientVerification.primary_id}
             dataName={"primary_id"}
             setData={setClientVerification}
-            canSwitch
+            mode = "both" // "both", "camera", "picker"
+            hasSwitch = {true}
+            initialCameraType = 'back'
             />
 
          </View>
@@ -885,7 +914,9 @@ const SelfiePage = () => {
          data={clientVerification.selfie}
          dataName={"selfie"}
          setData={setClientVerification}
-         setCameraFace='front'
+         mode = "both" // "both", "camera", "picker"
+         hasSwitch = {false}
+         initialCameraType = 'front'
          />
       </View>
    );

@@ -132,13 +132,16 @@ const WorkerBookingReceipt = () => {
          setDeleting(true);
 
          console.log(`Deleting Receipt: ${selectedImage} from booking ${details?.id}`);
+         const formattedImage = selectedImage.split('/');
+         const imageFile = formattedImage[formattedImage.length - 1];
+         // const imageFile = selectedImage.replace('https://', "");
 
-         const response = await api.delete(`worker/bookings/${details?.id}/materials/receipts/delete/${selectedImage.toString()}`, {
+         const response = await api.delete(`worker/bookings/${details?.id}/materials/receipts/delete/${imageFile}`, {
             headers: {'Authorization': `Bearer ${token}`}
          });
 
-         // console.log('DELETING GCASH', response?.data?.data);
-         setGcashReceipt(response?.data?.data?.updated_booking[0].payment_receipt || null);
+         console.log('DELETING MATERIAL', response?.data?.data);
+         setMaterialsReceipt(response?.data?.data?.updated_booking[0].receipts || []);
          setImageModalVisible(false);
       } catch (err) {
          const message = err?.response?.data?.message || err.message || 'Aban unknown error occurred while deleting receipt. Please try again.';

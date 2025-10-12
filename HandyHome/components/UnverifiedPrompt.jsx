@@ -11,7 +11,7 @@ import { COLORS, FONTS, FONT_SIZES } from '../styles/constants';
 import Icons from '@expo/vector-icons/MaterialCommunityIcons';
 
 
-const UnverifiedPrompt = ({ hidePrompt, isPending }) => {
+const UnverifiedPrompt = ({ hidePrompt, status }) => {
    // Hooks and States
    const router = useRouter();
    const {width} = useWindowDimensions();
@@ -29,6 +29,10 @@ const UnverifiedPrompt = ({ hidePrompt, isPending }) => {
          hidePrompt();
       })
    }
+
+   useEffect(() => {
+      console.log("VERIFICATION STATUS:", status);
+   }, [status])
 
    return (
       <Animated.View
@@ -65,10 +69,17 @@ const UnverifiedPrompt = ({ hidePrompt, isPending }) => {
             color: COLORS.lettersicons
          }}
          >
-            {isPending ? 'Your verification is still being processed. Please wait for a bit while our staff is reviewing your identity.' : 'Verify your account to fully access booking features and ensure secure transactions.'}
+            {
+            status === "Pending" ? 
+               'Your verification is still being processed. Please wait for a bit while our staff is reviewing your identity.' : 
+            status === "Rejected" ?
+               'Your verification has been rejected. Please submit another verification and make sure all images are clear.' :
+
+               'Verify your account to fully access booking features and ensure secure transactions.'
+            }
          </Text>
 
-         {!isPending &&
+         {(status === null || status === "Rejected") &&
             <View 
             style={{
                flexDirection: 'row',

@@ -232,6 +232,7 @@ export const BookingDetailsProvider = ({children}) => {
          console.log("[2] Succesful Emergency");
          setEmergencySuccess(true);
       } catch (err) {
+         console.log(err?.response?.data?.error);
          const message = err?.response?.data?.message || err?.message || "An unknown error has occured when sending emergency alerts.";
          setErrorMessage(message);
          setErrorType('emergency');

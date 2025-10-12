@@ -39,6 +39,10 @@ export const AppDataProvider = ({children}) => {
    // Loading states
    const [addressLoading, setAddressLoading] = useState(false);
    const [notificationsLoading, setNotificationsLoading] = useState(false);
+   const [notificationsMore, setNotificationsMore] = useState(false);
+   const [notificationsRefreshing, setNotificationsRefreshing] = useState(false);
+   const [hasMoreNotifs, setHasMoreNotifs] = useState(true)
+   const [notificationsPage, setNotificationsPage] = useState(1)
    const [workerLoading, setWorkerLoading] = useState(false);
    const [analyticsLoading, setAnalyticsLoading] = useState(false);
    const [earningsLoading, setEarningsLoading] = useState(false);
@@ -100,42 +104,97 @@ export const AppDataProvider = ({children}) => {
    }
 
    // Notifications
-   const fetchNotifications = async () => {
+   const fetchNotifications = async (pageNum = 1, isRefresh = false) => {
+      if ((notificationsLoading || notificationsMore) && !isRefresh) return;
+
       try {
-         setNotificationsLoading(true);
-
-         console.log('[AppDataContext] Fetching notifications...');
-         const route = user?.role === "User" || user?.role === "Guest" ? '/user/notifications' : user?.role === "Worker" ? '/worker/notifications' : null;
-         console.log(route);
-         const res = await api.get(route, {
-            headers: {'Authorization': `Bearer ${token}`}
-         });
-
-         if (user?.role === "User") { 
-            const notifs = res.data.data.notifications;
-            const promos = res.data.data.promos.map(promo => ({
-               ...promo,
-               announcement_type: 'promo',
-            }));
-            setNotifications([...notifs, ...promos]);
+         if (!isRefresh) {
+            setNotificationsPage(pageNum);
          } else {
-            setNotifications(res.data.data);
+            setNotificationsPage(1);
          }
 
-         console.log('[AppDataContext] Services fetched successfully');
+         if (isRefresh) {
+            setNotificationsRefreshing(true);
+         } else if (pageNum === 1) {
+            setNotificationsLoading(true);
+         } else {
+            setNotificationsMore(true);
+         }
+
+         const params = {
+            page: pageNum,
+            limit: 10,
+         }
+
+         // console.log('[AppDataContext] Fetching notifications...');
+         const route = user?.role === "User" || user?.role === "Guest" 
+            ? '/user/notifications' 
+            : user?.role === "Worker" 
+            ? '/worker/notifications' 
+            : null;
+         
+         console.log(route);
+         const res = await api.get(route, {
+            headers: {'Authorization': `Bearer ${token}`},
+            params: params,
+         });
+         console.log(`PAGE NUMBER ${pageNum}`, res?.data?.data);
+
+         let allNotifs;
+         if (user?.role === "User" || user?.role === "Guest") { 
+            const notifs = res?.data?.data?.notifications;
+            const formattedNotifs = notifs?.map(notif => 
+               !notif.announcement_type 
+                  ? {...notif, announcement_type: 'promo'} 
+                  : notif
+            );
+
+            allNotifs = formattedNotifs;
+         } else {
+            allNotifs = res?.data?.data?.notifications;
+         }
+
+         console.log(allNotifs);
+         if (isRefresh) {
+            setNotifications(allNotifs);
+         } else {
+            setNotifications(prev => pageNum === 1 ? allNotifs : [...prev, ...allNotifs]);
+         }
+
+         setHasMoreNotifs(allNotifs.length === 10);
+
+         if (!isRefresh) {
+            setNotificationsPage(pageNum);
+         }
+
+         // console.log('[AppDataContext] Notifications fetched successfully');
       } catch (err) {
          console.error('[AppDataContext] Failed to fetch notifications:', err);
          const message = err?.response?.data?.message || err?.message || 
             "Failed to load notifications. Please try again.";
          console.log(message);
-         // setErrorTitle("Services Load Error");
-         // setErrorMessage(message);
-         // setErrorMode("services");
-         // setShowError(true);
          throw err;
       } finally {
          setNotificationsLoading(false);
+         setNotificationsMore(false);
+         setNotificationsRefreshing(false);
       }
+   }
+
+   const fetchMoreNotifications = async () => {
+      if (!hasMoreNotifs || notificationsMore || notificationsLoading || notificationsRefreshing || notifications.length === 0) return;
+      console.log("---- FETCHING MORE NOTIFICATIONS:");
+      await fetchNotifications(notificationsPage + 1, false);
+   }
+
+   const fetchRefreshNotifications = async () => {
+      if (notificationsRefreshing) return;
+      console.log("---- REFRESHING NOTIFICATIONS:");
+      setNotifications([]);
+      setNotificationsPage(1);
+      setHasMoreNotifs(true);
+      await fetchNotifications(1, true);
    }
 
    // Worker Info
@@ -299,14 +358,13 @@ export const AppDataProvider = ({children}) => {
       const init = async () => {
          try {
             console.log('[AppDataContext] Initializing user data...');
-            fetchAddresses();
-            fetchNotifications();
+            await fetchAddresses();
+            await fetchNotifications(1, false);
 
             if (user?.role === "Worker") {
                console.log('[AppDataContext] User is worker - fetching worker data...');
-               fetchWorker();
-
-               initAnalytics();
+               await fetchWorker();
+               await initAnalytics();
             }
             console.log('[AppDataContext] User data initialization completed successfully');
          } catch (err) {
@@ -367,6 +425,11 @@ export const AppDataProvider = ({children}) => {
          isAppDataReady,
          // isInitializing,
          notificationsLoading,
+         notificationsMore,
+         notificationsRefreshing,
+         notificationsPage,
+         hasMoreNotifs,
+
          addressLoading,
          workerLoading,
          analyticsLoading,
@@ -377,6 +440,8 @@ export const AppDataProvider = ({children}) => {
          // Actions
          fetchAddresses,
          fetchNotifications,
+         fetchMoreNotifications,
+         fetchRefreshNotifications,
          fetchWorker,
          fetchServices,
          fetchEarnings,

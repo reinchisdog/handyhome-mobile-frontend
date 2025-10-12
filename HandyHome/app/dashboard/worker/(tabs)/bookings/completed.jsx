@@ -94,6 +94,7 @@ const UpcomingBooking = () => {
 
    const fetchRefresh = useCallback(async () => {
       setPage(1);
+      setBookings([]);
       setHasMore(true);
       await fetchBookings(1, true);
    }, [])

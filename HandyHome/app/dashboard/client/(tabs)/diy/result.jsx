@@ -119,7 +119,7 @@ const DiyResultScreen = () => {
                   }}
                   />
 
-                  {result?.unrelated_message ?
+                  {result?.unrelated_message && result?.unrelated_message !== "null" ?
                      <Text 
                      style={[
                         global.headingText, {
@@ -144,7 +144,7 @@ const DiyResultScreen = () => {
                <View style={global.divider}/>
                
                {/* Unrelated Message */}
-               {result?.unrelated_message &&
+               {result?.unrelated_message && result?.unrelated_message !== "null" &&
                   <Text style={{
                      fontFamily: FONTS.roboto400,
                      fontSize: FONT_SIZES.md,

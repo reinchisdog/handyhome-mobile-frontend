@@ -87,12 +87,16 @@ const UpcomingBooking = () => {
    }
 
    const fetchMore = useCallback(async () => {
-      if (!hasMore || loadingMore || loading) return;
+      if (!hasMore || loadingMore || loading || refreshing) return;
+
+      console.log("FETCHING MORE")
 
       await fetchBookings(page + 1, false);
    }, [hasMore, loadingMore, loading, page])
 
    const fetchRefresh = useCallback(async () => {
+      console.log("REFRESHING")
+      setBookings([])
       setPage(1);
       setHasMore(true);
       await fetchBookings(1, true);
@@ -100,11 +104,11 @@ const UpcomingBooking = () => {
 
    useFocusEffect(
       useCallback(() => {
-         if (bookings.length === 0 && !loading) {
-            setPage(1);
-            fetchBookings(1, false);
-         }
-      }, [])
+         // Refresh data every time screen comes into focus
+         setPage(1);
+         setHasMore(true);
+         fetchBookings(1, false);
+      }, []) // Empty dependency array means it runs every time screen is focused
    );
 
    // Renders
@@ -134,6 +138,13 @@ const UpcomingBooking = () => {
          renderItem={({item}) => (
             <WorkerBookingItem 
             booking={item}
+            left={item?.reschedule?.status === 'Pending' ? {
+               text: "Manage",
+               function: () => {router.push({
+                  pathname: `/dashboard/worker/booking/[id]/reschedule`,
+                  params: {id: item.id}
+               })},
+            } : null}
             right={{
                text: "Details",
                function: () => {router.push({

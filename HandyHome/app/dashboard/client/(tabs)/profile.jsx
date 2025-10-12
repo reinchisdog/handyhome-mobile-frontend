@@ -114,7 +114,8 @@ const ProfileScreen = () => {
                         </View>
                         :
                         <Pressable
-                        onPress={ user?.identity_status?.status === 'Pending' ?
+                        onPress={ 
+                           user?.identity_status?.status === 'Pending' ?
                            () => {
                               setErrorTitle('Account not yet verified!');
                               setErrorMessage('Your verification is still being processed. Please wait for a bit while our staff is reviewing your identity.');
@@ -210,7 +211,11 @@ const ProfileScreen = () => {
 
                {/* Be a Service Provider */}
                <ProfileTab 
-               onPress={user?.identity_status?.status === 'Pending' || !user?.can_book ?
+               onPress={
+                  user?.identity_status?.status === 'Pending' || 
+                  user?.identity_status?.status === 'Rejected' || 
+                  user?.identity_status?.status === null || 
+                  !user?.can_book ?
                   () => {
                      setErrorTitle('Account not yet verified!');
                      setErrorMessage('Your account needs verifying first before being able apply as a Service Provider.');

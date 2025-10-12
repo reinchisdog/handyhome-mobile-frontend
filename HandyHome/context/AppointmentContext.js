@@ -262,8 +262,8 @@ export const AppointmentProvider = ({ children }) => {
    const fetchSummary = async (id) => {
       try {
          setSummaryLoading(true);
-         // console.log("---- [Appointment Context] Summary Fetch Attempt ----");
-         // console.log("[1] Fetching Summary");
+         console.log("---- [Appointment Context] Summary Fetch Attempt ----");
+         console.log("[1] Fetching Summary");
          const summaryResult = await api.get(`/user/book/${id}/view_review_summary`, {
             headers: {
                'Authorization' : `Bearer ${token}`
@@ -271,7 +271,7 @@ export const AppointmentProvider = ({ children }) => {
          })
 
          const summaryData = summaryResult?.data?.data;
-         // console.log("[2] Successful Fetching:");
+         console.log("[2] Successful Fetching:");
          console.log(summaryData);
          setSummary(summaryData);
          setSummaryLoading(false);
@@ -284,7 +284,7 @@ export const AppointmentProvider = ({ children }) => {
 
       } catch (err) {
          const message = err?.response?.data?.message || err?.message || "An unknown error has occurred fetching the review summary"
-         // console.log("[0] Error Fetching:", message);
+         console.log("[0] Error Fetching Summary:", message);
          setErrorMessage(message);
          setErrorType('summary');
          setErrorModal(true);
@@ -343,14 +343,14 @@ export const AppointmentProvider = ({ children }) => {
          })
 
          const workerData = workerResult?.data?.data;
-         console.log("[2] Successful Fetching:");
+         console.log("[2] Successful Fetchinjg:");
          console.log(workerData);
          setWorker(workerData);
          setWorkerLoading(false);
-
+ 
       } catch (err) {
          const message = err?.response?.data?.message || err?.message || "An unknown error has occurred fetching the review summary"
-         console.log("[0] Error Fetching:", message);
+         console.log("[0] Error Fetching Worker Info:", message);
          setErrorMessage(message);
          setErrorType('worker');
          setErrorModal(true);

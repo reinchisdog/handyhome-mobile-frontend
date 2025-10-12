@@ -141,7 +141,7 @@ const HomeScreen = () => {
                   {!user?.can_book && showVerify && (
                      <UnverifiedPrompt 
                      hidePrompt={() => setShowVerify(false)} 
-                     isPending={user?.identity_status?.status === 'Pending'}
+                     status={user?.identity_status?.status || null}
                      />
                   )}
 

@@ -38,12 +38,12 @@ export const ClientVerificationProvider = ({ children }) => {
             const value = data[key];
 
             if (value && typeof value === 'object' && value.uri && value.type) {
-               console.log(`📎 Appending file: ${key} -> ${value.name} (${value.type})`);
+               // console.log(`📎 Appending file: ${key} -> ${value.name} (${value.type})`);
                formData.append(key, value);
             } else if (typeof value === 'object' && value !== null) {
                appendFormData(formData, value, formKey);
             } else {
-               console.log(`📝 Appending field: ${formKey} -> ${value}`);
+               // console.log(`📝 Appending field: ${formKey} -> ${value}`);
                formData.append(formKey, value);
             }
          }
@@ -74,20 +74,30 @@ export const ClientVerificationProvider = ({ children }) => {
          appendFormData(formData, converted);
 
          console.log("[2] Submitting Verification Files");
-         const verificationResult = await api.post(`/user/upload/identity`, formData, {
+         const response = await api.post(`/user/upload/identity`, formData, {
             headers: {
                'Authorization' : `Bearer ${token}`,
                'Content-Type': 'multipart/form-data',
             },
             timeout: 60000,
          })
+         
+         console.log(response?.data?.data);
+         const confidence = response?.data?.data?.confidence;
 
          await tryFetchUser(token);
          
-         console.log("[3] Succesful Submission of Verification. Routing to Success Screen");
-         router.replace("/dashboard/client/verify/user/success");
+         if (confidence >= 80) {
+            console.log("[3] Succesful Submission of Verification. Routing to Success Screen");
+            router.replace("/dashboard/client/verify/user/success");
+         } else {
+            console.log("[3] Failed Submission of Verification. Routing to Failed Screen");
+            router.replace("/dashboard/client/verify/user/success");
+         }
+         
 
       } catch (err) {
+         console.log(err);
          const message = err.response?.data?.message || err.message || "An unknown error has occurred when submitting your verification files. Please try again.";
 
          setErrorMessage(message);
