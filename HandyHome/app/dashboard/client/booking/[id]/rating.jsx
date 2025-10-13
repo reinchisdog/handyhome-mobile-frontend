@@ -118,7 +118,9 @@ const BookingRating = () => {
          const formData = new FormData();
          formData.append('review', feedback.review);
          formData.append('rating', feedback.rating);
-         formData.append('attachment', convertUriToFile(feedback.attachment));
+         if (feedback.attachment) {
+            formData.append('attachment', convertUriToFile(feedback.attachment));
+         }
          // appendFormData(formData, converted);
          console.log("[2] Submitting Feedback for Booking:", id);
          console.log(feedback);
@@ -126,13 +128,15 @@ const BookingRating = () => {
             headers: {
                'Authorization' : `Bearer ${token}`,
                'Content-Type': 'multipart/form-data'
-            }
+            },
+            timeout: 90000,
          })
 
          console.log('[3] Rated Succesfully, Showing Modal');
          setSuccessModal(true);
          
       } catch (err) {
+         console.log(err);
          const message = err?.response?.data?.message || err?.message || "An unknown error has occured when submitting your feedback.";
          setErrorTitle("Booking Rating Error");
          setErrorMessage(message);
@@ -387,6 +391,7 @@ const BookingRating = () => {
                      data={feedback.attachment}
                      dataName={"attachment"}
                      setData={setFeedback}
+                     hasSwitch={true}
                      />
                   </View>
 

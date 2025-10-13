@@ -31,7 +31,7 @@ const BookingItem = ({data, left, right}) => {
             // backgroundColor: 'green'
          }}>
             <Image 
-            source={ServiceCategoryImages[data?.serviceId]}
+            source={ServiceCategoryImages[data?.subServiceId]}
             style={{
                width: '33%',
                height: '100%',

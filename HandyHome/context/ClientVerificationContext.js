@@ -17,7 +17,7 @@ const ClientVerificationContext = createContext();
 export const ClientVerificationProvider = ({ children }) => {
    // Hooks and States
    const router = useRouter();
-   const { token, tryFetchUser } = useAuth();
+   const { token, tryFetchUser, setUser } = useAuth();
    const { convertUriToFile } = useConvert();
    const [showErrorModal, setShowErrorModal] = useState(false);
    const [errorMessage, setErrorMessage] = useState("");
@@ -93,9 +93,21 @@ export const ClientVerificationProvider = ({ children }) => {
          
          if (confidence >= 80) {
             console.log("[3] Succesful Submission of Verification. Routing to Success Screen");
+            // Fallback
+            setUser(prev => ({
+               ...prev,
+               identity_status: {status: "Verified"},
+               can_book: true
+            }))
             router.replace("/dashboard/client/verify/user/success");
          } else {
             console.log("[3] Failed Submission of Verification. Routing to Failed Screen");
+            // Fallback
+            setUser(prev => ({
+               ...prev,
+               identity_status: {status: "Pending"},
+               can_book: false
+            }))
             router.replace("/dashboard/client/verify/user/failed");
          }
          

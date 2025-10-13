@@ -277,7 +277,7 @@ export const AppointmentProvider = ({ children }) => {
          setSummaryLoading(false);
 
          if (worker === null) {
-            // console.log("[3] Fetching Worker Info,", summaryData?.booking?.accepted_by);
+            console.log("[3] Fetching Worker Info,", summaryData?.booking?.accepted_by);
             fetchWorkerInfo(summaryData?.booking?.accepted_by || currentAppointment?.accepted_by);
          }
          
