@@ -18,7 +18,7 @@ import { COLORS, FONTS, FONT_SIZES } from '../../../../../styles/constants';
 // ---- Other Libs
 import api from '../../../../../lib/api';
 
-const MAX_LIMIT = 5;
+const MAX_LIMIT = 10;
 
 const OngoingBooking = () => {
    // Hooks and States
@@ -36,38 +36,41 @@ const OngoingBooking = () => {
       if ((loading || loadingMore) && !isRefresh) return;
 
       try {
-         if (isRefresh) {
+         if (!isRefresh) {
             // Only show refresh control for explicit refresh actions
+            setPage(pageNum);
+         } else {
+            setPage(1);
+         }
+
+         if (isRefresh) {
             setRefreshing(true);
-            setLoading(false);
          } else if (pageNum === 1) {
             // First/initial load - show loading but not refresh control
             setLoading(true);
-            setRefreshing(false);
          } else {
             // Load more pages
             setLoadingMore(true);
          }
 
-         console.log("---- [Ongoing] Fetching Attempt ----");
-         console.log("[1] Fetching Bookings");
+         const params = {
+            page: pageNum,
+            limit: MAX_LIMIT,
+         }
+         // console.log("---- [Upcoming] Fetching Attempt ----");
+         // console.log("[1] Fetching Bookings");
          const bookingResult = await api.get('/user/book/Ongoing',{
-            params: {
-               page: pageNum,
-               limit: MAX_LIMIT,
-            },
-            headers: {
-               'Authorization': `Bearer ${token}`
-            }
+            headers: {'Authorization': `Bearer ${token}`},
+            params: params,
          });
 
-         console.log("[2] Succesfully Fetched");
+         // console.log("[2] Succesfully Fetched");
          const bookingData = bookingResult?.data?.data?.bookings;
-         console.log(bookingData);
-         if (isRefresh || pageNum === 1) {
+         // console.log(bookingData);
+         if (isRefresh) {
             setBookings(bookingData);
          } else {
-            setBookings(prev => [...prev, ...bookingData]);
+            setBookings(prev => pageNum === 1 ? bookingData : [...prev, ...bookingData]);
          }
 
          setHasMore(bookingData.length === MAX_LIMIT);
@@ -75,7 +78,6 @@ const OngoingBooking = () => {
          if (!isRefresh) {
             setPage(pageNum);
          }
-
       } catch (err) {
 
       } finally {
@@ -85,17 +87,20 @@ const OngoingBooking = () => {
       }
    }
 
-   const fetchMore = useCallback(async () => {
-      if (!hasMore || loadingMore || loading) return;
+   const fetchMore = async () => {
+      if (!hasMore || loadingMore || loading || refreshing || bookings.length === 0) return;
 
       await fetchBookings(page + 1, false);
-   }, [hasMore, loadingMore, loading, page])
+   }
 
-   const fetchRefresh = useCallback(async () => {
+   const fetchRefresh = async () => {
+      if (refreshing) return;
+
+      setBookings([]);
       setPage(1);
       setHasMore(true);
       await fetchBookings(1, true);
-   }, [])
+   }
 
    useFocusEffect(
       useCallback(() => {
@@ -120,7 +125,7 @@ const OngoingBooking = () => {
          )}
 
          {/* Show divider only when done and no more data */}
-         {(!hasMore && !loadingMore && !loading) && (
+         {(!hasMore && !loadingMore && !loading && bookings.length !== 0) && (
             <View style={global.divider}/>
          )}
       </View>
@@ -150,7 +155,8 @@ const OngoingBooking = () => {
          contentContainerStyle={{
             padding: 12,
             gap: 8,
-            alignItems: 'stretch'
+            alignItems: 'stretch',
+            flexGrow: 1,
          }}
          onEndReachedThreshold={0.5}
          onEndReached={fetchMore}
@@ -166,7 +172,7 @@ const OngoingBooking = () => {
          showsVerticalScrollIndicator={false}
          ListFooterComponent={renderFooter}
          ListEmptyComponent={() => (
-            !loading &&
+            (!loading && !refreshing) &&
                <BookingsEmpty 
                title={"No Active Bookings"}
                description={"You don't have any bookings in progress right now. Your active appointments will appear here."}

@@ -37,38 +37,41 @@ const UpcomingBooking = () => {
       if ((loading || loadingMore) && !isRefresh) return;
 
       try {
-         if (isRefresh) {
+         if (!isRefresh) {
             // Only show refresh control for explicit refresh actions
+            setPage(pageNum);
+         } else {
+            setPage(1);
+         }
+
+         if (isRefresh) {
             setRefreshing(true);
-            setLoading(false);
          } else if (pageNum === 1) {
             // First/initial load - show loading but not refresh control
             setLoading(true);
-            setRefreshing(false);
          } else {
             // Load more pages
             setLoadingMore(true);
          }
 
-         console.log("---- [Upcoming] Fetching Attempt ----");
-         console.log("[1] Fetching Bookings");
+         const params = {
+            page: pageNum,
+            limit: MAX_LIMIT,
+         }
+         // console.log("---- [Upcoming] Fetching Attempt ----");
+         // console.log("[1] Fetching Bookings");
          const bookingResult = await api.get('/worker/bookings/upcoming',{
-            params: {
-               page: pageNum,
-               limit: MAX_LIMIT,
-            },
-            headers: {
-               'Authorization': `Bearer ${token}`
-            }
+            headers: {'Authorization': `Bearer ${token}`},
+            params: params,
          });
 
-         console.log("[2] Succesfully Fetched");
+         // console.log("[2] Succesfully Fetched");
          const bookingData = bookingResult?.data?.data?.bookings;
-         console.log(bookingData);
-         if (isRefresh || pageNum === 1) {
+         // console.log(bookingData);
+         if (isRefresh) {
             setBookings(bookingData);
          } else {
-            setBookings(prev => [...prev, ...bookingData]);
+            setBookings(prev => pageNum === 1 ? bookingData : [...prev, ...bookingData]);
          }
 
          setHasMore(bookingData.length === MAX_LIMIT);
@@ -86,29 +89,28 @@ const UpcomingBooking = () => {
       }
    }
 
-   const fetchMore = useCallback(async () => {
-      if (!hasMore || loadingMore || loading || refreshing) return;
-
-      console.log("FETCHING MORE")
+   const fetchMore = async () => {
+      if (!hasMore || loadingMore || loading || refreshing || bookings.length === 0) return;
 
       await fetchBookings(page + 1, false);
-   }, [hasMore, loadingMore, loading, page])
+   }
 
-   const fetchRefresh = useCallback(async () => {
-      console.log("REFRESHING")
-      setBookings([])
+   const fetchRefresh = async () => {
+      if (refreshing) return;
+
+      setBookings([]);
       setPage(1);
       setHasMore(true);
       await fetchBookings(1, true);
-   }, [])
+   }
 
    useFocusEffect(
       useCallback(() => {
-         // Refresh data every time screen comes into focus
-         setPage(1);
-         setHasMore(true);
-         fetchBookings(1, false);
-      }, []) // Empty dependency array means it runs every time screen is focused
+         if (bookings.length === 0 && !loading) {
+            setPage(1);
+            fetchBookings(1, false);
+         }
+      }, [])
    );
 
    // Renders
@@ -125,7 +127,7 @@ const UpcomingBooking = () => {
          )}
 
          {/* Show divider only when done and no more data */}
-         {(!hasMore && !loadingMore && !loading) && (
+         {(!hasMore && !loadingMore && !loading && bookings.length !== 0) && (
             <View style={global.divider}/>
          )}
       </View>
@@ -158,7 +160,8 @@ const UpcomingBooking = () => {
          contentContainerStyle={{
             padding: 12,
             gap: 8,
-            alignItems: 'stretch'
+            alignItems: 'stretch',
+            flexGrow: 1
          }}
          onEndReachedThreshold={0.5}
          onEndReached={fetchMore}
@@ -174,7 +177,7 @@ const UpcomingBooking = () => {
          showsVerticalScrollIndicator={false}
          ListFooterComponent={renderFooter}
          ListEmptyComponent={() => (
-            !loading &&
+            (!loading && !refreshing) &&
                <BookingsEmpty 
                title={"No Upcoming Bookings"}
                description={"You don't have any bookings scheduled yet. Browse and book your next appointment to get started!"}

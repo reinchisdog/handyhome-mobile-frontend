@@ -72,7 +72,8 @@ const WorkerNotifications = () => {
             />
          }
          ListFooterComponent={renderFooter}
-         ListEmptyComponent={
+         ListEmptyComponent={() => (
+            !notificationsLoading &&
             <View
             style={{
                alignItems: 'center',
@@ -103,7 +104,7 @@ const WorkerNotifications = () => {
                   Nothing new for now. Check back later for more announcements.
                </Text>
             </View>
-         }
+         )}
          contentContainerStyle={{
             flexGrow: 1,
          }}

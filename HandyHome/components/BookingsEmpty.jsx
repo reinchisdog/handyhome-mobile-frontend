@@ -11,7 +11,9 @@ const BookingsEmpty = ({title, description}) => {
    return (
       <View
       style={{
+      flex: 1,
       alignItems: 'center',
+      justifyContent: 'center',
       gap: 12,
       paddingHorizontal: 24
       }}>
