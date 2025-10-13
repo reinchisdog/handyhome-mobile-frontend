@@ -207,8 +207,10 @@ const WorkerInbox = () => {
                <View
                style={{
                alignItems: 'center',
+               justifyContent: 'center',
                gap: 12,
-               paddingHorizontal: 24
+               paddingHorizontal: 24,
+               flex: 1,
                }}>
                   <Image
                   source={require('../../../../assets/images/illustrations/EmptyBookings.png')}
@@ -232,6 +234,9 @@ const WorkerInbox = () => {
                   </Text>
                </View>
          )}
+         contentContainerStyle={{
+            flexGrow: 1
+         }}
          />
       </View>
    )

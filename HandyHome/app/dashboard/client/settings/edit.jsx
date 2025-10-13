@@ -6,6 +6,8 @@ import { StyleSheet, Text, View, ScrollView, Image, Pressable } from 'react-nati
 import React, {useState, useEffect} from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
+import { SaveFormat, ImageManipulator} from 'expo-image-manipulator';
 import { useRouter } from 'expo-router';
 // ---- Other Components
 import Header from '../../../../components/Header';
@@ -51,27 +53,88 @@ const ProfileEditScreen = () => {
       return formattedDate;
    }
 
+   const MAX_FILE_SIZE = 20 * 1024 * 1024;
+
+   const getFileSize = async (uri) => {
+      try {
+         const fileInfo = await FileSystem.getInfoAsync(uri);
+         console.log(formatFileSize(fileInfo.size));
+         return fileInfo.size;
+      } catch (err) {
+         console.error('Error getting file size:', err);
+         return null;
+      }
+   }
+
+   const formatFileSize = (bytes) => {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+   }
+
+   const compressImage = async (uri) => {
+      try {
+         const fileSize = await getFileSize(uri);
+   
+         if (fileSize && fileSize < 1 * 1024 * 1024) { // Less than 1MB
+            console.log('✅ Image already small enough, skipping compression');
+            return uri;
+         }
+   
+         let quality = 0.7;
+         let maxWidth = 1920;
+   
+         if (fileSize > 10 * 1024 * 1024) { // > 10MB
+            quality = 0.5;
+            maxWidth = 1280;
+         } else if (fileSize > 5 * 1024 * 1024) { // > 5MB
+            quality = 0.6;
+            maxWidth = 1600;
+         }
+   
+         const manipulator = await ImageManipulator.manipulate(uri);
+         manipulator.resize({width: maxWidth});
+         const result = await manipulator.renderAsync();
+         const savedImage = await result.saveAsync({
+            format: SaveFormat.JPEG,
+            compress: quality
+         })
+   
+         const compressedSize = await getFileSize(savedImage.uri);
+         console.log(`✅ Compressed: ${formatFileSize(fileSize)} → ${formatFileSize(compressedSize)}`);
+         console.log('COMPRESSED IMAGE:', savedImage.uri, quality, maxWidth);
+   
+         return savedImage.uri;
+      } catch (err) {
+         console.error('Error compressing image:', err);
+         // Return original if compression fails
+         return uri;
+      }
+   }
+
    const handleImageSelect = async () => {
-      const uriPath = await ImagePicker.launchImageLibraryAsync({
+      const result = await ImagePicker.launchImageLibraryAsync({
          mediaTypes: ['images'],
          quality: 0.8,
       });
 
-      if(!uriPath.canceled) {
-         setInfo(prev => {
-            const asset = uriPath.assets[0];
+      if(!result.canceled && result.assets?.length > 0) {
+         const imageUri = result.assets[0].uri;
 
-            if (asset.fileSize && asset.fileSize > 5 * 1024 * 1024) {
-               setErrorMessage("Image is too large. Please select an image under 5MB.");
-               setErrorModal(true);
-               return prev;
-            }
+         const fileSize = await getFileSize(imageUri);
+         if (fileSize && fileSize > MAX_FILE_SIZE) {
+            alert(`Image is too large (${formatFileSize(fileSize)}). Maximum allowed size is ${formatFileSize(MAX_FILE_SIZE)}. Please select a smaller image.`);
+            return;
+         }
 
-            return {
-               ...prev,
-               profile_photo: asset?.uri
-            }
-         });
+         const compressedUri = await compressImage(imageUri);
+
+         setInfo(prev => ({
+            ...prev,
+            profile_photo: compressedUri
+         }));
       }
    }
 
@@ -105,6 +168,8 @@ const ProfileEditScreen = () => {
          setInfoLoading(false);
       }
    }
+
+   
 
    // Effects
    useEffect(() => {

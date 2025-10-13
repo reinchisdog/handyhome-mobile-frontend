@@ -2,7 +2,7 @@
 
 // Imports
 // ---- React and Expo Components
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Pressable, Modal, FlatList, ImageBackground, Image } from 'react-native'
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Pressable, Modal, FlatList, ImageBackground, Image, useWindowDimensions } from 'react-native'
 import { useState, useEffect, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
 // ---- Other Components
@@ -10,6 +10,7 @@ import Header from '../../../../../../components/Header'
 import MediaUpload from '../../../../../../components/MediaUpload';
 import MainButton from '../../../../../../components/MainButton';
 import GeneralModal from '../../../../../../components/GeneralModal';
+import LoadingDots from '../../../../../../components/LoadingDots'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 // ---- Styles and Icons
 import { globalStyles as global } from '../../../../../../styles/globalStyles';
@@ -25,6 +26,7 @@ const ClientBookingReceipt = () => {
    // Hooks and States
    const {convertUriToFile} = useConvert();
    const {token} = useAuth();
+   const {width, height} = useWindowDimensions();
    const { details, setErrorModal, setErrorMessage, setErrorType } = useBookingDetails();
    const insets = useSafeAreaInsets();
 
@@ -158,6 +160,22 @@ const ClientBookingReceipt = () => {
    
    return (
       <View style={[global.screenContainer, {backgroundColor: COLORS.primary, position: 'relative'}]}>
+         {initLoading &&
+            <View style={{
+               position: 'absolute',
+               justifyContent: 'center',
+               alignItems: 'center',
+               top: 0,
+               left: 0,
+               width: width,
+               height: height,
+               backgroundColor: COLORS.primary,
+               zIndex: 999999
+            }}>
+               <LoadingDots slide={false} color='#fff'/>
+            </View>
+         }
+
          {/* Modal Delete */}
          <GeneralModal 
          visible={deleteModal}

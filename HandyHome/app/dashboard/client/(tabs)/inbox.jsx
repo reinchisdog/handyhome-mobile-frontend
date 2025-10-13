@@ -201,35 +201,40 @@ const ClientInbox = () => {
          showsVerticalScrollIndicator={false}
          ListFooterComponent={renderFooter}
          ListEmptyComponent={() => (
-            !loading &&
-               <View
-               style={{
-               alignItems: 'center',
-               gap: 12,
-               paddingHorizontal: 24
-               }}>
-                  <Image
-                  source={require('../../../../assets/images/illustrations/EmptyBookings.png')}
-                  style={{
-                     height: 200,
-                     width: 200,
-                     aspectRatio: 1/1
-                  }}
-                  />
-         
-                  <Text 
-                  style={[
-                     launch.title, {
-                     marginBottom: 0, 
-                     marginTop: 4,
-                  }]}>
-                     No Messages yet
-                  </Text>
-                  <Text style={[launch.description, {paddingHorizontal: 0}]}>
-                     Book an appointment to connect and communicate with a service provider.
-                  </Text>
-               </View>
+                     !loading &&
+                        <View
+                        style={{
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 12,
+                        paddingHorizontal: 24,
+                        flex: 1,
+                        }}>
+                           <Image
+                           source={require('../../../../assets/images/illustrations/EmptyBookings.png')}
+                           style={{
+                              height: 200,
+                              width: 200,
+                              aspectRatio: 1/1
+                           }}
+                           />
+                  
+                           <Text 
+                           style={[
+                              launch.title, {
+                              marginBottom: 0, 
+                              marginTop: 4,
+                           }]}>
+                              No Messages yet
+                           </Text>
+                           <Text style={[launch.description, {paddingHorizontal: 0}]}>
+                              Book an appointment to connect and communicate with a service provider.
+                           </Text>
+                        </View>
          )}
+         contentContainerStyle={{
+            flexGrow: 1
+         }}
          />
       </View>
    )

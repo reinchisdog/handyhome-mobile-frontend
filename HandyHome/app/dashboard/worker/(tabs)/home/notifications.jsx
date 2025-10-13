@@ -2,7 +2,7 @@
 
 // Imports
 // React and Expo Components
-import { StyleSheet, Text, View, FlatList, RefreshControl } from 'react-native'
+import { StyleSheet, Text, View, FlatList, RefreshControl, Image } from 'react-native'
 import React from 'react'
 // Other Components
 import Header from '../../../../../components/Header';
@@ -12,6 +12,7 @@ import { useAppData } from '../../../../../context/AppDataContext';
 // Styles and Icons
 import { COLORS, FONTS, FONT_SIZES } from '../../../../../styles/constants';
 import { globalStyles as global } from '../../../../../styles/globalStyles';
+import { launchStyles as launch } from '../../../../../styles/launchStyles';
 
 const WorkerNotifications = () => {
    // Hooks and States
@@ -71,6 +72,41 @@ const WorkerNotifications = () => {
             />
          }
          ListFooterComponent={renderFooter}
+         ListEmptyComponent={
+            <View
+            style={{
+               alignItems: 'center',
+               justifyContent: 'center',
+               gap: 12,
+               paddingHorizontal: 24,
+               flex: 1,
+               // backgroundColor: 'green'
+            }}>
+               <Image
+               source={require('../../../../../assets/images/illustrations/EmptyNotifs.png')}
+               style={{
+                  height: 160,
+                  width: 160,
+                  aspectRatio: 1/1
+               }}
+               />
+      
+               <Text 
+               style={[
+                  launch.title, {
+                  marginBottom: 0, 
+                  marginTop: 4,
+               }]}>
+                  You have no notifications
+               </Text>
+               <Text style={[launch.description, {paddingHorizontal: 0}]}>
+                  Nothing new for now. Check back later for more announcements.
+               </Text>
+            </View>
+         }
+         contentContainerStyle={{
+            flexGrow: 1,
+         }}
          />
       </View>
    )

@@ -2,7 +2,7 @@
 
 // Imports
 // ---- React and Expo Components
-import { Animated, StyleSheet, Text, View, useWindowDimensions, StatusBar, Image, Pressable, TouchableOpacity, Modal } from 'react-native';
+import { Animated, StyleSheet, Text, View, useWindowDimensions, StatusBar, Image, Pressable, TouchableOpacity, Modal, } from 'react-native';
 import React, { useState, useRef, useEffect} from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -13,6 +13,7 @@ import MainButton from '../../../../../components/MainButton';
 import Multiline from '../../../../../components/Multiline';
 import MediaUpload from '../../../../../components/MediaUpload';
 import ErrorModal from '../../../../../components/ErrorModal';
+import LoadingDots from '../../../../../components/LoadingDots';
 import {ServiceCategoryImages} from '../../../../../components/ServiceCategoryMap';
 // ---- Styles and Icons
 import { globalStyles as global } from '../../../../../styles/globalStyles';
@@ -29,7 +30,7 @@ const BookingRating = () => {
    // Hooks and States
    const router = useRouter();
    const insets = useSafeAreaInsets();
-   const { height } = useWindowDimensions();
+   const { height, width } = useWindowDimensions();
    const { id } = useLocalSearchParams();
    const { token } = useAuth();
    const { convertUriToFile } = useConvert();
@@ -216,6 +217,22 @@ const BookingRating = () => {
          </Modal>
 
          <View style={[global.screenContainer, {position: 'relative'}]}>
+            {detailsLoading &&
+               <View style={{
+                  position: 'absolute',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  top: 0,
+                  left: 0,
+                  width: width,
+                  height: height,
+                  backgroundColor: '#fff',
+                  zIndex: 999999
+               }}>
+                  <LoadingDots slide={false}/>
+               </View>
+            }
+
             <Header 
             hasBack
             backgroundColor={headerColor}
