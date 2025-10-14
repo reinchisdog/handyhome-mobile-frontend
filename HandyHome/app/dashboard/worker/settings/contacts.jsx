@@ -464,125 +464,126 @@ const ContactModal = ({
       backdropColor={COLORS.modalbg}
       onRequestClose={handleClose}
       >
-         <KeyboardAvoidingView
-         behavior='position'
-         keyboardVerticalOffset={-insets.bottom + 24}>
+          <KeyboardAvoidingView
+         behavior='height'
+         keyboardVerticalOffset={-insets.bottom + 24}
+         style={{
+            flex: 1,
+            position: 'relative',
+            // backgroundColor: 'green'
+         }}>
             <Pressable
             onPress={handleClose}
             style={{
-               height: height,
+               flex: 1,
+               // backgroundColor: 'blue'
+            }} />
+
+            <View
+            style={{
                width: width,
-               position: 'relative'
+               padding: 24,
+               paddingBottom: insets.bottom + 24,
+               backgroundColor: '#fff',
+               borderTopLeftRadius: 20,
+               borderTopRightRadius: 20,
+               gap: 24
             }}>
-               <View
+               <Text
                style={{
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  width: width,
-                  padding: 24,
-                  paddingBottom: insets.bottom + 24,
-                  backgroundColor: '#fff',
-                  borderTopLeftRadius: 20,
-                  borderTopRightRadius: 20,
-                  gap: 24
+                  textAlign: 'center',
+                  fontFamily: FONTS.roboto700,
+                  fontSize: FONT_SIZES.lg,
+                  color: COLORS.primary
                }}>
-                  <Text
-                  style={{
-                     textAlign: 'center',
-                     fontFamily: FONTS.roboto700,
-                     fontSize: FONT_SIZES.lg,
-                     color: COLORS.primary
-                  }}>
-                     {
-                        mode === "add" ? "Add New Contact" : mode === "view" ? "Contact Information":
-                        null
-                     }
-                  </Text>
+                  {
+                     mode === "add" ? "Add New Contact" : mode === "view" ? "Contact Information":
+                     null
+                  }
+               </Text>
 
-                  <View style={global.divider}/>
+               <View style={global.divider}/>
 
-                  <View style={{gap: 12}}>
-                     <InputBasic 
-                     floatColor='#fff'
-                     placeholder='Name'
-                     inputMode='text'
-                     left={
-                        <Icons name='person' size={24} color={COLORS.labels}/>
-                     }
-                     value={contact.name}
-                     onChangeText={(e) => setContact(prev => ({
-                        ...prev,
-                        name: e
-                     }))}/>
+               <View style={{gap: 12}}>
+                  <InputBasic 
+                  floatColor='#fff'
+                  placeholder='Name'
+                  inputMode='text'
+                  left={
+                     <Icons name='person' size={24} color={COLORS.labels}/>
+                  }
+                  value={contact.name}
+                  onChangeText={(e) => setContact(prev => ({
+                     ...prev,
+                     name: e
+                  }))}/>
 
-                     <InputBasic 
-                     floatColor='#fff'
-                     placeholder='E-mail'
-                     inputMode='email'
-                     keyboardType='email-address'
-                     left={
-                        <Icons name='mail' size={24} color={COLORS.labels}/>
-                     }
-                     value={contact.email}
-                     onChangeText={(e) => setContact(prev => ({
-                        ...prev,
-                        email: e
-                     }))}/>
+                  <InputBasic 
+                  floatColor='#fff'
+                  placeholder='E-mail'
+                  inputMode='email'
+                  keyboardType='email-address'
+                  left={
+                     <Icons name='mail' size={24} color={COLORS.labels}/>
+                  }
+                  value={contact.email}
+                  onChangeText={(e) => setContact(prev => ({
+                     ...prev,
+                     email: e
+                  }))}/>
 
-                     <InputBasic 
-                     floatColor='#fff'
-                     placeholder='Phone Number'
-                     inputMode='numeric'
-                     keyboardType='phone-pad'
-                     left={
-                        <Icons name='phone' size={24} color={COLORS.labels}/>
-                     }
-                     value={contact.phone_number}
-                     onChangeText={(e) => setContact(prev => ({
-                        ...prev,
-                        phone_number: e
-                     }))}/>
-                  </View>
-                  
-                  <View 
-                  style={{
-                     flexDirection: 'row', 
-                     alignItems: 'center', 
-                     gap: 8
-                  }}>
-                     {mode === "add" &&
-                        <MainButton 
-                        type='primary'
-                        text={'Save'}
-                        loading={loading}
-                        onPress={handleAdd}
-                        />
-                     }
-                     {mode === "view" &&
-                        <>
-                           <MainButton 
-                           type='alert'
-                           text={'Delete'}
-                           size='grow'
-                           loading={loading}
-                           onPress={() => handleDelete(contact?.id)}
-                           />
-
-                           <MainButton 
-                           type='secondary'
-                           text={'Update'}
-                           size='grow'
-                           loading={loading}
-                           disabled={isButtonDisabled()}
-                           onPress={() => handleUpdate(contact?.id)}
-                           />
-                        </>
-                     }
-                  </View>
+                  <InputBasic 
+                  floatColor='#fff'
+                  placeholder='Phone Number'
+                  inputMode='numeric'
+                  keyboardType='phone-pad'
+                  left={
+                     <Icons name='phone' size={24} color={COLORS.labels}/>
+                  }
+                  value={contact.phone_number}
+                  onChangeText={(e) => setContact(prev => ({
+                     ...prev,
+                     phone_number: e
+                  }))}/>
                </View>
-            </Pressable>
+               
+               <View 
+               style={{
+                  flexDirection: 'row', 
+                  alignItems: 'center', 
+                  gap: 8
+               }}>
+                  {mode === "add" &&
+                     <MainButton 
+                     type='primary'
+                     text={'Save'}
+                     loading={loading}
+                     onPress={handleAdd}
+                     />
+                  }
+                  {mode === "view" &&
+                     <>
+                        <MainButton 
+                        type='alert'
+                        text={'Delete'}
+                        size='grow'
+                        loading={loading}
+                        onPress={() => handleDelete(contact?.id)}
+                        />
+
+                        <MainButton 
+                        type='secondary'
+                        text={'Update'}
+                        size='grow'
+                        loading={loading}
+                        disabled={isButtonDisabled()}
+                        onPress={() => handleUpdate(contact?.id)}
+                        />
+                     </>
+                  }
+               </View>
+            </View>
+            
          </KeyboardAvoidingView>
       </Modal>
    )
