@@ -2,7 +2,7 @@
 
 // Imports
 // ---- React and Expo Components
-import { StyleSheet, Text, View, Animated, StatusBar } from 'react-native';
+import { StyleSheet, Text, View, Animated, StatusBar, Pressable, Linking } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -18,7 +18,7 @@ const EmergencyScreen = () => {
    const router = useRouter();
    const insets = useSafeAreaInsets();
    const { id } = useLocalSearchParams();
-   const { handleEmergency, emergencySuccess, clearEmergency } = useBookingDetails();
+   const { handleEmergency, emergencySuccess, clearEmergency, emergencyFinish, setEmergencyFinish, emergencyContacts } = useBookingDetails();
 
    const countdown = 5;
    const [timer, setTimer] = useState(countdown);
@@ -48,6 +48,7 @@ const EmergencyScreen = () => {
    }, [timer])
 
    useEffect(() => {
+      setEmergencyFinish(false);
       circleLoop.setValue(0);
       Animated.loop(
          Animated.timing(circleLoop, {
@@ -56,7 +57,6 @@ const EmergencyScreen = () => {
             useNativeDriver: false,
          })
       ).start(() => {
-         
       });
    }, []);
 
@@ -75,14 +75,6 @@ const EmergencyScreen = () => {
             paddingHorizontal: 24
          }}>
             <Text style={{
-               fontFamily: FONTS.roboto500,
-               fontSize: FONT_SIZES.md,
-               color: '#fff',
-               textAlign: 'center'
-            }}>
-               Notifying Admins and Emergency Contacts...
-            </Text>
-            <Text style={{
                fontFamily: FONTS.roboto600,
                fontSize: 48,
                color: '#fff',
@@ -90,31 +82,87 @@ const EmergencyScreen = () => {
             }}>
                EMERGENCY
             </Text>
+            <Text style={{
+               fontFamily: FONTS.roboto500,
+               fontSize: FONT_SIZES.md,
+               color: '#fff',
+               textAlign: 'center'
+            }}>
+               {emergencyFinish ? 'You can also contact these government hotlines...' : 'Notifying Admins and Emergency Contacts...'}
+            </Text>
          </View>
 
          {/* ---- Middle */}
-         <View 
-         style={{
-            flex: 1, 
-            justifyContent: 'center', 
-            alignItems: 'center',
-            paddingHorizontal: 24
-         }}>
+         {emergencyFinish ?
+            <View style={{
+               flex: 1, 
+               justifyContent: 'center', 
+               alignItems: 'center',
+               margin: 24,
+               // backgroundColor: 'green'
+            }}>
+               <View style={{
+                  width: '100%',
+                  backgroundColor: '#fff',
+                  borderRadius: 20,
+                  overflow: 'hidden',
+               }}>
+                  {emergencyContacts.map((contact, index) => (
+                     <Pressable
+                     key={index}
+                     style={({pressed}) => [{
+                        paddingHorizontal: 24,
+                        paddingVertical: 12,
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        borderBottomWidth: index < emergencyContacts.length - 1 ? 1 : 0,
+                        borderBottomColor: '#e0e0e0',
+                        backgroundColor: pressed ? COLORS.summaryPress : '#fff'
+                     }]}
+                     onPress={() => Linking.openURL(`tel:${contact.number}`)}>
+                        <Text style={{
+                           fontFamily: FONTS.roboto600,
+                           fontSize: FONT_SIZES.md,
+                           color: COLORS.lettersicons
+                        }}>
+                           {contact.org}
+                        </Text>
+                        <Text style={{
+                           fontFamily: FONTS.roboto600,
+                           fontSize: FONT_SIZES.md,
+                           color: COLORS.accent
+                        }}>
+                           {contact.number}
+                        </Text>
+                     </Pressable>
+                  ))}
+               </View>
+            </View>
+         :
             <View 
             style={{
-               justifyContent: 'center',
+               flex: 1, 
+               justifyContent: 'center', 
                alignItems: 'center',
-               position: 'relative'
+               paddingHorizontal: 24
             }}>
-               {(timer > 0) ? <CountdownCircle timer={timer}/> : <EmergencyMessage />}
-               <Animated.View style={[
-                  styles.circleItem, {
-                  height: circleSize,
-                  opacity: circleOpacity,
-                  zIndex: 0,
-               }]} />
+               <View 
+               style={{
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  position: 'relative'
+               }}>
+                  {(timer > 0) ? <CountdownCircle timer={timer}/> : <EmergencyMessage />}
+                  <Animated.View style={[
+                     styles.circleItem, {
+                     height: circleSize,
+                     opacity: circleOpacity,
+                     zIndex: 0,
+                  }]} />
+               </View>
             </View>
-         </View>
+         }
 
          {/* ---- Bottom */}
          <View style={[
@@ -123,7 +171,7 @@ const EmergencyScreen = () => {
          }]}>
             <MainButton 
             type='alert'
-            text={emergencySuccess ? "Go Back" : "Cancel"}
+            text={emergencyFinish ? "Go Back" : "Cancel"}
             onPress={() => {
                clearEmergency();
                router.back();

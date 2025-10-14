@@ -91,6 +91,10 @@ const BookingsLayout = () => {
                name="completed" 
                options={{ title: "Completed" }} 
             />
+            <Tabs.Screen 
+               name="cancelled" 
+               options={{ title: "Cancelled" }} 
+            />
          </Tabs>
          
       </View>

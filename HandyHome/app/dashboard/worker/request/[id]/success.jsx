@@ -29,8 +29,14 @@ const RequestSuccessScreen = () => {
          <SuccessMessage
          type='neutral'
          title={'Wait for confirmation'}
-         body={'Please check regularly if the client will proceed with the booking.'}
-         />
+         body={
+            <Text>
+            Please check regularly if the client will proceed with the booking. In the meantime, we advise <Text style={{
+               color: COLORS.accent,
+               fontFamily: FONTS.roboto500
+            }}>not to purchase any materials until 1 day before the scheduled service date</Text>, as bookings can be cancelled at any time.
+            </Text>
+         }/>
 
          <View 
          style={{

@@ -63,6 +63,42 @@ const WorkerBookingDetails = () => {
    }, [permission, requestPermission])
 
    // Renders
+   const formatDateTime = (date, time, separator = ' | ') => {
+      if (!date) return;
+      
+      let dateObj, hour, minutes;
+      
+      // Check if date is in ISO format (YYYY-MM-DDTHH:MM:SS)
+      if (date.includes('T')) {
+         dateObj = new Date(date);
+         hour = dateObj.getHours();
+         minutes = dateObj.getMinutes().toString().padStart(2, '0');
+      } else {
+         // Original format: separate date and time strings
+         if (!time) return;
+         
+         // Parse the date string (YYYY-MM-DD)
+         const [year, month, day] = date.split('-');
+         dateObj = new Date(year, month - 1, day);
+         
+         // Parse the time string (HH:MM:SS)
+         const [hours, mins] = time.split(':');
+         hour = parseInt(hours);
+         minutes = mins;
+      }
+      
+      // Get month name
+      const monthName = dateObj.toLocaleString('en-US', { month: 'long' });
+      const day = dateObj.getDate();
+      
+      // Convert to 12-hour format
+      const period = hour >= 12 ? 'pm' : 'am';
+      const hour12 = hour % 12 || 12;
+      
+      // Format the result
+      return `${monthName} ${day}${separator}${hour12}:${minutes} ${period}`;
+   }
+
    const renderHeaderText = () => {
       const status = details?.status?.toLowerCase();
       switch (status) {
@@ -70,6 +106,7 @@ const WorkerBookingDetails = () => {
          case 'ongoing': return "Work is currently in progress.";
          case 'pending': return "Work is currently in progress.";
          case 'completed': return "Job has been completed successfully.";
+         case 'cancelled': return "This service has been cancelled."
          default: return null
       }
    }
@@ -85,6 +122,8 @@ const WorkerBookingDetails = () => {
             return `Currently working. Contact support if you need assistance.`;
          case 'completed':
             return `You are now able to preview the feedback of your work.`;
+         case 'cancelled':
+            return `${details?.reason_for_cancellation || ""}`
          default:
             return '';
       }
@@ -519,6 +558,13 @@ const WorkerBookingDetails = () => {
                         }}>
                            {details?.serviceName}
                         </Text>
+                        <Text style={{
+                           fontFamily: FONTS.roboto400,
+                           fontSize: FONT_SIZES.md,
+                           color: COLORS.lettersicons
+                        }}>
+                           {formatDateTime(details?.date, details?.time)}
+                        </Text>
                      </View>
                   </View>
 
@@ -725,7 +771,7 @@ const WorkerBookingDetails = () => {
                   </Text>
                   <View style={styles.sectionPressable}>
                      {/* ---- Chat Message */}
-                     {details?.status !== "Completed" &&
+                     {(details?.status !== "Completed" && details?.status !== "Cancelled") &&
                         <Pressable 
                         onPress={() => {fetchChatSession(details?.session)}}
                         style={({pressed}) => [

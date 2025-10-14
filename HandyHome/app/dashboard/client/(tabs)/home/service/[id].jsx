@@ -168,8 +168,8 @@ const ServiceCategoryScreen = () => {
          setVisible={setShowError}
          title={"An error has ocurred when starting an Appointment"}
          message={errorMessage}
-         buttonText={"Verify Now"}
-         onExit={() => router.replace('/dashboard/client/verify/user')}
+         buttonText={user?.identity_status?.status === "Pending" ? null : "Verify Now"}
+         onExit={user?.identity_status?.status === "Pending" ? null : () => router.replace('/dashboard/client/verify/user')}
          />
 
          <View

@@ -1,15 +1,15 @@
-// Screens: Cancelled Bookings
+// Screens: Upcoming Bookings
 
 // Imports
 // ---- React and Expo Components
 import { StyleSheet, Text, View, FlatList, RefreshControl } from 'react-native';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 // ---- Contexts
 import { useAuth } from '../../../../../context/AuthContext'
-import { useRouter } from 'expo-router';
 // ---- Other Components
-import UserBookingItem from '../../../../../components/UserBookingItem';
+import WorkerBookingItem from '../../../../../components/WorkerBookingItem';
 import LoadingDots from '../../../../../components/LoadingDots';
 import BookingsEmpty from '../../../../../components/BookingsEmpty';
 // ---- Styles and Icons
@@ -31,6 +31,7 @@ const CancelledBooking = () => {
    const [loadingMore, setLoadingMore] = useState(false);
    const [refreshing, setRefreshing] =useState(false);
    const [hasMore, setHasMore] = useState(true);
+
 
    const fetchBookings = async (pageNum = 1, isRefresh = false) => {
       if ((loading || loadingMore) && !isRefresh) return;
@@ -57,16 +58,16 @@ const CancelledBooking = () => {
             page: pageNum,
             limit: MAX_LIMIT,
          }
-         console.log("---- [Cancelled] Fetching Attempt ----");
-         console.log("[1] Fetching Bookings");
-         const bookingResult = await api.get('/user/book/Cancelled',{
+         // console.log("---- [Upcoming] Fetching Attempt ----");
+         // console.log("[1] Fetching Bookings");
+         const bookingResult = await api.get('/worker/bookings/cancelled',{
             headers: {'Authorization': `Bearer ${token}`},
             params: params,
          });
 
-         console.log("[2] Succesfully Fetched");
+         // console.log("[2] Succesfully Fetched");
          const bookingData = bookingResult?.data?.data?.bookings;
-         console.log(bookingData);
+         // console.log(bookingData);
          if (isRefresh) {
             setBookings(bookingData);
          } else {
@@ -78,8 +79,9 @@ const CancelledBooking = () => {
          if (!isRefresh) {
             setPage(pageNum);
          }
+
       } catch (err) {
-         console.log(err);
+
       } finally {
          setLoading(false);
          setLoadingMore(false);
@@ -129,19 +131,19 @@ const CancelledBooking = () => {
             <View style={global.divider}/>
          )}
       </View>
-   )  
+   )
 
    return (
       <View style={[global.screenContainer, {backgroundColor: COLORS.screenbg}]}>
          <FlatList 
          data={bookings}
          renderItem={({item}) => (
-            <UserBookingItem 
-            data={item}
+            <WorkerBookingItem 
+            booking={item}
             left={{
                text: "Details",
                function: () => {router.push({
-                  pathname: '/dashboard/client/booking/[id]/details',
+                  pathname: `/dashboard/worker/booking/[id]/details`,
                   params: {id: item.id}
                })},
             }}
@@ -152,7 +154,7 @@ const CancelledBooking = () => {
             padding: 12,
             gap: 8,
             alignItems: 'stretch',
-            flexGrow: 1,
+            flexGrow: 1
          }}
          onEndReachedThreshold={0.5}
          onEndReached={fetchMore}
@@ -173,8 +175,8 @@ const CancelledBooking = () => {
                title={"No Cancelled Bookings"}
                description={"You don't have any cancelled bookings. Hopefully it stays that way!"}
                />
-         )}
-         />
+         )}/>
+
       </View> 
    )
 }

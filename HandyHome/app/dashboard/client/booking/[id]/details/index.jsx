@@ -41,6 +41,42 @@ const ClientBookingDetails = () => {
    const [addonPrice, setAddonPrice] = useState(0);
 
    // Renders
+   const formatDateTime = (date, time, separator = ' | ') => {
+      if (!date) return;
+      
+      let dateObj, hour, minutes;
+      
+      // Check if date is in ISO format (YYYY-MM-DDTHH:MM:SS)
+      if (date.includes('T')) {
+         dateObj = new Date(date);
+         hour = dateObj.getHours();
+         minutes = dateObj.getMinutes().toString().padStart(2, '0');
+      } else {
+         // Original format: separate date and time strings
+         if (!time) return;
+         
+         // Parse the date string (YYYY-MM-DD)
+         const [year, month, day] = date.split('-');
+         dateObj = new Date(year, month - 1, day);
+         
+         // Parse the time string (HH:MM:SS)
+         const [hours, mins] = time.split(':');
+         hour = parseInt(hours);
+         minutes = mins;
+      }
+      
+      // Get month name
+      const monthName = dateObj.toLocaleString('en-US', { month: 'long' });
+      const day = dateObj.getDate();
+      
+      // Convert to 12-hour format
+      const period = hour >= 12 ? 'pm' : 'am';
+      const hour12 = hour % 12 || 12;
+      
+      // Format the result
+      return `${monthName} ${day}${separator}${hour12}:${minutes} ${period}`;
+   }
+
    const renderHeaderText = () => {
       const status = details?.status?.toLowerCase();
       switch (status) {
@@ -48,6 +84,7 @@ const ClientBookingDetails = () => {
          case 'ongoing': return "Service is underway.";
          case 'pending': return "Service is underway.";
          case 'completed': return "All done! Don't forget to rate your experience.";
+         case 'cancelled': return "This service has been cancelled."
          default: return null
       }
    }
@@ -63,6 +100,8 @@ const ClientBookingDetails = () => {
             return `Need help? Contact us anytime by using the Emergency Button.`;
          case 'completed':
             return `Leaving a review helps us improve our services.`;
+         case 'cancelled':
+            return `${details?.reason_for_cancellation || ""}`
          default:
             return '';
       }
@@ -435,6 +474,13 @@ const ClientBookingDetails = () => {
                         }}>
                            {details?.serviceName}
                         </Text>
+                        <Text style={{
+                           fontFamily: FONTS.roboto400,
+                           fontSize: FONT_SIZES.md,
+                           color: COLORS.lettersicons
+                        }}>
+                           {formatDateTime(details?.date, details?.time)}
+                        </Text>
                      </View>
                   </View>
 
@@ -702,7 +748,7 @@ const ClientBookingDetails = () => {
                   </Text>
                   <View style={styles.sectionPressable}>
                      {/* ---- Chat Message */}
-                     {details?.status !== "Completed" &&
+                     {details?.status !== "Completed" || details?.status !== "Cancelled" &&
                         <Pressable 
                         onPress={() => {fetchChatSession(details?.session)}}
                         style={({pressed}) => [

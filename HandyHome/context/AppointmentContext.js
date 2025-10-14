@@ -95,10 +95,18 @@ export const AppointmentProvider = ({ children }) => {
             time: convertDateToTime24(appointment.time),
             attachment: convertUriToFile(appointment.attachment),
          }
-         // console.log(converted);
+         console.log(converted);
 
          const formData = new FormData();
-         appendFormData(formData, converted);
+         // appendFormData(formData, converted);
+         formData.append('date', converted.date);
+         formData.append('time', converted.time);
+         formData.append('service_id', converted.service_id);
+         formData.append('sub_service_id', converted.sub_service_id);
+         formData.append('description', converted.description);
+         if (converted.attachment) {
+            formData.append('description', converted.attachment);
+         }
 
          console.log("[2] Submitting Initial Appointment");
          const appointmentResult = await api.post(`/user/book`, formData, {

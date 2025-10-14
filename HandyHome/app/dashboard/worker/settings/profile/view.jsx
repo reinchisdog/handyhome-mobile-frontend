@@ -140,6 +140,7 @@ const ProfileWorker = () => {
             customers={worker?.worker?.customer_count}
             rating={worker?.worker?.rating}
             review={worker?.worker?.total_reviews}
+            route={'/dashboard/worker/settings/profile/edit'}
             />
          )}
          renderTabBar={renderTabBar}

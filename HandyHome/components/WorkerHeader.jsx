@@ -2,12 +2,14 @@
 
 // Imports
 // ---- React Components
-import { StyleSheet, Text, View, ImageBackground } from 'react-native'
+import { StyleSheet, Text, View, ImageBackground, TouchableOpacity } from 'react-native'
 import React from 'react'
+import { useRouter } from 'expo-router'
 // ---- Styles and Icons
 import { globalStyles as global } from '../styles/globalStyles'
 import { COLORS, FONTS, FONT_SIZES } from '../styles/constants'
 import Icons from '@expo/vector-icons/MaterialCommunityIcons';
+import Arrows from '@expo/vector-icons/Entypo'
 
 const WorkerHeader = ({
    name,
@@ -17,7 +19,10 @@ const WorkerHeader = ({
    customers,
    rating,
    review,
+   route = null
 }) => {
+   const router = useRouter();
+
    return (
       <View style={{width: '100%'}}>
          {/* ---- Worker Details */}
@@ -112,6 +117,17 @@ const WorkerHeader = ({
                   </View>
                   
                </View>
+
+               {route &&
+                  <TouchableOpacity
+                  style={{
+                     flex: 1,
+                     alignItems: 'flex-end'
+                  }}
+                  onPress={() => router.push(route)}>
+                     <Arrows name='chevron-right' size={24} color={COLORS.accent}/>
+                  </TouchableOpacity>
+               }
             </View>
          </ImageBackground>
 

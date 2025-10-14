@@ -40,6 +40,8 @@ const AddressModal = ({
    const [ barangayList, setBarangayList ] = useState([]);
    const [ selectedBarangay, setSelectedBarangay ] = useState(null);
 
+   const [fetching, setFetching] = useState(false);
+
    // Functions
    const setAddressData = (name, value) => {
       if (name === 'province') {
@@ -70,6 +72,7 @@ const AddressModal = ({
 
    const getProvinceList = async () => {
       try {
+         setFetching(true);
          const provinces = await axios.get('https://psgc.gitlab.io/api/provinces/');
          const districts = await axios.get('https://psgc.gitlab.io/api/districts/');
 
@@ -85,6 +88,8 @@ const AddressModal = ({
 
       } catch (error) {
          console.log(error);
+      } finally {
+         setFetching(false);
       }
    }
 
@@ -94,8 +99,9 @@ const AddressModal = ({
       const provinceItem = provinceList.find(p => p.title === provinceTitle);
    
       if (!provinceItem) return;
-   
+
       try {
+         setFetching(true);
          let list = [];
          if (isDistrict)
          list = await axios.get(`https://psgc.gitlab.io/api/districts/${provinceItem.value}/cities-municipalities/`);
@@ -106,10 +112,12 @@ const AddressModal = ({
          value: item.code,
          title: item.name
          })).sort((a, b) => a.title.localeCompare(b.title));
-   
+
          setMunicipalList(filteredList);
       } catch (error) {
          console.log(error);
+      } finally {
+         setFetching(false);
       }
    };
   
@@ -118,6 +126,7 @@ const AddressModal = ({
       if (!municipalItem) return;
    
       try {
+         setFetching(true);
          const list = await axios.get(`https://psgc.gitlab.io/api/cities-municipalities/${municipalItem.value}/barangays/`);
          const filteredList = list.data.map((item) => ({
          value: item.code,
@@ -127,6 +136,8 @@ const AddressModal = ({
          setBarangayList(filteredList);
       } catch (error) {
          setBarangayList([]);
+      } finally {
+         setFetching(false);
       }
    };
 
@@ -138,13 +149,32 @@ const AddressModal = ({
    useEffect(() => {
       if (!selectedProvince) return;
 
-      getMunicipalList(selectedProvince?.value);
+      // console.log('SELECTED PROV');
+
+      if (municipalList.length > 0) {
+         setMunicipalList([]);
+         setBarangayList([]);
+         setSelectedMunicipal(null);
+         setSelectedBarangay(null);
+         setAddressData('municipal', '');
+         setAddressData('barangay', '');
+      }
+
+      // console.log('FETCHING MUNICIPALITY');
+
+      getMunicipalList(selectedProvince?.title);
    }, [selectedProvince])
    
    useEffect(() => {
       if (!selectedMunicipal) return;
 
-      getBarangayList(selectedMunicipal?.value);
+      if (barangayList.length > 0) {
+         setBarangayList([]);
+         setSelectedBarangay(null);
+         setAddressData('barangay', '');
+      }
+
+      getBarangayList(selectedMunicipal?.title);
    }, [selectedMunicipal])
 
    return (
@@ -156,97 +186,92 @@ const AddressModal = ({
       onRequestClose={() => {onClose ? onClose() : setVisible(false)}}
       >
          <KeyboardAvoidingView
-         behavior='position'
+         behavior='height'
          keyboardVerticalOffset={-insets.bottom + 24}
-         >
+         style={{
+            flex: 1,
+            position: 'relative',
+            // backgroundColor: 'green'
+         }}>
             <Pressable
             onPress={() => {onClose ? onClose() : setVisible(false)}}
             style={{
-               height: height,
+               flex: 1,
+               // backgroundColor: 'blue'
+            }} />
+
+            <View
+            style={{
                width: width,
-               position: 'relative'
+               padding: 24,
+               paddingBottom: insets.bottom + 24,
+               backgroundColor: '#fff',
+               borderTopLeftRadius: 20,
+               borderTopRightRadius: 20,
+               gap: 24
             }}>
-            
-               <View
+               <Text
                style={{
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  width: width,
-                  padding: 24,
-                  paddingBottom: insets.bottom,
-                  backgroundColor: '#fff',
-                  borderTopLeftRadius: 20,
-                  borderTopRightRadius: 20,
-                  gap: 24
+                  textAlign: 'center',
+                  fontFamily: FONTS.roboto700,
+                  fontSize: FONT_SIZES.lg,
+                  color: COLORS.primary
                }}>
-                  <Text
-                  style={{
-                     textAlign: 'center',
-                     fontFamily: FONTS.roboto700,
-                     fontSize: FONT_SIZES.lg,
-                     color: COLORS.primary
-                  }}>
-                     {mode === "add" ? "Add New Address" : "Update Current Address"}
-                  </Text>
+                  {mode === "add" ? "Add New Address" : "Update Current Address"}
+               </Text>
 
-                  <View style={global.divider}/>
+               <View style={global.divider}/>
 
-                  <View style={{ gap: 12 }}>
-                     <InputBasic
-                     floatLabel={false}
-                     placeholder='Block / No. / Street'
-                     value={data.block}
-                     onChangeText={(e) => setAddressData('block', e)}
-                     />
+               <View style={{ gap: 12 }}>
+                  <InputBasic
+                  floatLabel={false}
+                  placeholder='Block / No. / Street'
+                  value={data.block}
+                  onChangeText={(e) => setAddressData('block', e)}
+                  />
 
-                     <InputDropdown 
-                     items={provinceList}
-                     placeholder='Province'
-                     onSelect={(e) => {
-                        setSelectedProvince(e);
-                        setSelectedMunicipal(null);
-                        setSelectedBarangay(null);
-                        setAddressData('province', e.title);
-                        getMunicipalList(e.title);
-                     }}
-                     selectedItem={selectedProvince}
-                     />
+                  <InputDropdown 
+                  items={provinceList}
+                  placeholder='Province'
+                  onSelect={(e) => {
+                     setSelectedProvince(e);
+                     setAddressData('province', e.title);
+                  }}
+                  selectedItem={selectedProvince}
+                  loading={fetching}
+                  />
 
-                     <InputDropdown 
-                     items={municipalList}
-                     placeholder='City/Municipality'
-                     onSelect={(e) => {
-                        setSelectedMunicipal(e);
-                        setSelectedBarangay(null);
-                        setAddressData('municipal', e.title);
-                        getBarangayList(e.title);
-                     }}
-                     selectedItem={selectedMunicipal}
-                     />
+                  <InputDropdown 
+                  items={municipalList}
+                  placeholder='City/Municipality'
+                  onSelect={(e) => {
+                     setSelectedMunicipal(e);
+                     setAddressData('municipal', e.title);
+                  }}
+                  selectedItem={selectedMunicipal}
+                  loading={fetching}
+                  />
 
-                     <InputDropdown 
-                     items={barangayList}
-                     placeholder='Barangay'
-                     onSelect={(e) => {
-                        setSelectedBarangay(e);
-                        setAddressData('barangay', e.title);
-                     }}
-                     selectedItem={selectedBarangay}
-                     />
-                  </View>
-
-                  <MainButton 
-                  text={mode === "add" ? "Add Address" : "Update Address"}
-                  type='primary'
-                  onPress={onSubmit}
-                  disabled={disabled}
-                  loading={loading}
+                  <InputDropdown 
+                  items={barangayList}
+                  placeholder='Barangay'
+                  onSelect={(e) => {
+                     setSelectedBarangay(e);
+                     setAddressData('barangay', e.title);
+                  }}
+                  selectedItem={selectedBarangay}
+                  loading={fetching}
                   />
                </View>
-            
-            </Pressable>
+
+               <MainButton 
+               text={mode === "add" ? "Add Address" : "Update Address"}
+               type='primary'
+               onPress={onSubmit}
+               disabled={disabled}
+               loading={loading}
+               />
+            </View>
          </KeyboardAvoidingView>
       </Modal>
    )

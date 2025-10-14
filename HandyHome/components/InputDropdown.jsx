@@ -4,9 +4,10 @@
 // ---- React Components
 import { Text, View, Animated, Easing, TouchableWithoutFeedback, TouchableHighlight, ScrollView, useWindowDimensions, StyleSheet, Modal } from 'react-native'
 import React, { useState, useEffect, useRef } from 'react'
+import LoadingDots from '../components/LoadingDots';
 // ---- Styles and Icons
 import { authStyles as auth } from '../styles/authStyles';
-import { COLORS } from '../styles/constants';
+import { COLORS, FONT_SIZES, FONTS } from '../styles/constants';
 import Icons from '@expo/vector-icons/Feather';
 
 const InputDropdown = ({
@@ -14,6 +15,7 @@ const InputDropdown = ({
    items = [],
    onSelect,
    selectedItem,
+   loading = false,
 }) => {
    /* ----------------------------- Initialization ----------------------------- */
    const { height, width } = useWindowDimensions();
@@ -109,26 +111,62 @@ const InputDropdown = ({
          }}>
 
             {/* SCROLL LIST */}
-            <ScrollView style={auth.dropdownList}>
-
-            {items?.map((item, index) => (
-               <TouchableHighlight
-               underlayColor='#7FCDEE20'
-               key={index}
-               onPress={() => handleSelect(item)}>
-                  <View style={[
-                     auth.dropdownItem, {
-                     backgroundColor: (selected && selected.value == item.value)? '#7FCDEE40' : 'transparent'
-                  }]}>
-                     <Text style={auth.inputText}>
-                        {item.title}
-                     </Text>
-                  </View>
-               </TouchableHighlight>                     
-               ))
+            {loading ?
+               <View style={{
+                  width: '90%',
+                  backgroundColor: 'white',
+                  borderRadius: 8,  
+                  minHeight: 48,
+                  paddingTop: 12,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexDirection: 'column',
+                  position: "absolute",
+                  zIndex: 999,
+                  elevation: 999,
+               }}>
+                  <LoadingDots size={10} slide={false}/>
+               </View>
+            : items.length === 0 ? 
+               <View style={{
+                  width: '90%',
+                  backgroundColor: 'white',
+                  borderRadius: 8,  
+                  minHeight: 48,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexDirection: 'column',
+                  position: "absolute",
+                  zIndex: 999,
+                  elevation: 999,
+               }}>
+                  <Text style={{
+                     fontFamily: FONTS.roboto400,
+                     fontSize: FONT_SIZES.sm,
+                     color: COLORS.labels
+                  }}>
+                     This list is currently empty
+                  </Text>
+               </View>
+            :
+               <ScrollView style={auth.dropdownList}>
+               {items?.map((item, index) => (
+                  <TouchableHighlight
+                  underlayColor='#7FCDEE20'
+                  key={index}
+                  onPress={() => handleSelect(item)}>
+                     <View style={[
+                        auth.dropdownItem, {
+                        backgroundColor: (selected && selected.value == item.value)? '#7FCDEE40' : 'transparent'
+                     }]}>
+                        <Text style={auth.inputText}>
+                           {item.title}
+                        </Text>
+                     </View>
+                  </TouchableHighlight>                     
+               ))}
+               </ScrollView>
             }
-
-            </ScrollView>
 
             {/* BACKGROUND BUTTON (FOR EXIT) */}
             <TouchableWithoutFeedback

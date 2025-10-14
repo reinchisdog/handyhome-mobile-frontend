@@ -34,6 +34,12 @@ export const BookingDetailsProvider = ({children}) => {
       message: null
    });
    const [emergencySuccess, setEmergencySuccess] = useState(false);
+   const [emergencyFinish, setEmergencyFinish] = useState(false);
+   const emergencyContacts = [
+      {org: 'National Hotline', number: '911'},
+      {org: 'PNP', number: '117'},
+      {org: 'Bureau of Fire Protection', number: '3410-6319'}
+   ]
 
    const [errorModal, setErrorModal] = useState(false);
    const [errorMessage, setErrorMessage] = useState(null);
@@ -235,8 +241,15 @@ export const BookingDetailsProvider = ({children}) => {
          console.log(err?.response?.data?.error);
          const message = err?.response?.data?.message || err?.message || "An unknown error has occured when sending emergency alerts.";
          setErrorMessage(message);
-         setErrorType('emergency');
+         if (message.includes('Admin')) {
+            setErrorType(null);
+         } else {
+            setErrorType('emergency');
+         }
          setErrorModal(true);
+      } finally {
+         console.log("[4] FINALLY BLOCK - Setting emergencyFinish to true");
+         setEmergencyFinish(true);
       }
    }
 
@@ -268,6 +281,9 @@ export const BookingDetailsProvider = ({children}) => {
          clearEmergency,
          handleEmergency,
          emergencySuccess,
+         emergencyFinish,
+         setEmergencyFinish,
+         emergencyContacts,
 
          setErrorModal,
          setErrorMessage,

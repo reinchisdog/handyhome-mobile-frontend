@@ -27,6 +27,8 @@ const LocationDetails = () => {
   const [ barangayList, setBarangayList ] = useState([]);
   const [ selectedBarangay, setSelectedBarangay ] = useState(null);
 
+  const [fetching, setFetching] = useState(false);
+
   /* -------------------------------- Functions ------------------------------- */
   useEffect(() => {
     getProvinceList();
@@ -34,6 +36,7 @@ const LocationDetails = () => {
   // ---- List Loads
   const getProvinceList = async () => {
     try {
+      setFetching(true);
       const provinces = await axios.get('https://psgc.gitlab.io/api/provinces/');
       const districts = await axios.get('https://psgc.gitlab.io/api/districts/');
 
@@ -49,6 +52,8 @@ const LocationDetails = () => {
 
     } catch (error) {
       console.log(error);
+    } finally {
+      setFetching(false);
     }
   }
 
@@ -60,6 +65,7 @@ const LocationDetails = () => {
     if (!provinceItem) return;
   
     try {
+      setFetching(true);
       let list = [];
       if (isDistrict)
         list = await axios.get(`https://psgc.gitlab.io/api/districts/${provinceItem.value}/cities-municipalities/`);
@@ -74,6 +80,8 @@ const LocationDetails = () => {
       setMunicipalList(filteredList);
     } catch (error) {
       console.log(error);
+    } finally {
+      setFetching(false);
     }
   };
   
@@ -82,6 +90,7 @@ const LocationDetails = () => {
     if (!municipalItem) return;
   
     try {
+      setFetching(true);
       const list = await axios.get(`https://psgc.gitlab.io/api/cities-municipalities/${municipalItem.value}/barangays/`);
       const filteredList = list.data.map((item) => ({
         value: item.code,
@@ -91,20 +100,36 @@ const LocationDetails = () => {
       setBarangayList(filteredList);
     } catch (error) {
       setBarangayList([]);
+    } finally {
+      setFetching(false);
     }
   };
   
-
   useEffect(() => {
     if (!selectedProvince) return;
     
-    getMunicipalList(selectedProvince?.value);
+    if (municipalList.length > 0) {
+      setMunicipalList([]);
+      setBarangayList([]);
+      setSelectedMunicipal(null);
+      setSelectedBarangay(null);
+      updateHomeData('municipal', '');
+      updateHomeData('barangay', '');
+    }
+
+    getMunicipalList(selectedProvince?.title);
   }, [selectedProvince])
 
   useEffect(() => {
     if (!selectedProvince) return;
 
-    getBarangayList(selectedMunicipal?.value);
+    if (barangayList.length > 0) {
+      setBarangayList([]);
+      setSelectedBarangay(null);
+      updateHomeData('barangay', '');
+    }
+
+    getBarangayList(selectedMunicipal?.title);
   }, [selectedMunicipal])
 
   // When province list loads, match saved title and fetch municipal list
@@ -167,13 +192,10 @@ const LocationDetails = () => {
         items={provinceList}
         onSelect={(e) => {
           setSelectedProvince(e);
-          setSelectedMunicipal(null);
-          setSelectedBarangay(null);
           updateHomeData('province', e.title);
-          getMunicipalList(e.title); 
         }}
-        
         selectedItem={selectedProvince}
+        loading={fetching}
         />
 
         {/* ---- Municipality */}
@@ -182,11 +204,10 @@ const LocationDetails = () => {
         placeholder="Select City/Municipality"
         onSelect={(e) => {
           setSelectedMunicipal(e);
-          setSelectedBarangay(null);
           updateHomeData('municipal', e.title);
-          getBarangayList(e.title);
         }}
         selectedItem={selectedMunicipal}
+        loading={fetching}
         />
 
         {/* ---- Barangay */}
@@ -199,6 +220,7 @@ const LocationDetails = () => {
         }}
         
         selectedItem={selectedBarangay}
+        loading={fetching}
         />
         
       </View>

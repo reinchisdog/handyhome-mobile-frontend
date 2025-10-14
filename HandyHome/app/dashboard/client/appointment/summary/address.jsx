@@ -75,13 +75,19 @@ const AppointmentAddress = () => {
    }
 
    const verifyAddressAdd = () => {
-      const isFilled = 
-         !!newAddress.block && newAddress.block.trim() !== "" &&
+      if (
+         !(!!newAddress.block && newAddress.block.trim() !== "" &&
          !!newAddress.barangay && newAddress.barangay.trim() !== "" &&
          !!newAddress.municipal && newAddress.municipal.trim() !== "" &&
-         !!newAddress.province && newAddress.province.trim() !== "";
+         !!newAddress.province && newAddress.province.trim() !== "")
+      ) throw new Error ('Address fields are not all filled. Please enter the appropriate address to continue.');
+      
+      const province = newAddress.province?.trim() || "";
+      const municipal = newAddress.municipal?.trim() || "";
 
-      return isFilled
+      if (province !== "Second District" || municipal === "Marikina City") {
+         throw new Error ("Service is only available in Marikina City, Second District.");
+      }
    }
 
    const handleAddressAdd = async () => {
@@ -90,9 +96,7 @@ const AppointmentAddress = () => {
          console.log("---- [Addresses Screen] Add Address Attempt ----")
          console.log("[3] Verifying Data:", newAddress);
 
-         if (!verifyAddressAdd()) {
-            throw new Error ('Address fields are not all filled. Please enter the appropriate address to continue.');
-         }
+         verifyAddressAdd();
 
          console.log("[2] Adding New Address:", newAddress);
          await api.post(`/user/addresses`, newAddress, {
