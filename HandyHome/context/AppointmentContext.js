@@ -105,7 +105,7 @@ export const AppointmentProvider = ({ children }) => {
          formData.append('sub_service_id', converted.sub_service_id);
          formData.append('description', converted.description);
          if (converted.attachment) {
-            formData.append('description', converted.attachment);
+            formData.append('attachment', converted.attachment);
          }
 
          console.log("[2] Submitting Initial Appointment");
