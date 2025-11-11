@@ -2,7 +2,7 @@
 
 // Imports
 // ---- React and Expo Components
-import { StyleSheet, Text, View, FlatList, RefreshControl } from 'react-native';
+import { StyleSheet, Text, View, FlatList, RefreshControl, Modal, Pressable } from 'react-native';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
@@ -12,6 +12,8 @@ import { useAuth } from '../../../../../context/AuthContext'
 import WorkerBookingItem from '../../../../../components/WorkerBookingItem';
 import LoadingDots from '../../../../../components/LoadingDots';
 import BookingsEmpty from '../../../../../components/BookingsEmpty';
+import MainButton from '../../../../../components/MainButton';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 // ---- Styles and Icons
 import { globalStyles as global } from '../../../../../styles/globalStyles';
 import { COLORS, FONTS, FONT_SIZES } from '../../../../../styles/constants';
@@ -24,6 +26,7 @@ const UpcomingBooking = () => {
    // Hooks and States
    const {token} = useAuth();
    const router = useRouter();
+   const insets = useSafeAreaInsets();
 
    const [bookings, setBookings] = useState([]);
    const [page, setPage] = useState(1);
@@ -32,6 +35,9 @@ const UpcomingBooking = () => {
    const [refreshing, setRefreshing] =useState(false);
    const [hasMore, setHasMore] = useState(true);
 
+   const [manageModal, setManageModal] = useState(false);
+   const [managedId, setManagedId] = useState(null);
+   const [manageResched, setManageResched] = useState(false);
 
    const fetchBookings = async (pageNum = 1, isRefresh = false) => {
       if ((loading || loadingMore) && !isRefresh) return;
@@ -113,6 +119,13 @@ const UpcomingBooking = () => {
       }, [])
    );
 
+   const openManageModal = (id, canReschedule) => {
+      setManagedId(id);
+      setManageModal(true);
+      setManageResched(canReschedule);
+   }
+
+
    // Renders
    const renderFooter = () => (
       <View style={{
@@ -133,20 +146,87 @@ const UpcomingBooking = () => {
       </View>
    )
 
+   const canManageBooking = (bookingDate, canReschedule) => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const booking = new Date(bookingDate + 'T00:00:00');
+
+      const timeDiff = booking - today;
+      const daysDiff = timeDiff / (1000 * 60 * 60 * 24);
+
+      return daysDiff > 1 || canReschedule;
+   };
+
    return (
       <View style={[global.screenContainer, {backgroundColor: COLORS.screenbg}]}>
+         <Modal
+         visible={manageModal}
+         onRequestClose={() => setManageModal(false)}
+         animationType='slide'
+         statusBarTranslucent={true}
+         backdropColor={COLORS.modalbg}
+         style={{flex: 1}}
+         >  
+            <Pressable style={{flex: 1}} onPress={() => setManageModal(false)}/>
+            <View
+            style={[
+               global.shadowBottom, {
+               paddingTop: 24,
+               paddingBottom: insets.bottom + 24,
+               paddingHorizontal: 24,
+               borderWidth: StyleSheet.hairlineWidth,
+               borderColor: COLORS.strokes,
+               backgroundColor: '#fff',
+               borderTopLeftRadius: 24,
+               borderTopRightRadius: 24,
+               flexDirection: 'column',
+               gap: 16,
+               alignItems: 'stretch'
+            }]}>
+               {manageResched && (
+                  <MainButton 
+                  type='primary'
+                  text='Reschedule Booking'
+                  onPress={() => {
+                     router.push({
+                        pathname: `/dashboard/worker/booking/[id]/reschedule`,
+                        params: {id: managedId}
+                     });
+                     setManageModal(false);
+                  }}
+                  />
+               )}
+
+               <MainButton 
+               type='secondary'
+               text='Cancel Booking'
+               onPress={() => {
+                  router.push({
+                     pathname: `/dashboard/worker/booking/[id]/cancel`,
+                     params: {id: managedId}
+                  });
+                  setManageModal(false);
+               }}
+               />
+            </View>
+         </Modal>
+
          <FlatList 
          data={bookings}
          renderItem={({item}) => (
             <WorkerBookingItem 
             booking={item}
-            left={item?.reschedule?.status === 'Pending' ? {
+
+            left={
+            canManageBooking(
+               item.date, 
+               item.reschedule?.status === "Pending"
+            ) ? {
                text: "Manage",
-               function: () => {router.push({
-                  pathname: `/dashboard/worker/booking/[id]/reschedule`,
-                  params: {id: item.id}
-               })},
+               function: () => {openManageModal(item.id, item.reschedule?.status === "Pending")},
             } : null}
+
             right={{
                text: "Details",
                function: () => {router.push({

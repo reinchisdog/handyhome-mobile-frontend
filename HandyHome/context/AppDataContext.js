@@ -35,6 +35,7 @@ export const AppDataProvider = ({children}) => {
    const [earnings, setEarnings] = useState(null);
    const [customers, setCustomers] = useState(null);
    const [sentiment, setSentiment] = useState(null);
+   const [tags, setTags] = useState(null);
 
    // Loading states
    const [addressLoading, setAddressLoading] = useState(false);
@@ -48,6 +49,7 @@ export const AppDataProvider = ({children}) => {
    const [earningsLoading, setEarningsLoading] = useState(false);
    const [bookingsLoading, setBookingsLoading] = useState(false);
    const [reviewsLoading, setReviewsLoading] = useState(false)
+   const [tagsLoading, setTagsLoading] = useState(false);
    
    // Error states
    const [showError, setShowError] = useState(false);
@@ -66,7 +68,7 @@ export const AppDataProvider = ({children}) => {
          setServices(res.data.data);
          console.log('[AppDataContext] Services fetched successfully');
       } catch (err) {
-         console.error('[AppDataContext] Failed to fetch services:', err);
+         // console.error('[AppDataContext] Failed to fetch services:', err);
          const message = err?.response?.data?.message || err?.message || 
             "Failed to load services. Please try again.";
          setErrorTitle("Services Load Error");
@@ -170,7 +172,7 @@ export const AppDataProvider = ({children}) => {
 
          // console.log('[AppDataContext] Notifications fetched successfully');
       } catch (err) {
-         console.error('[AppDataContext] Failed to fetch notifications:', err);
+         // console.error('[AppDataContext] Failed to fetch notifications:', err);
          const message = err?.response?.data?.message || err?.message || 
             "Failed to load notifications. Please try again.";
          console.log(message);
@@ -211,7 +213,7 @@ export const AppDataProvider = ({children}) => {
          setWorker(workerResult?.data?.data);
          console.log('WORKER:', workerResult?.data?.data);
       } catch (err) {
-         console.error('[AppDataContext] Failed to fetch worker profile:', err);
+         // console.error('[AppDataContext] Failed to fetch worker profile:', err);
          const message = err?.response?.data?.message || err?.message || 
             "Failed to load your worker profile. Please try again.";
          setErrorTitle("Worker Profile Fetch Error");
@@ -236,7 +238,7 @@ export const AppDataProvider = ({children}) => {
          console.log('[AppDataContext] Worker earnings fetched successfully');
          setEarnings(earningsResult?.data?.data);
       } catch (err) {
-         console.error('[AppDataContext] Failed to fetch worker earnings:', err);
+         // console.error('[AppDataContext] Failed to fetch worker earnings:', err);
          const message = err?.response?.data?.message || err?.message || 
             "Failed to load your worker earnings. Please try again.";
          setErrorTitle("Earnings Fetch Error");
@@ -274,7 +276,7 @@ export const AppDataProvider = ({children}) => {
 
          setCustomers(chartData);
       } catch (err) {
-         console.error('[AppDataContext] Failed to fetch worker bookings:', err);
+         // console.error('[AppDataContext] Failed to fetch worker bookings:', err);
          const message = err?.response?.data?.message || err?.message || 
             "Failed to load your worker bookings. Please try again.";
          setErrorTitle("Bookings Fetch Error");
@@ -300,7 +302,7 @@ export const AppDataProvider = ({children}) => {
          console.log(reviewsResult?.data?.data);
          setSentiment(reviewsResult?.data?.data);
       } catch (err) {
-         console.error('[AppDataContext] Failed to fetch worker reviews:', err);
+         // console.error('[AppDataContext] Failed to fetch worker reviews:', err);
          const message = err?.response?.data?.message || err?.message || 
             "Failed to load your worker reviews. Please try again.";
          setErrorTitle("Reviews Fetch Error");
@@ -313,6 +315,46 @@ export const AppDataProvider = ({children}) => {
       }
    }
 
+   const fetchTags = async () => {
+       try {
+         // console.log('[AppDataContext] Fetching review tags...');
+         if (!analyticsLoading) setTagsLoading(true);
+         
+         const tagsResult = await api.get('/worker/reviews/tags', {
+            headers: {'Authorization': `Bearer ${token}`}
+         });
+
+         // console.log('[AppDataContext] Worker review tags fetched successfully');
+         // console.log(tagsResult?.data?.data);
+         const tagData = [
+            ...Object.entries(tagsResult.data?.data?.cons).map(([text, count]) => ({ text, count, type: 0 })),
+            ...Object.entries(tagsResult.data?.data?.pros).map(([text, count]) => ({ text, count, type: 1 }))
+         ].sort((a, b) => b.count - a.count);
+         // console.log(tagData);
+         const highestCount = tagData.length > 0 ? tagData[0].count : 0;
+         setTags({
+            data: tagData,
+            highest_count: highestCount,
+         });
+         // setTags(null);
+         console.log({
+            data: tagData,
+            highest_count: highestCount,
+         })
+      } catch (err) {
+         // console.error('[AppDataContext] Failed to fetch worker reviews:', err);
+         const message = err?.response?.data?.message || err?.message || 
+            "Failed to load your worker review tags. Please try again.";
+         setErrorTitle("Reviews Fetch Error");
+         setErrorMessage(message);
+         setErrorMode("tags");
+         setShowError(true);
+         throw err;
+      } finally {
+         if (!analyticsLoading) setTagsLoading(false);
+      }
+   }
+
    const initAnalytics = async () => {
       try {
          setAnalyticsLoading(true);
@@ -320,6 +362,7 @@ export const AppDataProvider = ({children}) => {
          await fetchEarnings('week');
          await fetchBookings('week');
          await fetchReviews();
+         await fetchTags();
       } catch (err) {
          // Individual fetch functions already handle their errors
          // No need to double-handle here
@@ -342,7 +385,7 @@ export const AppDataProvider = ({children}) => {
             setIsAppDataReady(true);
             console.log('[AppDataContext] App data initialization completed successfully');
          } catch (err) {
-            console.error('[AppDataContext] App data initialization failed:', err);
+            // console.error('[AppDataContext] App data initialization failed:', err);
          } finally {
             // setIsInitializing(false);
          }
@@ -369,7 +412,7 @@ export const AppDataProvider = ({children}) => {
             }
             console.log('[AppDataContext] User data initialization completed successfully');
          } catch (err) {
-            console.error('[AppDataContext] User data initialization failed:', err);
+            // console.error('[AppDataContext] User data initialization failed:', err);
          }
       }
 
@@ -421,6 +464,7 @@ export const AppDataProvider = ({children}) => {
          earnings,
          customers,
          sentiment,
+         tags,
          
          // States
          isAppDataReady,
@@ -437,6 +481,7 @@ export const AppDataProvider = ({children}) => {
          earningsLoading: earningsLoading || analyticsLoading,
          bookingsLoading: bookingsLoading || analyticsLoading,
          reviewsLoading: reviewsLoading || analyticsLoading,
+         tagsLoading: tagsLoading || analyticsLoading,
          
          // Actions
          fetchAddresses,
@@ -448,6 +493,7 @@ export const AppDataProvider = ({children}) => {
          fetchEarnings,
          fetchBookings,
          fetchReviews,
+         fetchTags,
          initAnalytics,
       }}>
          <ErrorModal
@@ -465,6 +511,7 @@ export const AppDataProvider = ({children}) => {
             errorMode === "earnings" ? (earningsLoading || analyticsLoading) :
             errorMode === "bookings" ? (bookingsLoading || analyticsLoading) :
             errorMode === "reviews" ? (reviewsLoading || analyticsLoading) :
+            errorMode === "tags" ? (tagsLoading || analyticsLoading) :
             false
          }
          />

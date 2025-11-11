@@ -116,7 +116,7 @@ export const useConvert = () => {
          // console.log(fileObject);
          return fileObject;
       } catch (err) {
-         console.error('Error transforming URI to File Object:', err);
+         // console.error('Error transforming URI to File Object:', err);
          return null;
       }
    }, [])

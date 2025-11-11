@@ -61,7 +61,7 @@ const ProfileEditScreen = () => {
          console.log(formatFileSize(fileInfo.size));
          return fileInfo.size;
       } catch (err) {
-         console.error('Error getting file size:', err);
+         // console.error('Error getting file size:', err);
          return null;
       }
    }
@@ -108,7 +108,7 @@ const ProfileEditScreen = () => {
    
          return savedImage.uri;
       } catch (err) {
-         console.error('Error compressing image:', err);
+         // console.error('Error compressing image:', err);
          // Return original if compression fails
          return uri;
       }

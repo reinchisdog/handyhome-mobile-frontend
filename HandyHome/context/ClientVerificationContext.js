@@ -81,7 +81,7 @@ export const ClientVerificationProvider = ({ children }) => {
                'Authorization' : `Bearer ${token}`,
                'Content-Type': 'multipart/form-data',
             },
-            timeout: 120000,
+            timeout: 180000,
             timeoutErrorMessage: "We're having trouble verifying your selfie. Please try again in a well-lit area with your face clearly visible."
          })
          

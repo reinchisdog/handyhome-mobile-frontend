@@ -59,12 +59,13 @@ export const AuthProvider = ({children}) => {
             await api.get(`/auth/validate-token`, {
                headers: { Authorization: `Bearer ${token}` },
             });
+            console.log("TOKEN VALIDATED");
          }
 
          const userResult = await api.get(`/user`, {
             headers: { Authorization: `Bearer ${token}`},
          });
-
+         console.log("USER FETCHED");
          const userObj = userResult?.data?.data;
          setUser(userObj);
          console.log("---- SUCCESFULLY FETCHED USER DATA ---");
@@ -72,7 +73,7 @@ export const AuthProvider = ({children}) => {
          setIsTokenValid(true);
          setIsLoading(false);
       } catch (err) {
-         console.error('Fetch user failed:', err?.response?.data?.message || err?.message);
+         // console.error('Fetch user failed:', err?.response?.data?.message || err?.message);
          setIsTokenValid(false);
       }
    }

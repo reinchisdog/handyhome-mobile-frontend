@@ -77,7 +77,7 @@ export const InboxProvider = ({children}) => {
       } catch (err) {
          const message = err?.response?.data?.message || err?.message || 
             "Failed to load your chat sessions. Please try again.";
-         console.error('[AppDataContext] Failed to fetch Chat Sessions:', message);
+         // console.error('[AppDataContext] Failed to fetch Chat Sessions:', message);
       } finally {
          setLoading(false);
          setLoadingMore(false);

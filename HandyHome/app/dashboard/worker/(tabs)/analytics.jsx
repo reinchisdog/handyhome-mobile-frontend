@@ -2,7 +2,7 @@
 
 // Imports
 // ---- React Components
-import { ScrollView, StyleSheet, Text, View, Pressable, useWindowDimensions, RefreshControl } from 'react-native'
+import { ScrollView, StyleSheet, Text, View, Pressable, useWindowDimensions, RefreshControl, FlatList } from 'react-native'
 import React, { useState } from 'react'
 // ---- Other Components
 import Header from '../../../../components/Header';
@@ -21,9 +21,9 @@ const AnalyticsScreen = () => {
    // Hooks and States
    const {width} = useWindowDimensions();
    const {
-      earnings, customers, sentiment,
-      earningsLoading, bookingsLoading, reviewsLoading, analyticsLoading,
-      fetchEarnings, fetchBookings, fetchReviews, initAnalytics
+      earnings, customers, sentiment, tags,
+      earningsLoading, bookingsLoading, reviewsLoading, tagsLoading, analyticsLoading,
+      fetchEarnings, fetchBookings, fetchReviews, fetchTags, initAnalytics
    } = useAppData();
 
    const [refreshing, setRefreshing] = useState(false);
@@ -384,6 +384,83 @@ const AnalyticsScreen = () => {
                </View>
             }
             />
+
+            <DataContainer 
+            icon={<Icons2 name='rate-review' size={24} color={COLORS.primary}/>}
+            title={'Review Tags'}
+            content={
+               <View
+               style={{
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  minHeight: 100,
+                  // backgroundColor: 'green'
+               }}>
+                  {analyticsLoading || tagsLoading ?
+                     <LoadingDots size={8} slide={false}/>
+                     :
+                     <FlatList
+                     scrollEnabled={false}
+                     data={tags?.data}
+                     keyExtractor={(item, index) => index.toString()}
+                     style={{flex: 1}}
+                     contentContainerStyle={{gap: 16, marginBottom: 16, flexGrow: 1, justifyContent: 'center', alignItems: 'center'}}
+                     renderItem={({item}) => (
+                        <View style={{gap: 8}}>
+                           <View style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              width: '100%',
+                              // backgroundColor: COLORS.lightblue
+                           }}>
+                              <Text style={{
+                                 fontFamily: FONTS.roboto600,
+                                 fontSize: FONT_SIZES.md,
+                                 color: COLORS.lettersicons
+                              }}>
+                                 {item?.text}
+                              </Text>
+                              <Text style={{
+                                 fontFamily: FONTS.roboto600,
+                                 fontSize: FONT_SIZES.md,
+                                 color: COLORS.lettersicons
+                              }}>
+                                 {item?.count}
+                              </Text>
+                           </View>
+                           <View style={{
+                              height: 6,
+                              width: '100%',
+                              backgroundColor: COLORS.strokes,
+                              borderRadius: 12,
+                              overflow: 'hidden',
+                           }}>
+                              <View style={{
+                                 height: '100%',
+                                 width: `${(item?.count / (tags?.highest_count || 1)) * 100}%`,
+                                 backgroundColor: item?.type === 1 ? COLORS.green : COLORS.red,
+                                 borderRadius: 12,
+                              }}/>
+                           </View>
+                        </View>
+                     )}
+                     ListEmptyComponent={
+                        <Text
+                        style={{
+                           fontFamily: FONTS.roboto400,
+                           fontSize: FONT_SIZES.md,
+                           color: COLORS.labels,
+                        }}>
+                           No review tags available.
+                        </Text>
+                     }
+                     />
+                  }
+               </View>
+
+            }/>
+
          </View>
       </ScrollView>
    )

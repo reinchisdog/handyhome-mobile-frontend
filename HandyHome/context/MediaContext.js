@@ -26,7 +26,7 @@ const getFileSize = async (uri) => {
       console.log(formatFileSize(fileInfo.size));
       return fileInfo.size;
    } catch (err) {
-      console.error('Error getting file size:', err);
+      // console.error('Error getting file size:', err);
       return null;
    }
 }
@@ -73,7 +73,7 @@ const compressImage = async (uri) => {
 
       return savedImage.uri;
    } catch (err) {
-      console.error('Error compressing image:', err);
+      // console.error('Error compressing image:', err);
       // Return original if compression fails
       return uri;
    }
@@ -153,7 +153,7 @@ export const MediaProvider = ({ children }) => {
          }
 
       } catch (err) {
-         console.error('Error picking image:', err);
+         // console.error('Error picking image:', err);
       }
    }
 
@@ -186,7 +186,7 @@ export const MediaProvider = ({ children }) => {
             return result.assets[0];
          }
       } catch (err) {
-         console.error('File pick error: ', e);
+         // console.error('File pick error: ', e);
       }
    }
 
@@ -255,7 +255,7 @@ const CameraScreen = ({
          setVisible(false);
 
       } catch (err) {
-         console.error('Error taking photo:', err);
+         // console.error('Error taking photo:', err);
       }
    }, [setImage]);
 

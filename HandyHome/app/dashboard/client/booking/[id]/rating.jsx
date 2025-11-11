@@ -2,7 +2,7 @@
 
 // Imports
 // ---- React and Expo Components
-import { Animated, StyleSheet, Text, View, useWindowDimensions, StatusBar, Image, Pressable, TouchableOpacity, Modal, } from 'react-native';
+import { Animated, StyleSheet, Text, View, useWindowDimensions, StatusBar, Image, Pressable, TouchableOpacity, Modal } from 'react-native';
 import React, { useState, useRef, useEffect} from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -39,9 +39,27 @@ const BookingRating = () => {
    const [detailsLoading, setDetailsLoading] = useState(true);
 
    const ratingValues = [1, 2, 3, 4, 5];
+   const prosOptions = [
+      "On Time",
+      "Very Professional",
+      "Good Service",
+      "Communicative",
+      "Friendly",
+      "Cleaned Up"
+   ];
+   const consOptions = [
+      "Arrived Late",
+      "Unprofessional",
+      "Poor Quality",
+      "No Communication",
+      "Rude",
+      "Left a Mess"
+   ];
    const [feedback, setFeedback] = useState({
       rating: 0,
       review: '',
+      pros: [],
+      cons: [],
       attachment: null
    })
    const [feedbackLoading, setFeedbackLoading] = useState(false);
@@ -63,6 +81,64 @@ const BookingRating = () => {
    })
    
    // Functions
+   const handleOptionSelect = (type, option) => {
+      // Map compliments to their corresponding issues
+      const optionMap = {
+         "On Time": "Arrived Late",
+         "Arrived Late": "On Time",
+         "Very Professional": "Unprofessional",
+         "Unprofessional": "Very Professional",
+         "Good Service": "Poor Quality",
+         "Poor Quality": "Good Service",
+         "Communicative": "No Communication",
+         "No Communication": "Communicative",
+         "Friendly": "Rude",
+         "Rude": "Friendly",
+         "Cleaned Up": "Left a Mess",
+         "Left a Mess": "Cleaned Up"
+      };
+
+      if (type === 'pros') {
+         setFeedback(prev => {
+            const isSelected = prev.pros.includes(option);
+            const updatedPros = isSelected
+               ? prev.pros.filter(item => item !== option)
+               : [...prev.pros, option];
+            
+            // Remove the corresponding issue if selecting a compliment
+            const correspondingCon = optionMap[option];
+            const updatedCons = isSelected 
+               ? prev.cons 
+               : prev.cons.filter(item => item !== correspondingCon);
+            
+            return {
+               ...prev,
+               pros: updatedPros,
+               cons: updatedCons
+            };
+         });
+      } else if (type === 'cons') {
+         setFeedback(prev => {
+            const isSelected = prev.cons.includes(option);
+            const updatedCons = isSelected
+               ? prev.cons.filter(item => item !== option)
+               : [...prev.cons, option];
+            
+            // Remove the corresponding compliment if selecting an issue
+            const correspondingPro = optionMap[option];
+            const updatedPros = isSelected 
+               ? prev.pros 
+               : prev.pros.filter(item => item !== correspondingPro);
+            
+            return {
+               ...prev,
+               cons: updatedCons,
+               pros: updatedPros
+            };
+         });
+      }
+   }
+
    const fetchDetails = async () => {
       try {
          setDetailsLoading(true);
@@ -122,6 +198,17 @@ const BookingRating = () => {
          if (feedback.attachment) {
             formData.append('attachment', convertUriToFile(feedback.attachment));
          }
+         if (feedback.pros.length > 0) {
+            feedback.pros.forEach((pro, index) => {
+               formData.append(`pros[${index}]`, pro);
+            });
+         }
+         if (feedback.cons.length > 0) {
+            feedback.cons.forEach((con, index) => {
+               formData.append(`cons[${index}]`, con);
+            });
+         }
+
          // appendFormData(formData, converted);
          console.log("[2] Submitting Feedback for Booking:", id);
          console.log(feedback);
@@ -161,6 +248,17 @@ const BookingRating = () => {
          setFeedbackDisabled(true);
       }
    }, [feedback])
+
+   // Renders
+   const ratingPlaceholder = () => {
+      const rating = feedback.rating;
+      if (rating === 0) return "How was your overall experience?";
+      if (rating === 1) return "Terrible.";
+      if (rating === 2) return "Dissapointing.";
+      if (rating === 3) return "Average.";
+      if (rating === 4) return "Good Service!";
+      if (rating === 5) return "Excellent!";
+   }
 
    return (
       <>
@@ -339,17 +437,17 @@ const BookingRating = () => {
                      {/* ---- Rating */}
                      <View 
                      style={{
-                        flexDirection: 'row',
+                        // flexDirection: 'row',
                         alignItems: 'center',
-                        justifyContent: 'space-between',
+                        gap: 8
                      }}>
                         <Text
                         style={{
-                           fontFamily: FONTS.roboto500,
+                           fontFamily: FONTS.roboto700,
                            fontSize: FONT_SIZES.md,
                            color: COLORS.lettersicons,
                         }}>
-                           Rating
+                           {ratingPlaceholder()}
                         </Text>
 
                         <View 
@@ -376,6 +474,75 @@ const BookingRating = () => {
                         </View>
                      </View>
                      
+                     {/* ---- Compliments */}
+                     <View 
+                     style={{
+                        // flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 8
+                     }}>
+                        <Text
+                        style={{
+                           fontFamily: FONTS.roboto700,
+                           fontSize: FONT_SIZES.md,
+                           color: COLORS.lettersicons,
+                        }}>
+                           What went well?
+                        </Text>
+                        <View style={styles.options}>
+                           {prosOptions.map((option, index) => (
+                              <Pressable
+                              key={index}
+                              onPress={() => {handleOptionSelect('pros', option)}}>
+                                 {({pressed}) => (
+                                    <Text style={[styles.option, {
+                                       ...feedback.pros.includes(option) && styles.selectedOption,
+                                       ...(pressed && !feedback.pros.includes(option)) && styles.hoveredOption
+                                    }]}>
+                                       {option}
+                                    </Text>
+                                 )}
+                                 
+                              </Pressable>
+                           ))}
+                        </View>
+                     </View>
+
+                     {/* ---- Issues */}
+                     <View 
+                     style={{
+                        // flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 8
+                     }}>
+                        <Text
+                        style={{
+                           fontFamily: FONTS.roboto700,
+                           fontSize: FONT_SIZES.md,
+                           color: COLORS.lettersicons,
+                        }}>
+                           What was the issue?
+                        </Text>
+                        <View style={styles.options}>
+                           {consOptions.map((option, index) => (
+                              <Pressable
+                              key={index}
+                              onPress={() => {handleOptionSelect('cons', option)}}>
+                              {({pressed}) => (
+                                 <Text style={[styles.option, {
+                                    ...feedback.cons.includes(option) && styles.selectedOption,
+                                    ...(pressed && !feedback.cons.includes(option)) && styles.hoveredOption
+                                 }]}>
+                                    {option}
+                                 </Text>
+                              )}
+                              </Pressable>
+                           ))}
+                        </View>
+                     </View>
+                     
+                     <View style={global.divider}/>
+
                      {/* ---- Review */}
                      <View
                      style={{
@@ -428,4 +595,31 @@ const BookingRating = () => {
 
 export default BookingRating
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+   options: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: 8,
+   },
+   option: {
+      fontFamily: FONTS.roboto400,
+      fontSize: FONT_SIZES.sm,
+      color: COLORS.lettersicons,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: COLORS.strokes,
+   },
+   selectedOption: {
+      fontFamily: FONTS.roboto500,
+      color: '#fff',
+      backgroundColor: COLORS.darkblue,
+      borderColor: COLORS.darkblue,
+   },
+   hoveredOption: {
+      backgroundColor: COLORS.lightblue,
+   },
+})

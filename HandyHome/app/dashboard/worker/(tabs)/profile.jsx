@@ -149,11 +149,12 @@ const ProfileScreen = () => {
                />
 
                {/* My Addresses */}
-               {/* <ProfileTab 
-               onPress={() => {router.push('/dashboard/client/settings/address')}}
+               <ProfileTab 
+               onPress={() => {router.push('/dashboard/worker/settings/address')}}
                icon={<Icons1 name="location-on" size={24} color={COLORS.primary} />}
                title="My Addresses"
-               /> */}
+               />
+
                <ProfileTab 
                onPress={() => {router.push('/dashboard/worker/settings/availability')}}
                icon={<Icons2 name="clock" size={24} color={COLORS.primary} />}
