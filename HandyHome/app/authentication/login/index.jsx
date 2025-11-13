@@ -7,6 +7,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'expo-router';
 // ---- Contexts
 import { useAuth } from '../../../context/AuthContext'
+import { usePushNotif } from '../../../context/PushNotifContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 // ---- Custom Components
@@ -25,6 +26,7 @@ import { COLORS, FONTS, FONT_SIZES } from '../../../styles/constants';
 export default function LoginScreen() {
    // Hooks
    const { login } = useAuth();
+   const { registerForPushNotif } = usePushNotif();
    const router = useRouter();
    const insets = useSafeAreaInsets();
    // States
@@ -44,12 +46,13 @@ export default function LoginScreen() {
          setIsLoginLoading(true);
 
          const result = await login(loginData);
-
+         
          if (!result.success) {
             throw Error (result.message);
          } 
          else router.replace('authentication/login/success');
-         
+
+         await registerForPushNotif();
       } catch (err) {
          console.log(err);
 

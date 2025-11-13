@@ -68,7 +68,8 @@
         "backgroundColor": "#58B7F3"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.reinchisdog.HandyHome"
+      "package": "com.reinchisdog.HandyHome",
+      "googleServicesFile": "./google-services.json"
     },
     "experiments": {
       "typedRoutes": true

@@ -8,6 +8,7 @@ import React, { useState, useEffect } from 'react';
 import { AuthProvider } from '../context/AuthContext';
 import { AppDataProvider } from '../context/AppDataContext';
 import { InboxProvider } from '../context/InboxContext';
+import { PushNotifProvider } from '../context/PushNotifContext'
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { KeyboardProvider } from 'react-native-keyboard-controller'
 
@@ -16,6 +17,7 @@ const RootLayout = () => {
 		<AuthProvider>
 		<AppDataProvider>
 		<InboxProvider>
+		<PushNotifProvider>
 		<SafeAreaProvider>
 		<KeyboardProvider>
 			<Stack 
@@ -26,6 +28,7 @@ const RootLayout = () => {
 			/>
 		</KeyboardProvider>
 		</SafeAreaProvider>
+		</PushNotifProvider>
 		</InboxProvider>
 		</AppDataProvider>
 		</AuthProvider>
