@@ -21,7 +21,7 @@ const PushNotifContext = createContext(null);
 
 export const PushNotifProvider = ({children}) => {
    // Hooks and States
-   const {user, token} = useAuth();
+   const {user, token, isAuthReady, registerLogoutCallback, unregisterLogoutCallback} = useAuth();
    const [expoPushToken, setExpoPushToken] = useState(null);
    const [notification, setNotification] = useState(null);
    const [isLoading, setIsLoading] = useState(false);
@@ -30,8 +30,11 @@ export const PushNotifProvider = ({children}) => {
    // Effects
    // ---- Register on Mount
    useEffect(() => {
+      if (!isAuthReady) return;
+
+      console.log('🚀 Auth ready - registering for push notifications');
       registerForPushNotif();
-   }, []);
+   }, [isAuthReady]);
 
    // ---- Listen on Mount
    useEffect(() => {
@@ -53,6 +56,23 @@ export const PushNotifProvider = ({children}) => {
          responseListener.remove();
       }
    }, []);
+
+   useEffect(() => {
+      // When user becomes authenticated and we have a locally stored token
+      const syncTokenWithBackend = async () => {
+         if (user && token && expoPushToken) {
+            console.log('🔄 User authenticated - syncing push token with backend');
+            try {
+               await callRegistrationAPI(expoPushToken, user.role);
+               await AsyncStorage.setItem(LAST_REGISTERED_KEY, Date.now().toString());
+            } catch (err) {
+               console.error('Failed to sync push token:', err);
+            }
+         }
+      };
+
+      syncTokenWithBackend();
+   }, [user, token, expoPushToken, callRegistrationAPI]); // Run when user/token/expoPushToken changes
 
    // Functions
    // ---- Checks if token registration is needed based on cooldown
@@ -81,15 +101,21 @@ export const PushNotifProvider = ({children}) => {
    }
 
    // ---- API Call to register token with backend
-   const callRegistrationAPI = async (pushToken) => {
+   const callRegistrationAPI = async (pushToken, role) => {
       if (!user || !token) return null;
+      const userRole = role || (user ? user.role : null);
 
       const deviceInfo = getDeviceInfo();
 
+      let route = '/user/push-token/register'; // Default
+      if (userRole === 'Worker') {
+         route = '/worker/push-token/register';
+      }
+   
       try {
-         const response = await api.post('/push-token/register', {
-            push_token: pushToken,
-            device_info: deviceInfo,
+         const response = await api.post(route, {
+            pushToken: pushToken,
+            deviceInfo: deviceInfo,
          }, {
             headers: { Authorization: `Bearer ${token}` }
          });
@@ -103,9 +129,11 @@ export const PushNotifProvider = ({children}) => {
    }
 
    // ---- Main Registration Function
-   const registerForPushNotif = useCallback(async (force = false) => {
+   const registerForPushNotif = useCallback(async (force = false, userObj) => {
       setIsLoading(true);
       setError(null);
+
+      // console.log('[REGISTER PUSH NOTIF]', userObj);
 
       try {
          if (!Device.isDevice) {
@@ -139,6 +167,7 @@ export const PushNotifProvider = ({children}) => {
 
          const tokenData = await Notifications.getExpoPushTokenAsync();
          const pushToken = tokenData.data;
+         console.log('PUSH TOKEN:', pushToken);
 
          const storedToken = await AsyncStorage.getItem(TOKEN_STORAGE_KEY);
          if (!force && storedToken === pushToken) {
@@ -148,8 +177,14 @@ export const PushNotifProvider = ({children}) => {
             return pushToken;
          }
 
+         // console.log("______ [PUSH NOTIF CONTEXT] ______");
+         // console.log('User:', userObj ? userObj : user);
+         // console.log('Token:', userObj ? userObj.token : token);
+         // console.log('Role:', userObj ? userObj.role : user.role);
+         // console.log("__________________________________");
+
          if (user && token) {
-            await callRegistrationAPI(pushToken);
+            await callRegistrationAPI(pushToken, userObj ? userObj.role : user.role);
          } else {
             console.log('⚠️ User not authenticated - token stored locally only');
          }
@@ -178,28 +213,40 @@ export const PushNotifProvider = ({children}) => {
 
    // ---- Soft Reset
    const resetPushToken = useCallback(async () => {
+      const currentToken = expoPushToken;
+      const currentAuthToken = token;
+      const currentUser = user;
+
       try {
-         if (!user || !token) {
-            console.log('⚠️ No user or token - skipping API call');
-            await AsyncStorage.removeItem(TOKEN_STORAGE_KEY);
-            await AsyncStorage.removeItem(LAST_REGISTERED_KEY);
-            setExpoPushToken(null);
+         if (!currentToken) {
+            console.log('⚠️ No push token to remove from backend');
             return;
          }
 
-         const response = await api.post('/push-token/remove', {
-            push_token: expoPushToken,
-         }, {
-            headers: { Authorization: `Bearer ${token}` }
-         });
+         if (currentAuthToken && currentUser) {
+            let route = '/user/push-token/remove';
+            if (currentUser.role === 'Worker') {
+               route = '/worker/push-token/remove';
+            }
 
-         await AsyncStorage.removeItem(TOKEN_STORAGE_KEY);
-         await AsyncStorage.removeItem(LAST_REGISTERED_KEY);
+            await api.post(route, {
+               pushToken: currentToken,
+            }, {
+               headers: { Authorization: `Bearer ${currentAuthToken}` }
+            });
 
-         setExpoPushToken(null);
+            console.log('🗑️ Push token removed from backend');
+         } else {
+            console.log('⚠️ No auth token available - skipping backend removal');
+         }
+
          console.log('🗑️ Push token reset successfully');
       } catch (err) {
          console.error('❌ Failed to reset push token:', err);
+      } finally {
+         await AsyncStorage.removeItem(TOKEN_STORAGE_KEY);
+         await AsyncStorage.removeItem(LAST_REGISTERED_KEY);
+         setExpoPushToken(null);
       }
    }, [user, token, expoPushToken]);
 
@@ -216,7 +263,7 @@ export const PushNotifProvider = ({children}) => {
          isLoading,
          error,
          registerForPushNotif,
-          forceRegister,
+         forceRegister,
          resetPushToken,
          checkNotificationsEnabled,
       }}>

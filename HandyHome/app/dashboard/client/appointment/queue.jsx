@@ -24,6 +24,8 @@ const AppointmentQueueScreen = () => {
    const insets = useSafeAreaInsets();
    const {width} = useWindowDimensions();
 
+   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
+
    const [cancelModal, setCancelModal] = useState(false);
    const [cancelLoading, setCancelLoading] = useState(false);
 

@@ -4,6 +4,7 @@
 import 
    React, { 
    createContext, 
+   useCallback, 
    useContext, 
    useEffect, 
    useState,
@@ -11,6 +12,9 @@ import
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../lib/api';
 import { useRouter } from 'expo-router';
+
+const TOKEN_STORAGE_KEY = '@expo_push_token';
+const LAST_REGISTERED_KEY = '@last_token_registration';
 
 const AuthContext = createContext();
 
@@ -65,11 +69,11 @@ export const AuthProvider = ({children}) => {
          const userResult = await api.get(`/user`, {
             headers: { Authorization: `Bearer ${token}`},
          });
-         console.log("USER FETCHED");
+         // console.log("USER FETCHED");
          const userObj = userResult?.data?.data;
          setUser(userObj);
-         console.log("---- SUCCESFULLY FETCHED USER DATA ---");
-         console.log(userObj);
+         // console.log("---- SUCCESFULLY FETCHED USER DATA ---");
+         // console.log(userObj);
          setIsTokenValid(true);
          setIsLoading(false);
       } catch (err) {
@@ -106,31 +110,76 @@ export const AuthProvider = ({children}) => {
          setIsTokenValid(true);
          // console.log("4. Succesfully Fetched User Data:", JSON.stringify(userObj));
 
-         return { success: true };
+         return { success: true, user: {...userObj, token: token} };
       } catch (err){
          // console.log("/// Failed Loggin In ///")
          const message = err.response?.data.message || "An error has ocurred when trying to login. Please try again.";
 
-         return { success: false, message };
+         return { success: false, message, user: null };
       }
    }
    
-   const logout = async () => {
+   // ---- Logout
+   const [logoutCallbacks, setLogoutCallbacks] = useState([]);
+
+   const registerLogoutCallback = useCallback((callback) => {
+      setLogoutCallbacks((prevCallbacks) => [...prevCallbacks, callback]);
+   }, []);
+
+   const unregisterLogoutCallback = useCallback((callback) => {
+      setLogoutCallbacks((prevCallbacks) =>
+         prevCallbacks.filter((cb) => cb !== callback)
+      );
+   }, []);
+
+   const logout = useCallback(async () => {
       try {
-         router.replace('/authentication');
- 
+         const pushToken = await AsyncStorage.getItem(TOKEN_STORAGE_KEY);
+         console.log("[LOGOUT PUSH TOKEN]:", pushToken);
+
+         if (pushToken && user && token) {
+            let route = '/user/push-token/remove';
+            if (user && user.role === 'Worker') {
+               route = '/worker/push-token/remove';
+            }
+
+            console.log("[LOUGOUT TOKEN REMOVAL ROUTE]:", route);
+
+            try {
+               const response = await api.post(route, {pushToken: pushToken}, {
+                  headers: { Authorization: `Bearer ${token}` }
+               });
+               console.log(response.data);
+               console.log('🗑️ Push token removed from backend');
+            } catch (err) {
+               console.error('❌ Failed to remove push token from backend:', err);
+            }
+         }
+
+         
+         await Promise.all(logoutCallbacks.map((cb) => cb()));
+
          await api.post('/auth/logout', {}, {
             headers: { Authorization: `Bearer ${token}` },
          });
-         await AsyncStorage.removeItem('token');
-         setUser(null);
-         setToken(null);
-         // console.log("--- [Auth Context]: Logged Out ---");
+         
+         console.log("--- [Auth Context]: Logged Out ---");
       } catch (err) {
          const message = err.response?.data.message || "An error has ocurred when trying to logout. Please try again.";
+         console.log(message);
+      } finally {
+         await AsyncStorage.removeItem(TOKEN_STORAGE_KEY);
+         await AsyncStorage.removeItem(LAST_REGISTERED_KEY);
+         await AsyncStorage.removeItem('token');
+
+         setUser(null);
+         setToken(null);
+         setIsTokenValid(false);
+
+         router.replace('/authentication');
       }
       
-   }
+   }, [logoutCallbacks, user, token]);
 
    useEffect(() => {
       if (isAuthReady) return;
@@ -152,6 +201,8 @@ export const AuthProvider = ({children}) => {
       value={{
          login,
          logout,
+         registerLogoutCallback,
+         unregisterLogoutCallback,
          token,
          setToken,
          isTokenValid,

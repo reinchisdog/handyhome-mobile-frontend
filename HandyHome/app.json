@@ -69,7 +69,7 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.reinchisdog.HandyHome",
-      "googleServicesFile": "./google-services.json"
+      "googleServicesFile": "./android/app/google-services.json"
     },
     "experiments": {
       "typedRoutes": true

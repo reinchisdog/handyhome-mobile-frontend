@@ -35,3 +35,6 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+google-services.json
+handyhome-8f862-firebase-adminsdk-fbsvc-034a032fe4.json

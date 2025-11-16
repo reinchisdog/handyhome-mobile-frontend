@@ -25,7 +25,7 @@ import { COLORS, FONTS, FONT_SIZES } from '../../../styles/constants';
 
 export default function LoginScreen() {
    // Hooks
-   const { login } = useAuth();
+   const { login, user, token } = useAuth();
    const { registerForPushNotif } = usePushNotif();
    const router = useRouter();
    const insets = useSafeAreaInsets();
@@ -46,13 +46,15 @@ export default function LoginScreen() {
          setIsLoginLoading(true);
 
          const result = await login(loginData);
+         if (!result.success) throw Error (result.message);  
          
-         if (!result.success) {
-            throw Error (result.message);
-         } 
-         else router.replace('authentication/login/success');
+         console.log("HANDLE LOGIN:", result.user.role);
+         await registerForPushNotif(true, result.user).catch(err => {
+            // Don't block login if push registration fails
+            console.log('Push notification registration failed:', err);
+         });
 
-         await registerForPushNotif();
+         router.replace('authentication/login/success');
       } catch (err) {
          console.log(err);
 

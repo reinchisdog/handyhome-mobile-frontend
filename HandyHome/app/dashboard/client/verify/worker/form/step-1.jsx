@@ -218,7 +218,7 @@ const FormCredentials = ({data, setData}) => {
             {/* NBI Clearance */}
             <ApplicationUpload 
             icon={<Icons2 name='file-document' size={24} color={COLORS.primary}/>}
-            title="NBI Clearance"
+            title="NBI Clearance (Optional)"
             label="Add File"
             data={data.nbi}
             renderData={

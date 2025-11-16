@@ -3,7 +3,7 @@
 // Imports
 // ---- React and Expo Components
 import { Animated, StyleSheet, Text, View, useWindowDimensions, StatusBar, Image, Pressable, TouchableOpacity, Modal } from 'react-native';
-import React, { useState, useRef, useEffect} from 'react';
+import React, { useState, useRef, useEffect, use} from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 // ---- Other Components
@@ -39,29 +39,31 @@ const BookingRating = () => {
    const [detailsLoading, setDetailsLoading] = useState(true);
 
    const ratingValues = [1, 2, 3, 4, 5];
-   const prosOptions = [
-      "On Time",
-      "Very Professional",
-      "Good Service",
-      "Communicative",
-      "Friendly",
-      "Cleaned Up"
-   ];
-   const consOptions = [
-      "Arrived Late",
-      "Unprofessional",
-      "Poor Quality",
-      "No Communication",
-      "Rude",
-      "Left a Mess"
-   ];
+   const tagOptions = {
+      pros: [
+         "On Time",
+         "Very Professional",
+         "Good Service",
+         "Communicative",
+         "Friendly",
+         "Cleaned Up"
+      ],
+      cons: [
+         "Arrived Late",
+         "Unprofessional",
+         "Poor Quality",
+         "No Communication",
+         "Rude",
+         "Left a Mess"
+      ]
+   }
    const [feedback, setFeedback] = useState({
       rating: 0,
       review: '',
-      pros: [],
-      cons: [],
+      tags: [],
       attachment: null
    })
+   const prevRating = useRef(0);
    const [feedbackLoading, setFeedbackLoading] = useState(false);
    const [feedbackDisabled, setFeedbackDisabled] = useState(true);
 
@@ -72,6 +74,78 @@ const BookingRating = () => {
    const [successModal, setSuccessModal] = useState(false)
 
    // Animations
+   const wellAnim = useRef(new Animated.Value(0)).current;
+   const issueAnim = useRef(new Animated.Value(0)).current;
+   const [wellVisible, setWellVisible] = useState(false);
+   const [issueVisible, setIssueVisible] = useState(false);
+
+   useEffect(() => {
+      const oldRating = prevRating.current;
+      const newRating = feedback.rating;
+
+      if (oldRating === newRating) return;
+
+      // Determine which "side" the rating belongs to
+      const oldSide = oldRating >= 4 ? "pros" : oldRating >= 1 ? "cons" : null;
+      const newSide = newRating >= 4 ? "pros" : newRating >= 1 ? "cons" : null;
+
+      // Reset tags ONLY when switching between sides
+      if (oldSide && newSide && oldSide !== newSide) {
+         setFeedback(prev => ({ ...prev, tags: [] }));
+      }
+
+      // Visibility Logic
+      if (newRating >= 4) {
+         setWellVisible(true);
+         setIssueVisible(false);
+      } else if (newRating >= 1) {
+         setIssueVisible(true);
+         setWellVisible(false);
+      } else {
+         setWellVisible(false);
+         setIssueVisible(false);
+      }
+
+      prevRating.current = newRating;
+   }, [feedback.rating]);
+
+   useEffect(() => {
+      if (wellVisible) {
+         wellAnim.setValue(0);
+         Animated.timing(wellAnim, {
+            toValue: 1,
+            duration: 250,
+            useNativeDriver: true,
+         }).start();
+      }
+
+      if (issueVisible) {
+         issueAnim.setValue(0);
+         Animated.timing(issueAnim, {
+            toValue: 1,
+            duration: 250,
+            useNativeDriver: true,
+         }).start();
+      }
+
+      // if hidden, reset anim value to 0 so re-showing animates again
+      if (!wellVisible) {
+         wellAnim.setValue(0);
+      }
+
+      if (!issueVisible) {
+         issueAnim.setValue(0);
+      }
+   }, [wellVisible, issueVisible]);
+
+
+   const fadeSlide = anim => ({
+      opacity: anim,
+      transform: [
+         { translateY: anim.interpolate({ inputRange: [0,1], outputRange: [10,0] }) }
+      ]
+   });
+
    const scrollY = useRef(new Animated.Value(0)).current;
 
    const headerColor = scrollY.interpolate({
@@ -79,65 +153,20 @@ const BookingRating = () => {
       outputRange: ['rgba(255, 255, 255, 0)', 'rgba(255, 255, 255, 1)'],
       extrapolate: 'clamp',
    })
+
+
    
    // Functions
-   const handleOptionSelect = (type, option) => {
-      // Map compliments to their corresponding issues
-      const optionMap = {
-         "On Time": "Arrived Late",
-         "Arrived Late": "On Time",
-         "Very Professional": "Unprofessional",
-         "Unprofessional": "Very Professional",
-         "Good Service": "Poor Quality",
-         "Poor Quality": "Good Service",
-         "Communicative": "No Communication",
-         "No Communication": "Communicative",
-         "Friendly": "Rude",
-         "Rude": "Friendly",
-         "Cleaned Up": "Left a Mess",
-         "Left a Mess": "Cleaned Up"
-      };
+   const handleTagSelect = (option) => {
+      setFeedback(prev => {
+         const isSelected = prev.tags.includes(option);
+         const updatedTags = isSelected
+            ? prev.tags.filter(item => item !== option)
+            : [...prev.tags, option];
 
-      if (type === 'pros') {
-         setFeedback(prev => {
-            const isSelected = prev.pros.includes(option);
-            const updatedPros = isSelected
-               ? prev.pros.filter(item => item !== option)
-               : [...prev.pros, option];
-            
-            // Remove the corresponding issue if selecting a compliment
-            const correspondingCon = optionMap[option];
-            const updatedCons = isSelected 
-               ? prev.cons 
-               : prev.cons.filter(item => item !== correspondingCon);
-            
-            return {
-               ...prev,
-               pros: updatedPros,
-               cons: updatedCons
-            };
-         });
-      } else if (type === 'cons') {
-         setFeedback(prev => {
-            const isSelected = prev.cons.includes(option);
-            const updatedCons = isSelected
-               ? prev.cons.filter(item => item !== option)
-               : [...prev.cons, option];
-            
-            // Remove the corresponding compliment if selecting an issue
-            const correspondingPro = optionMap[option];
-            const updatedPros = isSelected 
-               ? prev.pros 
-               : prev.pros.filter(item => item !== correspondingPro);
-            
-            return {
-               ...prev,
-               cons: updatedCons,
-               pros: updatedPros
-            };
-         });
-      }
-   }
+         return { ...prev, tags: updatedTags };
+      });
+   };
 
    const fetchDetails = async () => {
       try {
@@ -198,14 +227,9 @@ const BookingRating = () => {
          if (feedback.attachment) {
             formData.append('attachment', convertUriToFile(feedback.attachment));
          }
-         if (feedback.pros.length > 0) {
-            feedback.pros.forEach((pro, index) => {
-               formData.append(`pros[${index}]`, pro);
-            });
-         }
-         if (feedback.cons.length > 0) {
-            feedback.cons.forEach((con, index) => {
-               formData.append(`cons[${index}]`, con);
+         if (feedback.tags.length > 0) {
+            feedback.tags.forEach((tag, index) => {
+               formData.append(`tags[${index}]`, tag);
             });
          }
 
@@ -475,71 +499,55 @@ const BookingRating = () => {
                      </View>
                      
                      {/* ---- Compliments */}
-                     <View 
-                     style={{
-                        // flexDirection: 'row',
-                        alignItems: 'center',
-                        gap: 8
-                     }}>
-                        <Text
-                        style={{
-                           fontFamily: FONTS.roboto700,
-                           fontSize: FONT_SIZES.md,
-                           color: COLORS.lettersicons,
-                        }}>
-                           What went well?
-                        </Text>
-                        <View style={styles.options}>
-                           {prosOptions.map((option, index) => (
-                              <Pressable
-                              key={index}
-                              onPress={() => {handleOptionSelect('pros', option)}}>
-                                 {({pressed}) => (
-                                    <Text style={[styles.option, {
-                                       ...feedback.pros.includes(option) && styles.selectedOption,
-                                       ...(pressed && !feedback.pros.includes(option)) && styles.hoveredOption
-                                    }]}>
-                                       {option}
-                                    </Text>
-                                 )}
-                                 
-                              </Pressable>
-                           ))}
-                        </View>
-                     </View>
+                     {wellVisible && (
+                        <Animated.View style={[fadeSlide(wellAnim), {alignItems: 'center', gap: 8}]}>
+                           <Text style={{ fontFamily: FONTS.roboto700, fontSize: FONT_SIZES.md, color: COLORS.lettersicons, }}>
+                              What went well?
+                           </Text>
+
+                           <View style={styles.options}>
+                              {tagOptions.pros.map((option, index) => (
+                                 <Pressable key={index} onPress={() => handleTagSelect(option)}>
+                                    {({pressed}) => (
+                                       <Text style={[
+                                          styles.option,
+                                          feedback.tags.includes(option) && styles.selectedOption,
+                                          pressed && !feedback.tags.includes(option) && styles.hoveredOption
+                                       ]}>
+                                          {option}
+                                       </Text>
+                                    )}
+                                 </Pressable>
+                              ))}
+                           </View>
+                        </Animated.View>
+                     )}
 
                      {/* ---- Issues */}
-                     <View 
-                     style={{
-                        // flexDirection: 'row',
-                        alignItems: 'center',
-                        gap: 8
-                     }}>
-                        <Text
-                        style={{
-                           fontFamily: FONTS.roboto700,
-                           fontSize: FONT_SIZES.md,
-                           color: COLORS.lettersicons,
-                        }}>
-                           What was the issue?
-                        </Text>
-                        <View style={styles.options}>
-                           {consOptions.map((option, index) => (
-                              <Pressable
-                              key={index}
-                              onPress={() => {handleOptionSelect('cons', option)}}>
-                              {({pressed}) => (
-                                 <Text style={[styles.option, {
-                                    ...feedback.cons.includes(option) && styles.selectedOption,
-                                    ...(pressed && !feedback.cons.includes(option)) && styles.hoveredOption
-                                 }]}>
-                                    {option}
-                                 </Text>
-                              )}
-                              </Pressable>
-                           ))}
-                        </View>
-                     </View>
+                     {issueVisible && (
+                        <Animated.View style={[fadeSlide(issueAnim), {alignItems: 'center', gap: 8}]}>
+                           <Text style={{ fontFamily: FONTS.roboto700, fontSize: FONT_SIZES.md, color: COLORS.lettersicons, }}>
+                              What was the issue?
+                           </Text>
+
+                           <View style={styles.options}>
+                              {tagOptions.cons.map((option, index) => (
+                                 <Pressable key={index} onPress={() => handleTagSelect(option)}>
+                                    {({pressed}) => (
+                                       <Text style={[
+                                          styles.option,
+                                          feedback.tags.includes(option) && styles.selectedOption,
+                                          pressed && !feedback.tags.includes(option) && styles.hoveredOption
+                                       ]}>
+                                          {option}
+                                       </Text>
+                                    )}
+                                 </Pressable>
+                              ))}
+                           </View>
+                        </Animated.View>
+                     )}
+
                      
                      <View style={global.divider}/>
 
