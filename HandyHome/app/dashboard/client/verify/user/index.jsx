@@ -818,6 +818,8 @@ const ValidIdPage = () => {
       {title: "Passport", value: "Passport"},
       {title: "SSS ID", value: "SSS ID"},
       {title: "National ID", value: "National ID"},
+      {title: "Postal ID", value: "Postal ID"},
+      {title: "PHIC", value: "PHIC"},
    ]   
 
    return (

@@ -63,10 +63,10 @@ export const AppDataProvider = ({children}) => {
    // Services
    const fetchServices = async () => { 
       try {
-         console.log('[AppDataContext] Fetching services...');
+         // console.log('[AppDataContext] Fetching services...');
          const res = await api.get(`/general/services`);
          setServices(res.data.data);
-         console.log('[AppDataContext] Services fetched successfully');
+         // console.log('[AppDataContext] Services fetched successfully');
       } catch (err) {
          // console.error('[AppDataContext] Failed to fetch services:', err);
          const message = err?.response?.data?.message || err?.message || 
@@ -175,7 +175,7 @@ export const AppDataProvider = ({children}) => {
          // console.error('[AppDataContext] Failed to fetch notifications:', err);
          const message = err?.response?.data?.message || err?.message || 
             "Failed to load notifications. Please try again.";
-         console.log(message);
+         // console.log(message);
          throw err;
       } finally {
          setNotificationsLoading(false);
@@ -202,16 +202,16 @@ export const AppDataProvider = ({children}) => {
    // Worker Info
    const fetchWorker = async () => {
       try {
-         console.log('[AppDataContext] Fetching worker profile...');
-         setWorkerLoading(true);
+         // console.log('[AppDataContext] Fetching worker profile...');
+         // setWorkerLoading(true);
          
          const workerResult = await api.get(`/worker`, {
             headers: {'Authorization': `Bearer ${token}`}
          });
 
-         console.log('[AppDataContext] Worker profile fetched successfully');
+         // console.log('[AppDataContext] Worker profile fetched successfully');
          setWorker(workerResult?.data?.data);
-         console.log('WORKER:', workerResult?.data?.data);
+         // console.log('WORKER:', workerResult?.data?.data);
       } catch (err) {
          // console.error('[AppDataContext] Failed to fetch worker profile:', err);
          const message = err?.response?.data?.message || err?.message || 
@@ -228,14 +228,14 @@ export const AppDataProvider = ({children}) => {
 
    const fetchEarnings = async (filter) => {
       try {
-         console.log('[AppDataContext] Fetching worker earnings...');
+         // console.log('[AppDataContext] Fetching worker earnings...');
          if (!analyticsLoading) setEarningsLoading(true);
          
          const earningsResult = await api.get(`/worker/earnings?filter=${filter}`, {
             headers: {'Authorization': `Bearer ${token}`}
          });
 
-         console.log('[AppDataContext] Worker earnings fetched successfully');
+         // console.log('[AppDataContext] Worker earnings fetched successfully');
          setEarnings(earningsResult?.data?.data);
       } catch (err) {
          // console.error('[AppDataContext] Failed to fetch worker earnings:', err);
@@ -253,14 +253,14 @@ export const AppDataProvider = ({children}) => {
 
    const fetchBookings = async (filter) => {
       try {
-         console.log('[AppDataContext] Fetching worker bookings...');
+         // console.log('[AppDataContext] Fetching worker bookings...');
          if (!analyticsLoading) setBookingsLoading(true);
          
          const bookingsResult = await api.get(`/worker/bookings?filter=${filter}`, {
             headers: {'Authorization': `Bearer ${token}`}
          });
 
-         console.log('[AppDataContext] Worker bookings fetched successfully');
+         // console.log('[AppDataContext] Worker bookings fetched successfully');
          const data = bookingsResult?.data?.data;
 
          let chartData;
@@ -291,15 +291,15 @@ export const AppDataProvider = ({children}) => {
 
    const fetchReviews = async () => {
       try {
-         console.log('[AppDataContext] Fetching worker reviews...');
+         // console.log('[AppDataContext] Fetching worker reviews...');
          if (!analyticsLoading) setReviewsLoading(true);
          
          const reviewsResult = await api.get('/worker/sentiment', {
             headers: {'Authorization': `Bearer ${token}`}
          });
 
-         console.log('[AppDataContext] Worker reviews fetched successfully');
-         console.log(reviewsResult?.data?.data);
+         // console.log('[AppDataContext] Worker reviews fetched successfully');
+         // console.log(reviewsResult?.data?.data);
          setSentiment(reviewsResult?.data?.data);
       } catch (err) {
          // console.error('[AppDataContext] Failed to fetch worker reviews:', err);
@@ -337,10 +337,10 @@ export const AppDataProvider = ({children}) => {
             highest_count: highestCount,
          });
          // setTags(null);
-         console.log({
-            data: tagData,
-            highest_count: highestCount,
-         })
+         // console.log({
+         //    data: tagData,
+         //    highest_count: highestCount,
+         // })
       } catch (err) {
          // console.error('[AppDataContext] Failed to fetch worker reviews:', err);
          const message = err?.response?.data?.message || err?.message || 
@@ -379,11 +379,11 @@ export const AppDataProvider = ({children}) => {
 
       const init = async () => {
          try {
-            console.log('[AppDataContext] Initializing app data...');
+            // console.log('[AppDataContext] Initializing app data...');
             // Always fetch services first
             await fetchServices();
             setIsAppDataReady(true);
-            console.log('[AppDataContext] App data initialization completed successfully');
+            // console.log('[AppDataContext] App data initialization completed successfully');
          } catch (err) {
             // console.error('[AppDataContext] App data initialization failed:', err);
          } finally {
@@ -401,16 +401,16 @@ export const AppDataProvider = ({children}) => {
 
       const init = async () => {
          try {
-            console.log('[AppDataContext] Initializing user data...');
+            // console.log('[AppDataContext] Initializing user data...');
             await fetchAddresses();
             await fetchNotifications(1, false);
 
             if (user?.role === "Worker") {
-               console.log('[AppDataContext] User is worker - fetching worker data...');
+               // console.log('[AppDataContext] User is worker - fetching worker data...');
                await fetchWorker();
                await initAnalytics();
             }
-            console.log('[AppDataContext] User data initialization completed successfully');
+            // console.log('[AppDataContext] User data initialization completed successfully');
          } catch (err) {
             // console.error('[AppDataContext] User data initialization failed:', err);
          }

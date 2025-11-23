@@ -118,6 +118,10 @@ const ProfileContacts = () => {
          throw new Error("Please enter a valid email address.");
       }
 
+      if (!email.endsWith("@gmail.com")) {
+         throw new Error("Email must be a Gmail address (e.g., handyh@gmail.com)");
+      }
+
       if (phone.length !== 11) {
          throw new Error("Phone number must be 11 digits long.");
       }

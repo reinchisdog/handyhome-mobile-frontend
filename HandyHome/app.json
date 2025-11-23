@@ -30,26 +30,35 @@
     "plugins": [
       "expo-router",
       [
-        "expo-splash-screen", {
+        "expo-splash-screen",
+        {
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#58B7F3"
         }
-      ], [
-        "react-native-vision-camera", {
+      ],
+      [
+        "react-native-vision-camera",
+        {
           "cameraPermissionText": "$(PRODUCT_NAME) needs access to your Camera."
         }
-      ], [
-        "expo-camera", {
+      ],
+      [
+        "expo-camera",
+        {
           "cameraPermission": "$(PRODUCT_NAME) needs access to your Camera."
         }
-      ], [
-        "expo-image-picker", {
+      ],
+      [
+        "expo-image-picker",
+        {
           "photosPermission": "$(PRODUCT_NAME) needs access to your Photo Gallery."
         }
-      ], [
-        "expo-location", {
+      ],
+      [
+        "expo-location",
+        {
           "locationAlwaysAndWhenInUsePermission": "HandyHome needs your permission to access your location."
         }
       ]
@@ -59,7 +68,11 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.capstone.HandyHome",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSCameraUsageDescription": "$(PRODUCT_NAME) needs access to your Camera."
+      },
+      "runtimeVersion": {
+        "policy": "appVersion"
       }
     },
     "android": {
@@ -69,10 +82,24 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.reinchisdog.HandyHome",
-      "googleServicesFile": "./android/app/google-services.json"
+      "googleServicesFile": "./android/app/google-services.json",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ],
+      "runtimeVersion": "1.0.0"
     },
     "experiments": {
       "typedRoutes": true
-    }  
+    },
+    "updates": {
+      "url": "https://u.expo.dev/759b66b0-d109-4d05-9a4b-6158419712e6"
+    }
   }
 }

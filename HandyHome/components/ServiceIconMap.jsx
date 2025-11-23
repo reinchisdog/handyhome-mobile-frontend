@@ -39,6 +39,11 @@ const ServiceIconList = [
       name: 'Upholstery',
       getIcon: (size, color) => <Icons1 name="sofa-single" size={size} color={color} />,
    },
+   {
+      id: 9,
+      name: 'Masseur',
+      getIcon: (size, color) => <Icons2 name="back-hand" size={size} color={color} />,
+   },
  ];
 
 export const ServiceIconMap = ({serviceId , iconColor = COLORS.primary, iconSize = 24}) => {

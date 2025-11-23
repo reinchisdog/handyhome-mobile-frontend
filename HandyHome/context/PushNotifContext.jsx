@@ -32,7 +32,7 @@ export const PushNotifProvider = ({children}) => {
    useEffect(() => {
       if (!isAuthReady) return;
 
-      console.log('🚀 Auth ready - registering for push notifications');
+      // console.log('🚀 Auth ready - registering for push notifications');
       registerForPushNotif();
    }, [isAuthReady]);
 
@@ -40,14 +40,14 @@ export const PushNotifProvider = ({children}) => {
    useEffect(() => {
       const notificationListener = Notifications.addNotificationReceivedListener(
          (notification) => {
-            console.log('Notification Received:', notification);
+            // console.log('Notification Received:', notification);
             setNotification(notification);
          }
       )
 
       const responseListener = Notifications.addNotificationResponseReceivedListener(
          (response) => {
-            console.log('Notification Response Received:', response);
+            // console.log('Notification Response Received:', response);
          }
       );
 
@@ -61,7 +61,7 @@ export const PushNotifProvider = ({children}) => {
       // When user becomes authenticated and we have a locally stored token
       const syncTokenWithBackend = async () => {
          if (user && token && expoPushToken) {
-            console.log('🔄 User authenticated - syncing push token with backend');
+            // console.log('🔄 User authenticated - syncing push token with backend');
             try {
                await callRegistrationAPI(expoPushToken, user.role);
                await AsyncStorage.setItem(LAST_REGISTERED_KEY, Date.now().toString());
@@ -85,7 +85,7 @@ export const PushNotifProvider = ({children}) => {
          const hoursSinceLastRegistration = (Date.now() - parseInt(lastRegistered, 10)) / (1000 * 60 * 60);
          return hoursSinceLastRegistration >= REGISTRATION_COOLDOWN_HOURS;
       } catch (e) {
-         console.log('Error checking registration cooldown:', e);
+         // console.log('Error checking registration cooldown:', e);
          return true;
       }
    }
@@ -120,7 +120,7 @@ export const PushNotifProvider = ({children}) => {
             headers: { Authorization: `Bearer ${token}` }
          });
 
-         console.log('✅ API registration successful');
+         // console.log('✅ API registration successful');
          return response;
       } catch (error) {
          console.error('❌ API registration failed:', error);
@@ -145,7 +145,7 @@ export const PushNotifProvider = ({children}) => {
          if (!force) {
             const should = await shouldRegister();
             if (!should) {
-               console.log('⏭️ Skipping registration - within cooldown period');
+               // console.log('⏭️ Skipping registration - within cooldown period');
                const storedToken = await AsyncStorage.getItem(TOKEN_STORAGE_KEY);
                setExpoPushToken(storedToken);
                setIsLoading(false);
@@ -167,11 +167,11 @@ export const PushNotifProvider = ({children}) => {
 
          const tokenData = await Notifications.getExpoPushTokenAsync();
          const pushToken = tokenData.data;
-         console.log('PUSH TOKEN:', pushToken);
+         // console.log('PUSH TOKEN:', pushToken);
 
          const storedToken = await AsyncStorage.getItem(TOKEN_STORAGE_KEY);
          if (!force && storedToken === pushToken) {
-            console.log('⏭️ Token unchanged - skipping API registration');
+            // console.log('⏭️ Token unchanged - skipping API registration');
             setExpoPushToken(pushToken);
             setIsLoading(false);
             return pushToken;
@@ -186,14 +186,14 @@ export const PushNotifProvider = ({children}) => {
          if (user && token) {
             await callRegistrationAPI(pushToken, userObj ? userObj.role : user.role);
          } else {
-            console.log('⚠️ User not authenticated - token stored locally only');
+            // console.log('⚠️ User not authenticated - token stored locally only');
          }
 
          await AsyncStorage.setItem(TOKEN_STORAGE_KEY, pushToken);
          await AsyncStorage.setItem(LAST_REGISTERED_KEY, Date.now().toString());
 
          setExpoPushToken(pushToken);
-         console.log('✅ Push notification registered successfully');
+         // console.log('✅ Push notification registered successfully');
       
          return pushToken;
       } catch (err) {
@@ -207,7 +207,7 @@ export const PushNotifProvider = ({children}) => {
 
    // ---- Force Re-registration
    const forceRegister = useCallback(async () => {
-      console.log('🔄 Force registering push token...');
+      // console.log('🔄 Force registering push token...');
       return await registerForPushNotif(true);
    }, [registerForPushNotif]);
 
@@ -219,7 +219,7 @@ export const PushNotifProvider = ({children}) => {
 
       try {
          if (!currentToken) {
-            console.log('⚠️ No push token to remove from backend');
+            // console.log('⚠️ No push token to remove from backend');
             return;
          }
 
@@ -235,12 +235,12 @@ export const PushNotifProvider = ({children}) => {
                headers: { Authorization: `Bearer ${currentAuthToken}` }
             });
 
-            console.log('🗑️ Push token removed from backend');
+            // console.log('🗑️ Push token removed from backend');
          } else {
-            console.log('⚠️ No auth token available - skipping backend removal');
+            // console.log('⚠️ No auth token available - skipping backend removal');
          }
 
-         console.log('🗑️ Push token reset successfully');
+         // console.log('🗑️ Push token reset successfully');
       } catch (err) {
          console.error('❌ Failed to reset push token:', err);
       } finally {

@@ -42,7 +42,7 @@ const FormCredentials = ({data, setData}) => {
       const file = await openDocumentPicker();
       const fileName = file.name;
 
-      if (variable === 'nbi' || variable === 'barangay') {
+      if (variable === 'barangay') {
          if (!fileName.endsWith('jpg') && !fileName.endsWith('jpeg')) {
             setErrorMessage('File should be in the jpg/jpeg format. Please try again.');
             setErrorModal(true);
@@ -97,7 +97,13 @@ const FormCredentials = ({data, setData}) => {
                ...prev,
                tesda: data  // ✅ Just set it directly
             }))
-         } else {
+         } else if (variable === "clearance") {
+            setData(prev => ({
+               ...prev,
+               clearance: data  // ✅ Just set it directly
+            }))
+         }
+         else {
             // For arrays (primary_id, certificates, experience)
             setData(prev => ({
                ...prev,
@@ -141,6 +147,8 @@ const FormCredentials = ({data, setData}) => {
             {
                modalType === "ids" ? 
                   <ValidIdModal handleModalData={handleModalData}/> :
+               modalType === "clearance" ? 
+                  <ClearanceModal handleModalData={handleModalData}/> :
                modalType === "certs" ? 
                   <CertificateModal handleModalData={handleModalData}/> :
                modalType === "work" ?
@@ -215,20 +223,63 @@ const FormCredentials = ({data, setData}) => {
             onPress={() => openModal("ids")}
             />
 
-            {/* NBI Clearance */}
+            {/* NBI/Police Clearance */}
             <ApplicationUpload 
             icon={<Icons2 name='file-document' size={24} color={COLORS.primary}/>}
-            title="NBI Clearance (Optional)"
+            title="NBI/Police Clearance (Optional)"
             label="Add File"
-            data={data.nbi}
+            data={data.clearance?.uri ? data.clearance : null}
             renderData={
-               <FileContainer 
-               file={data.nbi}
-               onDelete={() => setData(prev => ({
-                  ...prev, nbi: null
-               }))}/>
+               data.clearance?.uri && (
+                  <View 
+                  style={{
+                     width: '100%',
+                     flexDirection: 'row',
+                     justifyContent: 'space-between',
+                     alignItems: 'center',
+                     paddingVertical: 8,
+                     gap: 8
+                  }}>
+                     <View style={{flexDirection: 'row', gap: 8, alignItems: 'center', flexShrink: 1}}>
+                        <Image 
+                        source={{uri: data.clearance.uri}}
+                        style={{
+                           height: 48,
+                           width: 72,
+                           objectFit: 'cover',
+                           resizeMode: 'cover',
+                           borderRadius: 12,
+                           borderWidth: 1.5,
+                           borderColor: COLORS.strokes,
+                        }}/>
+                        <View style={{gap: 4, flexShrink: 1}}>
+                           <Text 
+                           style={{
+                              fontFamily: FONTS.roboto400,
+                              fontSize: FONT_SIZES.xs,
+                              color: COLORS.lettersicons,
+                              textTransform: 'capitalize',
+                           }}>
+                              {`${data.clearance.clearance_type} Clearance`}
+                           </Text>
+                        </View>
+                     </View>
+                     <TouchableOpacity 
+                     onPress={() => {
+                        setData(prev => ({
+                           ...prev,
+                           clearance: {
+                              uri: null,
+                              clearance_type: ""
+                           }
+                        }))
+                     }}>
+                        <Icons2 name='window-close' size={24} color={COLORS.lettersicons}/>
+                     </TouchableOpacity>
+                  </View>
+               )
             }
-            onPress={() => handleSingleData("nbi")}
+            onPress={() => openModal("clearance")}
             />
 
             {/* Barangay Clearance */}
@@ -520,6 +571,8 @@ const ValidIdModal = ({handleModalData}) => {
       {title: "Passport", value: "Passport"},
       {title: "SSS ID", value: "SSS ID"},
       {title: "National ID", value: "National ID"},
+      {title: "Postal ID", value: "Postal ID"},
+      {title: "PHIC", value: "PHIC"},
    ]   
    const [data, setData] = useState({
       uri: null,
@@ -570,6 +623,75 @@ const ValidIdModal = ({handleModalData}) => {
                type: e.value
             }))}
             selectedItem={data.type}
+            />
+
+            <MediaUpload 
+            maxMedia={1}
+            data={data.uri}
+            dataName={"uri"}
+            setData={setData}
+            mode = "both"
+            hasSwitch ={false}
+            initialCameraType={'back'}
+            />
+         </View>
+         
+         <MainButton 
+         type='primary'
+         text='Save'
+         onPress={handleSave}
+         />
+      </KeyboardAwareScrollView>
+   )
+}
+
+const ClearanceModal = ({handleModalData}) => {
+   // Hooks and States
+   const insets = useSafeAreaInsets();
+
+   const clearanceTypes = [
+      {title: "NBI", value: "nbi"},
+      {title: "Police", value: "police"},
+   ]   
+   const [data, setData] = useState({
+      uri: null,
+      clearance_type: ""
+   })
+
+   const handleSave = () => {
+      handleModalData(data, "clearance")
+   }
+
+   return (
+      <KeyboardAwareScrollView
+      contentContainerStyle={{
+         flexGrow: 1,
+         paddingHorizontal: 24,
+         paddingBottom: insets.bottom + 24,
+         gap: 24,
+         justifyContent: 'space-between',
+      }}>
+         <View style={{gap: 24, flex: 1,}}>
+            {/* ---- Title */}
+            <Text 
+            style={{
+               fontFamily: FONTS.roboto700,
+               fontSize: FONT_SIZES.xxl,
+               color: COLORS.darkblue,
+               textAlign: 'left',
+            }}>
+               Add NBI/Police Clearance
+            </Text>
+            {/* ---- Content */}
+
+            <InputDropdown 
+            placeholder='Type of ID'
+            items={clearanceTypes}
+            onSelect={(e) => setData(prev => ({
+               ...prev,
+               clearance_type: e.value
+            }))}
+            selectedItem={data.clearance_type}
             />
 
             <MediaUpload 

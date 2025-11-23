@@ -70,12 +70,17 @@ const ApplicationPreview = () => {
                      <View style={styles.bulletDivider}/>
                   <View style={styles.bulletItem}>
                      <View style={styles.bullet}/>
-                     <Text style={styles.bulletText}>NBI Clearance</Text>
+                     <Text style={styles.bulletText}>NBI/Police Clearance (Optional)</Text>
                   </View>
                      <View style={styles.bulletDivider}/>
                   <View style={styles.bulletItem}>
                      <View style={styles.bullet}/>
                      <Text style={styles.bulletText}>Barangay Clearance</Text>
+                  </View>
+                     <View style={styles.bulletDivider}/>
+                  <View style={styles.bulletItem}>
+                     <View style={styles.bullet}/>
+                     <Text style={styles.bulletText}>TESDA Certificate (Optional)</Text>
                   </View>
                      <View style={styles.bulletDivider}/>
                   <View style={styles.bulletItem}>

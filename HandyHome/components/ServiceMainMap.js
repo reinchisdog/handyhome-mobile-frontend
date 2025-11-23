@@ -6,5 +6,6 @@ export const ServiceMainImages = {
    "5": require("../assets/images/servicesmain/aircon.png"),
    "6": require("../assets/images/servicesmain/pest control.png"),
    "7": require("../assets/images/servicesmain/upholstery.png"),
+   "9": require("../assets/images/servicesmain/masseur.png"),
  };
  

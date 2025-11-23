@@ -34,5 +34,7 @@ export const ServiceCategoryImages = {
    "33": require("../assets/images/subservices/33.jpg"),
    "34": require("../assets/images/subservices/34.jpg"),
    "35": require("../assets/images/subservices/35.jpg"),
+   "36": require("../assets/images/subservices/36.png"),
+   "37": require("../assets/images/subservices/37.png"),
  };
  

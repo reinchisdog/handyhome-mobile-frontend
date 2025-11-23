@@ -31,7 +31,10 @@ const ApplicationForm = () => {
    const {convertUriToFile, convertDateToFormattedDate} = useConvert();
 
    const [application, setApplication] = useState({
-      nbi: null,
+      clearance: {
+         uri: null,
+         clearance_type: "",
+      },
       barangay: null,
       tesda: {  // ✅ Initialize as empty object instead of null
          uri: null,
@@ -80,8 +83,8 @@ const ApplicationForm = () => {
             throw new Error("Two (2) Primary IDs are required");
          } 
 
-         // if (!application.nbi) {
-         //    throw new Error("NBI Clearance is required");
+         // if (!application.clearance?.uri) {
+         //    throw new Error("Clearance is required");
          // }
 
          if (!application.barangay) {
@@ -125,14 +128,22 @@ const ApplicationForm = () => {
       const formData = new FormData;
       // Services
       formData.append("service_id", application.service.id);
+      
       // Single Files
-      formData.append("nbi", convertUriToFile(application.nbi.uri));
+      if (application.clearance?.uri) {
+         formData.append("clearance", convertUriToFile(application.clearance.uri));
+         formData.append("clearance_type", application.clearance.clearance_type);
+      }
+
       formData.append("barangay", convertUriToFile(application.barangay.uri));
 
-      formData.append("tesda", convertUriToFile(application.tesda.uri));
-      formData.append("tesda_certificate_name", application.tesda.tesda_certificate_name);
-      formData.append("tesda_certificate_number", application.tesda.tesda_certificate_number);
-      formData.append("tesda_issue_date", convertDateToFormattedDate(application.tesda.tesda_issue_date, "-"));
+      if (application.tesda?.uri) {
+         formData.append("tesda", convertUriToFile(application.tesda.uri));
+         formData.append("tesda_certificate_name", application.tesda.tesda_certificate_name);
+         formData.append("tesda_certificate_number", application.tesda.tesda_certificate_number);
+         formData.append("tesda_issue_date", convertDateToFormattedDate(application.tesda.tesda_issue_date, "-"));
+      }
+
       // Multiple Files
       // ---- Valid ID
       // ------ Primary ID 1
@@ -141,6 +152,7 @@ const ApplicationForm = () => {
       // ------ Primary ID 2
       formData.append("primary_id_2", convertUriToFile(application.primary_id[1].uri));
       formData.append("primary_id_2_type", application.primary_id[1].type);
+
       // ---- Certificates
       for (let i = 0; i < application.certificates.length; i++) {
          formData.append("certificates", convertUriToFile(application.certificates[i].uri));
@@ -148,6 +160,7 @@ const ApplicationForm = () => {
          formData.append(`issue_organization[${i}]`, application.certificates[i].organization);
          formData.append(`issue_date[${i}]`, convertDateToFormattedDate(application.certificates[i].date, "-"));
       }
+      
       // ---- Experience
       for (let i = 0; i < application.experience.length; i++) {
          formData.append(`title[${i}]`, application.experience[i].title);
@@ -164,15 +177,36 @@ const ApplicationForm = () => {
    }
 
    const printFormData = async (formData) => {
-      console.log("[2] Form Structure");
+      console.log("=".repeat(60));
+      console.log("[2] 📋 FORM DATA STRUCTURE");
+      console.log("=".repeat(60));
+
+      let fileCount = 0;
+      let textCount = 0;
 
       for (let [key, value] of formData.entries()) {
-         if (value instanceof File) {
-            console.log(`${key}: [File] name=${value.name}, type=${value.type}`);
+         // Check if it's a file object (has uri, name, type properties)
+         if (value && typeof value === 'object' && (value.uri || value.name)) {
+            fileCount++;
+            console.log(`📄 ${key}:`);
+            console.log(`   └─ Name: ${value.name || 'Unknown'}`);
+            console.log(`   └─ Type: ${value.type || value.mimeType || 'Unknown'}`);
+            if (value.size) {
+               console.log(`   └─ Size: ${(value.size / 1024).toFixed(2)} KB`);
+            }
+            console.log(`   └─ URI: ${value.uri || 'N/A'}`);
+         } else if (typeof value === 'object') {
+            // It's an object but not a file
+            console.log(`⚠️ ${key}: [Object] ${JSON.stringify(value).substring(0, 100)}`);
          } else {
-            console.log(`${key}: ${value}`);
+            textCount++;
+            console.log(`📝 ${key}: ${value}`);
          }
       }
+
+      console.log("=".repeat(60));
+      console.log(`📊 Summary: ${fileCount} files, ${textCount} text fields`);
+      console.log("=".repeat(60));
    };
 
    const handleSubmit = async () => {
@@ -398,9 +432,17 @@ const ApplicationForm = () => {
                <MainButton 
                type='primary'
                text={step === 4 ? 'Submit Application' : 'Next'}
-               onPress={step === 4 ? handleSubmit : nextStep}
-               loading={submitting}
-               />
+               onPress={() => {
+                  console.log("🖱️ Button clicked! Current step:", step);
+                  if (step === 4) {
+                     console.log("📤 Calling handleSubmit...");
+                     handleSubmit();
+                  } else {
+                     console.log("➡️ Calling nextStep...");
+                     nextStep();
+                  }
+               }}
+               loading={submitting}/>
             </View>
          </View>
       </>

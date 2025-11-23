@@ -63,7 +63,7 @@ export const AuthProvider = ({children}) => {
             await api.get(`/auth/validate-token`, {
                headers: { Authorization: `Bearer ${token}` },
             });
-            console.log("TOKEN VALIDATED");
+            // console.log("TOKEN VALIDATED");
          }
 
          const userResult = await api.get(`/user`, {
@@ -96,7 +96,7 @@ export const AuthProvider = ({children}) => {
          const token = tokenResult.data.data.token;
          await AsyncStorage.setItem('token', JSON.stringify(token));
          setToken(token);
-         console.log("[Auth Context] Token Set:", token); 
+         // console.log("[Auth Context] Token Set:", token); 
          
          // console.log("3. Fetching User Data");
          const userResult = await api.get(`/user`, {
