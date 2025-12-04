@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 // ---- Contexts
 import { useAppointment } from '../../../../context/AppointmentContext';
 // ---- Other Components
+import Header from '../../../../components/Header';
 import MainButton from '../../../../components/MainButton';
 import LoadingDots from '../../../../components/LoadingDots';
 import GeneralModal from '../../../../components/GeneralModal';
@@ -68,16 +69,13 @@ const AppointmentQueueScreen = () => {
    useFocusEffect(
       useCallback(() => {
          const onBackPress = () => {
-            if (queueLoading && currentAppointment?.id && !currentAppointment?.accepted_by) {
-               setCancelModal(true);
-               return true;
-            }
-            return false;
+            router.replace('/dashboard/client/home'); // ✅ Use replace
+            return true;
          };
 
          const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
          return () => subscription?.remove();
-      }, [queueLoading, currentAppointment?.id, currentAppointment?.accepted_by])
+      }, [])
    );
 
    // Fixed animation trigger logic
@@ -121,70 +119,82 @@ const AppointmentQueueScreen = () => {
          primaryLoading={cancelLoading}
          />
 
-         <View style={[
-            global.screenContainer, 
-            global.centerContainer, {
-            backgroundColor: '#fff', 
-            position: 'relative'
-         }]}>
-            {queueLoading ? (
-               <>
-                  <View style={{gap: 48, alignItems: 'center'}}>
-                     <LoadingDots size={16}/>
-                     <Text
+         <View style={global.screenContainer}>
+            <Header 
+            hasBack
+            onBack={() => router.replace('/dashboard/client/home')}
+            backColor={COLORS.primary}
+            position='absolute'
+            />
+
+            <View style={[
+               global.screenContainer, 
+               global.centerContainer, {
+               backgroundColor: '#fff', 
+               position: 'relative'
+            }]}>
+
+
+               {queueLoading ? (
+                  <>
+                     <View style={{gap: 48, alignItems: 'center'}}>
+                        <LoadingDots size={16}/>
+                        <Text
+                        style={{
+                           fontFamily: FONTS.roboto500,
+                           fontSize: FONT_SIZES.md,
+                           color: COLORS.lettersicons,
+                           alignItems: 'center'
+                        }}>
+                           Finding the<Text style={{color: COLORS.primary}}> best available provider </Text>for you.
+                        </Text>
+                     </View>
+
+                     <View 
                      style={{
-                        fontFamily: FONTS.roboto500,
-                        fontSize: FONT_SIZES.md,
-                        color: COLORS.lettersicons,
-                        alignItems: 'center'
+                        paddingBottom: insets.bottom + 24, 
+                        paddingHorizontal: 24, 
+                        position: 'absolute', 
+                        bottom: 0, 
+                        left: 0, 
+                        right: 0,
+                        width: width,
                      }}>
-                        Finding the<Text style={{color: COLORS.primary}}> best available provider </Text>for you.
-                     </Text>
-                  </View>
-
-                  <View 
-                  style={{
-                     paddingBottom: insets.bottom + 24, 
-                     paddingHorizontal: 24, 
-                     position: 'absolute', 
-                     bottom: 0, 
-                     left: 0, 
-                     right: 0,
-                     width: width,
-                  }}>
-                     <MainButton
-                     type='secondary'
-                     text={"Cancel Appointment"}
-                     onPress={() => setCancelModal(true)}
+                        <MainButton
+                        type='secondary'
+                        text={"Cancel Appointment"}
+                        onPress={() => setCancelModal(true)}
+                        />
+                     </View>
+                  </>
+               ) : (
+                  <>
+                     <SuccessMessage 
+                     title={"Service Provider Found!"}
+                     body={"A provider has accepted your request. View their profile and confirm your booking."}
+                     type='andy'
                      />
-                  </View>
-               </>
-            ) : (
-               <>
-                  <SuccessMessage 
-                  title={"Service Provider Found!"}
-                  body={"A provider has accepted your request. View their profile and confirm your booking."}
-                  type='andy'
-                  />
 
-                  <View
-                  style={{
-                     position: 'absolute',
-                     top: StatusBar.currentHeight,
-                     height: 12,
-                     width: width,
-                     backgroundColor: COLORS.secondary,
-                  }}>
-                     <Animated.View 
+                     <View
                      style={{
-                        height: '100%',
-                        width: loadingWidth,
-                        backgroundColor: COLORS.primary,
-                     }}/>
-                  </View>
-               </>
-            )}
+                        position: 'absolute',
+                        top: StatusBar.currentHeight,
+                        height: 12,
+                        width: width,
+                        backgroundColor: COLORS.secondary,
+                     }}>
+                        <Animated.View 
+                        style={{
+                           height: '100%',
+                           width: loadingWidth,
+                           backgroundColor: COLORS.primary,
+                        }}/>
+                     </View>
+                  </>
+               )}
+            </View>
          </View>
+         
       </>
    )
 }

@@ -136,20 +136,48 @@ export const AppointmentProvider = ({ children }) => {
    const checkPendingAppointment = async () => {
       try {
          const pending = await AsyncStorage.getItem('pending_appointment');
-         // console.log(pending);
-         if (pending) {
-            const response = await api.get(`user/book/${pending}/check-initial-booking`, {
-               headers: {'Authorization': `Bearer ${token}`}
-            });
+         console.log("Pending from AsyncStorage:", pending);
 
+         let appointmentData = null;
+
+         if (pending) {
+            try {
+               const response = await api.get(`user/book/${pending}/check-initial-booking`, {
+                  headers: {'Authorization': `Bearer ${token}`}
+               });
+               appointmentData = response?.data?.data;
+            } catch (err) {
+               console.log("Error fetching with ID, will try backup endpoint:", err?.message);
+            }
+         }
+
+         if (!appointmentData) {
+            console.log("Trying backup endpoint to fetch pending appointment");
+            try {
+               const backupResponse = await api.get(`user/book/check-initial-existing-booking`, {
+                  headers: {'Authorization': `Bearer ${token}`}
+               });
+               appointmentData = backupResponse?.data?.data;
+
+               if (appointmentData?.id) {
+                  await AsyncStorage.setItem('pending_appointment', appointmentData.id.toString());
+                  console.log("Stored pending appointment ID from backup endpoint:", appointmentData.id);
+               }
+            } catch (backupErr) {
+               console.log("Backup endpoint also failed:", backupErr?.message);
+            }
+         }
+         
+         if (appointmentData?.id) {
             const selected = await AsyncStorage.getItem('materialsSelected');
             console.log("SELECTED?", selected);
             setMaterialsSelected(selected === 'true');
-            // console.log(response?.data?.data);
-            setCurrentAppointment(response?.data?.data); 
+            // console.log(appointmentData);
+            setCurrentAppointment(appointmentData); 
          }
+
       } catch (err) {
-         console.err(err?.reponse?.data?.message || err?.message);
+         console.error("Error in checkPendingAppointment:", err?.response?.data?.message || err?.message);
       }
    }
 

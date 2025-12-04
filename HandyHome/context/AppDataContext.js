@@ -316,44 +316,82 @@ export const AppDataProvider = ({children}) => {
    }
 
    const fetchTags = async () => {
-       try {
-         // console.log('[AppDataContext] Fetching review tags...');
+      try {
          if (!analyticsLoading) setTagsLoading(true);
-         
+
          const tagsResult = await api.get('/worker/reviews/tags', {
-            headers: {'Authorization': `Bearer ${token}`}
+            headers: { 'Authorization': `Bearer ${token}` }
+         });
+         console.log(tagsResult?.data?.data);
+
+         const rawTags = tagsResult?.data?.data?.tags || {};
+         // Test data
+         // Object.assign(rawTags, {
+         //    "Poor Quality": 10,
+         //    "Unprofessional": 5,
+         //    "Rude": 3,
+         //    "Arrived Late": 8,
+         //    "Good Service": 15,
+         //    "On Time": 20,
+         //    "Friendly": 12,
+         // });
+
+         const tagOptions = {
+            pros: [
+               "On Time",
+               "Very Professional",
+               "Good Service",
+               "Communicative",
+               "Friendly",
+               "Cleaned Up"
+            ],
+            cons: [
+               "Arrived Late",
+               "Unprofessional",
+               "Poor Quality",
+               "No Communication",
+               "Rude",
+               "Left a Mess"
+            ]
+         };
+
+         const allTags = [];
+
+         Object.entries(rawTags).forEach(([text, count]) => {
+            if (tagOptions.pros.includes(text)) {
+               allTags.push({ text, count, type: 1 }); // type: 1 for pros (green)
+            } else if (tagOptions.cons.includes(text)) {
+               allTags.push({ text, count, type: 0 }); // type: 0 for cons (red)
+            }
          });
 
-         // console.log('[AppDataContext] Worker review tags fetched successfully');
-         // console.log(tagsResult?.data?.data);
-         const tagData = [
-            ...Object.entries(tagsResult.data?.data?.cons).map(([text, count]) => ({ text, count, type: 0 })),
-            ...Object.entries(tagsResult.data?.data?.pros).map(([text, count]) => ({ text, count, type: 1 }))
-         ].sort((a, b) => b.count - a.count);
-         // console.log(tagData);
-         const highestCount = tagData.length > 0 ? tagData[0].count : 0;
+         // Sort all tags by count (highest first)
+         allTags.sort((a, b) => b.count - a.count);
+
+         const highestCount = allTags.length > 0 ? allTags[0].count : 0;
+
          setTags({
-            data: tagData,
+            data: allTags,
             highest_count: highestCount,
          });
-         // setTags(null);
-         // console.log({
-         //    data: tagData,
-         //    highest_count: highestCount,
-         // })
+
       } catch (err) {
-         // console.error('[AppDataContext] Failed to fetch worker reviews:', err);
-         const message = err?.response?.data?.message || err?.message || 
+         const message =
+            err?.response?.data?.message ||
+            err?.message ||
             "Failed to load your worker review tags. Please try again.";
+
          setErrorTitle("Reviews Fetch Error");
          setErrorMessage(message);
          setErrorMode("tags");
          setShowError(true);
          throw err;
+
       } finally {
          if (!analyticsLoading) setTagsLoading(false);
       }
-   }
+   };
+
 
    const initAnalytics = async () => {
       try {

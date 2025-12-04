@@ -58,22 +58,33 @@ const LocationPrompt = () => {
             ]);
          }
 
-         const {coords} = await Location.getCurrentPositionAsync();
+         const {coords} = await Location.getCurrentPositionAsync({
+            accuracy: Location.Accuracy.Balanced, // Use Balanced instead of Highest
+         });
+
          if (coords) {
             const {latitude, longitude} = coords;
 
-            let response = await Location.reverseGeocodeAsync({
+            // Add timeout promise
+            const timeoutPromise = new Promise((_, reject) => 
+               setTimeout(() => reject(new Error('Location lookup timed out')), 8000)
+            );
+
+            const geocodePromise = Location.reverseGeocodeAsync({
                latitude,
                longitude
             });
 
-            console.log(response);
+            // Race between geocode and timeout
+            let response = await Promise.race([geocodePromise, timeoutPromise]);
             
-            if (response.length <= 0) {
+            console.log(response);
+         
+            if (!response || response.length <= 0) {
                throw new Error("Unable to retrieve address from location.");
             }
 
-            if (!response[0].formattedAddress.includes("Marikina")) {
+            if (!response[0].formattedAddress?.includes("Marikina")) {
                throw new Error("Service is only currently available in Marikina City.");
             }
             

@@ -2,9 +2,9 @@
 
 // Imports
 // ---- React and Expo Components
-import { StyleSheet, Text, View, ScrollView, useWindowDimensions, Pressable, Image, ImageBackground, Modal, StatusBar, FlatList, TouchableOpacity } from 'react-native';
-import React, { useEffect, useState } from 'react';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { StyleSheet, Text, View, ScrollView, useWindowDimensions, Pressable, Image, ImageBackground, Modal, StatusBar, FlatList, TouchableOpacity, BackHandler } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -153,6 +153,19 @@ const AppointmentSummaryScreen = () => {
          setVoucherLoading(false);
       }
    }
+
+   //Effects
+   useFocusEffect(
+      useCallback(() => {
+         const onBackPress = () => {
+            router.replace('/dashboard/client/home'); // ✅ Use replace
+            return true;
+         };
+
+         const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+         return () => subscription?.remove();
+      }, [])
+   );
 
    useEffect(() => {
       const fetch = async () => {
@@ -365,10 +378,11 @@ const AppointmentSummaryScreen = () => {
             backgroundColor: COLORS.screenbg,
             paddingBottom: 224 + insets.bottom
          }}>
-            <Header
-            hasBack={false}
-            title={"Review Summary"}
-            backgroundColor='#fff'
+            <Header 
+            hasBack
+            onBack={() => router.replace('/dashboard/client/home')}
+            backColor={COLORS.primary}
+            title='Review Summary'
             />
 
             <View

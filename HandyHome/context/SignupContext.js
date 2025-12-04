@@ -145,6 +145,10 @@ export const SignupProvider = ({children}) => {
       const email = signupData.email?.trim() || "";
       const phone = signupData.phone_number?.trim() || "";
 
+      if (!email || !phone) {
+         return "Email and phone number cannot be empty.";
+      }
+
       if (email === "" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
          return "Please enter a valid email address.";
       }

@@ -401,7 +401,7 @@ const AnalyticsScreen = () => {
                      :
                      <FlatList
                      scrollEnabled={false}
-                     data={tags?.data}
+                     data={tags?.data || []}
                      keyExtractor={(item, index) => index.toString()}
                      style={{flex: 1}}
                      contentContainerStyle={{gap: 16, marginBottom: 16, flexGrow: 1, justifyContent: 'center', alignItems: 'center'}}
@@ -411,40 +411,42 @@ const AnalyticsScreen = () => {
                               flexDirection: 'row',
                               alignItems: 'center',
                               justifyContent: 'space-between',
-                              width: '100%',
-                              // backgroundColor: COLORS.lightblue
+                              width: '100%'
                            }}>
                               <Text style={{
-                                 fontFamily: FONTS.roboto600,
-                                 fontSize: FONT_SIZES.md,
-                                 color: COLORS.lettersicons
+                              fontFamily: FONTS.roboto600,
+                              fontSize: FONT_SIZES.md,
+                              color: COLORS.lettersicons
                               }}>
-                                 {item?.text}
+                              {item.text}
                               </Text>
+
                               <Text style={{
-                                 fontFamily: FONTS.roboto600,
-                                 fontSize: FONT_SIZES.md,
-                                 color: COLORS.lettersicons
+                              fontFamily: FONTS.roboto600,
+                              fontSize: FONT_SIZES.md,
+                              color: COLORS.lettersicons
                               }}>
-                                 {item?.count}
+                              {item.count}
                               </Text>
                            </View>
+
                            <View style={{
                               height: 6,
                               width: '100%',
                               backgroundColor: COLORS.strokes,
                               borderRadius: 12,
-                              overflow: 'hidden',
+                              overflow: 'hidden'
                            }}>
                               <View style={{
-                                 height: '100%',
-                                 width: `${(item?.count / (tags?.highest_count || 1)) * 100}%`,
-                                 backgroundColor: item?.type === 1 ? COLORS.green : COLORS.red,
-                                 borderRadius: 12,
+                              height: '100%',
+                              width: `${(item.count / (tags?.highest_count || 1)) * 100}%`,
+                              backgroundColor: item.type === 1 ? COLORS.green : COLORS.red,
+                              borderRadius: 12
                               }}/>
                            </View>
                         </View>
                      )}
+
                      ListEmptyComponent={
                         <Text
                         style={{

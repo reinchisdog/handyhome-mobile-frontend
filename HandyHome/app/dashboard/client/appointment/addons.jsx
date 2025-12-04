@@ -2,9 +2,9 @@
 
 // Imports
 // ---- React and Expo Components
-import { FlatList, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'expo-router';
+import { FlatList, Image, ScrollView, StyleSheet, BackHandler, Text, View } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 // ---- Other Components
@@ -77,6 +77,18 @@ const AppointmentAddonsScreen = () => {
    }
 
    // Effects
+   useFocusEffect(
+      useCallback(() => {
+         const onBackPress = () => {
+            router.replace('/dashboard/client/home'); // ✅ Use replace
+            return true;
+         };
+
+         const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+         return () => subscription?.remove();
+      }, [])
+   );
+
    useEffect(() => {
       if (!currentAppointment?.id) return;
 
@@ -105,8 +117,10 @@ const AppointmentAddonsScreen = () => {
          secondaryFunction={handleSkip}/>
 
          <Header 
-         hasBack={false}
-         title={'Review Add-ons'}
+         hasBack
+         onBack={() => router.replace('/dashboard/client/home')}
+         backColor={COLORS.primary}
+         title='Review Add-ons'
          />
    
          <ScrollView

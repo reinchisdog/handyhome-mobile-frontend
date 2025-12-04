@@ -35,7 +35,6 @@ const AccountDetails = () => {
       {/* -------------------------- Account Information -------------------------- */}
       <View style={auth.inputSet}>
         <Text style={auth.inputSetTitle}>ACCOUNT INFORMATION</Text>
-        <Text style={[auth.textGeneral, {width: '100%', textAlign: 'center'}]}>Fill in at least one of either Email or Phone.</Text>
         {/* ---- Email */}
         <BasicInput 
           left={<Icons name="email" size={24} color="#3D3D3D"/>}
