@@ -1,2 +1,4 @@
 # handyhome-mobile-frontend
 This is the frontend repository for the capstone project HANDYHOME: A MACHINE LEARNING-ENHANCED PLATFORM FOR HOME SERVICE MATCHING AND WORKFORCE COORDINATION.
+
+For additional information, this is the backend of the system: https://github.com/darkttyu/handyhome-mobile-backend
